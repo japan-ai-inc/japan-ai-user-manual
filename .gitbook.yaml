@@ -3,3 +3,28 @@ root: ./
 structure:
   readme: README.md
   summary: SUMMARY.md
+
+redirects:
+  japan-ai-studio-yzmanyuaru/01-overview: getting-started/studio-overview.md
+  japan-ai-studio-yzmanyuaru/02-prerequisites: getting-started/getting-started-and-navigation.md
+  japan-ai-studio-yzmanyuaru/03-system-map: getting-started/studio-components.md
+  japan-ai-studio-yzmanyuaru/04-navigation: getting-started/getting-started-and-navigation.md
+  japan-ai-studio-yzmanyuaru/05-quickstart: labs/first-project-and-agent.md
+  japan-ai-studio-yzmanyuaru/06-projects: build/create-project-and-basic-settings.md
+  japan-ai-studio-yzmanyuaru/07-workflows: build/configure-workflow-nodes.md
+  japan-ai-studio-yzmanyuaru/08-agents: build/create-agent-instructions-and-models.md
+  japan-ai-studio-yzmanyuaru/09-skills: build/create-and-use-skills.md
+  japan-ai-studio-yzmanyuaru/10-data-integration: build/prepare-and-reference-datasets.md
+  japan-ai-studio-yzmanyuaru/11-custom-objects: build/design-object-structure.md
+  japan-ai-studio-yzmanyuaru/12-storage: build/organize-storage-folders.md
+  japan-ai-studio-yzmanyuaru/13-pages: build/ask-ai-to-build-pages.md
+  japan-ai-studio-yzmanyuaru/14-members-iam: operations/manage-project-and-app-members.md
+  japan-ai-studio-yzmanyuaru/15-secrets: operations/manage-project-secrets.md
+  japan-ai-studio-yzmanyuaru/16-connectors-mcp: operations/manage-external-tools-integrations-mcp.md
+  japan-ai-studio-yzmanyuaru/17-task-scheduler: build/configure-task-scheduler.md
+  japan-ai-studio-yzmanyuaru/18-api-keys-audit-log: operations/manage-project-api-keys.md
+  japan-ai-studio-yzmanyuaru/19-node-reference: build/configure-workflow-nodes.md
+  japan-ai-studio-yzmanyuaru/20-trigger-reference: build/configure-workflow-triggers.md
+  japan-ai-studio-yzmanyuaru/21-roles-permissions: operations/understand-org-project-app-permissions.md
+  japan-ai-studio-yzmanyuaru/22-glossary: getting-started/studio-glossary.md
+  japan-ai-studio-yzmanyuaru/23-faq: labs/tips-index-by-goal.md
