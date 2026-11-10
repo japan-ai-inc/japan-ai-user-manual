@@ -115,7 +115,6 @@
 * [作成者が組織内self-installする](distribution/self-install-in-organization.md)
 * [組織内self-installを更新する](distribution/update-self-install.md)
 * [Marketplaceへ公開申請する](distribution/submit-to-marketplace.md)
-* [リリースの互換性を管理する](distribution/manage-release-compatibility.md)
 
 ## 開発ガイド：選び方と環境
 

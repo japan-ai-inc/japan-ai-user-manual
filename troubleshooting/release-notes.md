@@ -7,7 +7,6 @@ Studioの変更と、その確認方法を案内します。SDK／CLI、Studio U
 - [非推奨機能・移行のお知らせ](deprecations-and-migrations.md)
 - [開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)
 - [SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)
-- [リリースの互換性を管理する](../distribution/manage-release-compatibility.md)
 
 ## この記事の範囲
 
@@ -118,4 +117,3 @@ SDK／CLI・Node.jsの版、実行環境、対象Project、接続先、メソッ
 - [非推奨機能・移行のお知らせ](deprecations-and-migrations.md)
 - [開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)
 - [SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)
-- [リリースの互換性を管理する](../distribution/manage-release-compatibility.md)

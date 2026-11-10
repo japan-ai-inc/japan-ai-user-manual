@@ -179,5 +179,4 @@ Project SecretとWebログイン用シークレットは別の設定です。同
 - [接続の失効・担当者変更に対応する](../operations/handle-expired-connections-and-owner-changes.md)
 - [Project Secretを登録・更新・削除する](../operations/manage-project-secrets.md)
 - [組織内self-installを更新する](../distribution/update-self-install.md)（作成者向け）
-- [リリースの互換性を管理する](../distribution/manage-release-compatibility.md)（配布担当者向け）
 - [App導入・初期設定・更新に失敗する](../troubleshooting/app-install-setup-update-failures.md)
