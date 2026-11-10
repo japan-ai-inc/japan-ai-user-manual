@@ -38,8 +38,8 @@ Storage SDK全体の操作・実行モードは[SDK Storage](../development/sdk-
 ```text
 jai-studio storage list [--path <path>] [--recursive] [--cursor <cursor>] [--limit <n>] [--order-by <field>] [--order-direction <dir>]
 ```
-以下の`<...>`を含む表記は**置換が必要な構文表記**です。角括弧を含めてそのままシェルへ貼り付けず、実際の値に置き換えてください。
 
+以下の`<...>`を含む表記は**置換が必要な構文表記**です。角括弧を含めてそのままシェルへ貼り付けず、実際の値に置き換えてください。
 
 | フラグ | 必須 | 既定値 | 意味 |
 |---|---|---|---|

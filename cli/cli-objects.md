@@ -15,8 +15,8 @@ SDK **0.11.0** のCLIを対象にします。Node.jsは22以上を使い、接�
 ```text
 jai-studio --profile <name> objects list --limit 50 --pretty
 ```
-以下の`<...>`を含む表記は**置換が必要な構文表記**です。角括弧を含めてそのままシェルへ貼り付けず、実際の値に置き換えてください。
 
+以下の`<...>`を含む表記は**置換が必要な構文表記**です。角括弧を含めてそのままシェルへ貼り付けず、実際の値に置き換えてください。
 
 共通フラグは`--profile <name>`、`--env <env>`、`--key <key>`、`--pretty`、`--debug`です。`--env`には`production`またはHTTP/HTTPS URLを指定できます。`--pretty`はJSONを整形し、`--debug`は詳細な応答をエラー出力へ表示します。`--json`フラグはなく、成功時の出力はJSONです。
 
@@ -34,8 +34,6 @@ jai-studio --profile <name> objects list --limit 50 --pretty
 
 ```text
 jai-studio objects list [--cursor <cursor>] [--limit <n>]
-```
-```text
 jai-studio objects get <objectId>
 jai-studio objects create --name <name> [--display-name <name>] [--description <desc>]
 jai-studio objects update <objectId> [--name <name>] [--display-name <name>] [--description <desc>]
@@ -85,8 +83,6 @@ jai-studio objects fields create object-id --data '{"fieldName":"email","display
 
 ```text
 jai-studio objects records list <objectId> [--cursor <cursor>] [--limit <n>]
-```
-```text
 jai-studio objects records get <objectId> <recordId>
 jai-studio objects records create <objectId> --data <json>
 jai-studio objects records update <objectId> <recordId> --data <json>

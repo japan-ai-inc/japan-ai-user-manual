@@ -16,6 +16,7 @@ Agentの一般的なSDK呼出しとストリームは[SDK Agents：実行・ス�
 - `@japan-ai-inc/studio-sdk`は現行公開版0.11.0を使用し、利用するPage実行環境との対応を確認します。`platform`はベータ機能です。
 - Pageのブラウザコードには、Project APIキー、Cookie、認証ヘッダー、Secret値を入れません。SDKは空の`baseUrl`で初期化します。
 - 会話に渡す画面データは必要最小限にします。顧客情報・個人情報・画面上の非表示項目を、利便性だけを理由に丸ごと渡さないでください。
+
 ## 1. Page内のAgent呼出しを実装する
 
 Page実行環境のブラウザでは、次のように初期化します。`agents.invoke()`はPage実行環境を検出すると、Page相対の`/api/agent-chat`へ送信します。利用者のPageセッションが使われるため、APIキーを追加しません。
@@ -55,7 +56,7 @@ for await (const event of studio.agents.invokeStream(agentId, {
 }
 ```
 
-Page相対には、roomの状態を確認する`/api/agent-chat/status/{roomId}`、履歴を取得する`/api/chat-history/{roomId}`もあります。いずれも有効なPageセッションを前提とし、room IDはUUID形式です。ただし通常の会話継続では、これらの経路を直接組み立てず、`sessionId`とSDKを優先してください。`/api/mentions`は、この確認範囲でPage利用者向けのAPIとして確認できませんでした。
+Page相対には、roomの状態を確認する`/api/agent-chat/status/{roomId}`、履歴を取得する`/api/chat-history/{roomId}`もあります。いずれも有効なPageセッションを前提とし、room IDはUUID形式です。Page向けに返る履歴では、ツール呼び出しの引数（`args`）は含まれません。画面表示や処理でツールの引数を使わないでください。ただし通常の会話継続では、これらの経路を直接組み立てず、`sessionId`とSDKを優先してください。`/api/mentions`は、この確認範囲でPage利用者向けのAPIとして確認できませんでした。
 
 SDK 0.11.0では、Page実行環境が対応する場合に限り、実行結果の`requestId`から`getTurnCredits()`でターンのクレジットを、`getRoomCredits()`でroomの合計を取得できます。対応していない実行環境では404になるため、クレジット表示を必須の画面機能にせず、失敗を処理してください。
 
@@ -82,6 +83,7 @@ const next = await studio.agents.invoke(agentId, {
 ```
 
 会話をまたぐ場合は、room ID、対象Agent、Project、利用者を対応付けます。推測したIDで別の会話へ接続しません。履歴とCanvasは[SDK Agents：会話履歴・Canvas](../development/sdk-agents-history-and-canvas.md)を参照してください。
+
 ## 3. Pageコンテキストを読む
 
 `platform`はPage実行環境のブラウザ専用です。`isAvailable()`で利用可否を確認でき、同期読取の`getContext()`は利用できない場合に`null`を返します。初期表示で注入が完了していないことがあるため、通常は`waitForReady()`を使います。既定の待機時間は5,000ミリ秒で、利用不可または待機切れでは`null`になります。
@@ -94,6 +96,7 @@ if (!context) {
   showCurrentProject(context.orgName, context.projectId);
 }
 ```
+
 | 区分 | 値 |
 |---|---|
 | 利用者 | `userId`、`email`、`userName`、`memberRole` |
