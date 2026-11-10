@@ -116,11 +116,6 @@
 * [組織内self-installを更新する](distribution/update-self-install.md)
 * [Marketplaceへ公開申請する](distribution/submit-to-marketplace.md)
 * [リリースの互換性を管理する](distribution/manage-release-compatibility.md)
-* [JAI Adminでリリースを登録・検証導入する](distribution/admin-register-and-test-install-release.md)
-* [JAI Adminで審査・承認・Stable昇格する](distribution/admin-review-approve-promote-stable.md)
-* [JAI Adminで顧客へ配布・更新確認する](distribution/admin-distribute-and-check-updates.md)
-* [JAI Adminで掲載・価格を管理する](distribution/admin-manage-listing-and-pricing.md)
-* [リビジョンの実行サポートを終了する](distribution/end-revision-runtime-support.md)
 
 ## 開発ガイド：選び方と環境
 

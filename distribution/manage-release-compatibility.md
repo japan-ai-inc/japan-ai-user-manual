@@ -8,7 +8,6 @@ Appを更新すると、導入先の画面、業務手順、接続、保存済�
 
 - [App更新の変更点と再設定を確認する](../use/check-app-updates.md)
 - [SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)
-- [JAI Adminで顧客へ配布・更新確認する](admin-distribute-and-check-updates.md)
 - [リリースノート](../troubleshooting/release-notes.md)
 
 ## この記事の範囲
@@ -105,5 +104,4 @@ Marketplaceの詳細では「常に最新版（自動更新）」と表示され
 
 - [App更新の変更点と再設定を確認する](../use/check-app-updates.md)
 - [SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)
-- [JAI Adminで顧客へ配布・更新確認する](admin-distribute-and-check-updates.md)
 - [リリースノート](../troubleshooting/release-notes.md)

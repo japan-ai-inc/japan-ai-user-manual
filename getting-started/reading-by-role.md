@@ -74,9 +74,6 @@ Pageのコード、SDK、CLI、APIを扱う人は、メソッド一覧から読�
 
 - **作成者が組織内に導入する**：[作成者が組織内self-installする](../distribution/self-install-in-organization.md)
 - **Marketplace掲載を申請する**：[Marketplaceへ公開申請する](../distribution/submit-to-marketplace.md)
-- **JAI Adminで配布運用を担当する**：[JAI Adminでリリースを登録・検証導入する](../distribution/admin-register-and-test-install-release.md)以降の運用記事
-
-JAI Admin向けの記事は、その操作を担当し、必要な権限を持つ人のための手順です。一般のApp利用者や、導入先で初期設定を行う管理者が、同じ操作を行うという意味ではありません。
 
 **導入先でAppを使い始める仕事と、配布元からAppを届ける仕事は別です。** 前者は「Studioを使う」「管理・運用」、後者は「Appの公開・配布」を中心に読みます。
 

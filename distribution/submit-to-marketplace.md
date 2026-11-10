@@ -7,7 +7,6 @@ Marketplaceへ出すAppは、リリースの中身だけでなく、利用者が
 ## 関連記事
 
 - [配布対象・依存・認証設定の制約](distribution-scope-dependencies-auth.md)
-- [JAI Adminで審査・承認・Stable昇格する](admin-review-approve-promote-stable.md)
 - [MarketplaceでAppを選ぶ](../use/choose-marketplace-app.md)
 - [Appの利用人数・料金・契約上限を確認する](../operations/check-app-seats-pricing-and-limits.md)
 
@@ -106,6 +105,5 @@ Marketplaceへ出すAppは、リリースの中身だけでなく、利用者が
 ## 次に読む記事
 
 - [配布対象・依存・認証設定の制約](distribution-scope-dependencies-auth.md)
-- [JAI Adminで審査・承認・Stable昇格する](admin-review-approve-promote-stable.md)
 - [MarketplaceでAppを選ぶ](../use/choose-marketplace-app.md)
 - [Appの利用人数・料金・契約上限を確認する](../operations/check-app-seats-pricing-and-limits.md)

@@ -8,7 +8,6 @@
 
 - [リリースノート](release-notes.md)
 - [SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)
-- [リビジョンの実行サポートを終了する](../distribution/end-revision-runtime-support.md)
 - [開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)
 
 ## この記事の範囲
@@ -150,7 +149,7 @@ Studio画面の非推奨化、終了日、移行先について、本記事に�
 
 Appの旧リビジョンの実行サポート終了は、SDKの版更新とは別の運用です。終了後も旧ルームの履歴は閲覧できますが、その旧リビジョンで新しいメッセージ実行はできません。後継の現在版で新しいルームを開始する場合も、旧ルームの会話内容が自動で引き継がれるとは扱いません。
 
-利用者へのお知らせには、対象App・対象業務・終了する旧リビジョン、実行できなくなること、後継版または新しいルームという移行先、必要な再設定、問い合わせ先を明記します。終了操作、影響確認、未完了処理の扱いは[リビジョンの実行サポートを終了する](../distribution/end-revision-runtime-support.md)を参照してください。終了予定の予約や自動通知の仕組みは確認できないため、画面上の操作だけで告知期間を管理しません。
+利用者へのお知らせには、対象App・対象業務・終了する旧リビジョン、実行できなくなること、後継版または新しいルームという移行先、必要な再設定、問い合わせ先を明記します。終了予定の予約や自動通知の仕組みは確認できないため、画面上の操作だけで告知期間を管理しません。
 
 ## よくある誤解
 
@@ -160,11 +159,10 @@ Appの旧リビジョンの実行サポート終了は、SDKの版更新とは�
 
 ## 確認できない場合
 
-対象の組織・Project・Pageまたはアプリ、SDK／CLI／Node.jsの版、接続先、変更前後の結果、発生日時、実行したコマンドまたはメソッド、表示メッセージ・HTTP状態、確認済み事項をまとめます。APIキー、Cookie、認証ヘッダー、Secret値、トークン、顧客の機密データを含めません。SDK・APIの段階的な更新は[SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)、Appリビジョンの終了運用は[リビジョンの実行サポートを終了する](../distribution/end-revision-runtime-support.md)を確認してください。
+対象の組織・Project・Pageまたはアプリ、SDK／CLI／Node.jsの版、接続先、変更前後の結果、発生日時、実行したコマンドまたはメソッド、表示メッセージ・HTTP状態、確認済み事項をまとめます。APIキー、Cookie、認証ヘッダー、Secret値、トークン、顧客の機密データを含めません。SDK・APIの段階的な更新は[SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)を確認してください。
 
 ## 次に読む記事
 
 - [リリースノート](release-notes.md)
 - [SDK／APIのバージョン移行](../development/sdk-api-version-migration.md)
 - [開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)
-- [リビジョンの実行サポートを終了する](../distribution/end-revision-runtime-support.md)
