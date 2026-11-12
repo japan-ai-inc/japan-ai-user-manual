@@ -104,7 +104,7 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows/runs/<runId>' \
 
 `GET /runs/{runId}`は`runId`、`status`、必要に応じて`outputs`と`error`を返します。状態は`RUNNING`、`SUCCEEDED`、`FAILED`、`PARTIAL_SUCCEEDED`、`STOPPED`です。`RUNNING`中は同じIDで照会します。不正なIDは400、実行なしは404、照会タイムアウトは408です。
 
-完了まで待つには`POST /{workflowId}/run-and-wait`を使います。`inputs`は任意、`timeout`はミリ秒で既定60,000、1,000〜300,000です。送信からサーバー側照会までを含む期限です。408時は`runId`があれば結果照会へ切り替えます。
+完了まで待つには`POST /{workflowId}/run-and-wait`を使います。`inputs`は任意、`timeout`はミリ秒で既定60,000、1,000〜300,000です。送信からサーバー側照会までを含む期限です。SDKとCLIは通信の猶予時間を確保するため、上限を270秒にしています。REST APIを直接呼ぶ場合の上限は300秒です。408時は`runId`があれば結果照会へ切り替えます。
 
 ## 6. 予定実行タスクを扱う場合
 

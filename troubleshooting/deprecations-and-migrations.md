@@ -133,7 +133,7 @@ CLIの `workflows run-and-wait --timeout <seconds>` は、サーバー側の実�
 | 対象／状態 | SDK／CLI、公開API。スケジュールタスク、Agent定義の作成・更新、Objectのレコードアクセスルール、Objectの一括削除が追加されました。 |
 | 期限 | 追加機能のため終了期限はありません。 |
 | 影響 | スケジュールタスクは`task:read`、`task:write`（加えて`workflow:execute`）、`task:delete`、Agent定義は`agent:write`、レコードルールは一覧に`object:read`と`object:policy`、作成・削除に`object:write`と`object:policy`を要します。`bulkDelete`は`object:delete`を要しますが、SDKの存在だけで直接公開APIでも使えるとはいえません。スケジュールタスク、Agent定義、レコードルールのスコープはAppのリリースマニフェストに宣言できません。キーの作成者にも対応する権限が必要です。 |
-| 移行先・対応 | 利用する経路と操作に必要なスコープだけを確認します。現行productionではレコードルールの公開APIはあります。一方、`bulkDelete`の公開API用`DELETE /api/v1/objects/:objectId/records/bulk`は確認できないため、直接Project APIキー用として案内せず、PRSブラウザ経路か利用環境の対応を確認します。発行と管理は[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照してください。 |
+| 移行先・対応 | 利用する経路と操作に必要なスコープだけを確認します。現行productionではレコードルールの公開APIはあります。一方、`bulkDelete`の公開API用`DELETE /api/v1/objects/:objectId/records/bulk`は、2026-11-11時点で本番での提供を確認できていません（開発中の版には実装があります）。直接Project APIキー用として案内せず、PRSブラウザ経路か利用環境の対応を確認します。発行と管理は[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照してください。 |
 
 ### 新機能の接続先・Page runtime依存（SDK 0.3.0〜0.11.0）
 

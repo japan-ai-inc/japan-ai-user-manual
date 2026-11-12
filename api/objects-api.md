@@ -73,7 +73,7 @@ curl -sS "https://api.japan-ai.co.jp/api/v1/objects" \
 
 `PATCH`の`data`は部分更新ではなく**完全置換**です。保持するフィールドも含めます。`expectedRevision`は1〜2,147,483,647の整数です。取得した`revision`を更新本文または削除queryへ渡し、不一致なら409です。省略時、更新はlast-write-wins、削除は無条件です。競合時は最新レコードを取得します。
 
-> SDK 0.11.0には`objects.define(objectId).bulkDelete(recordIds)`がありますが、この公開REST APIの確認対象には対応する一括削除経路がありません。公開REST APIでは、対象ごとの`DELETE /api/v1/objects/{objectId}/records/{recordId}`を使います。PRSのObjects経路とは区別してください。
+> SDK 0.11.0には`objects.define(objectId).bulkDelete(recordIds)`がありますが、2026-11-11時点で、本番の公開REST APIには対応する一括削除経路（`DELETE /api/v1/objects/{objectId}/records/bulk`）の提供を確認できていません。開発中の版には実装があり、本番に提供された後は`object:delete`で1〜1,000件を削除でき、1件でも削除できなければ全件失敗します。公開REST APIでは、対象ごとの`DELETE /api/v1/objects/{objectId}/records/{recordId}`を使います。PRSのObjects経路とは区別してください。
 
 ```bash
 curl -sS -X PATCH \

@@ -49,7 +49,7 @@ SDK 0.11.0とCLIのNode.js要件は22以上です。SDKとCLIを併用する場�
 
 PRSブラウザの`agents.listCompareModels(agentId)`、比較への画像・PDF・Storageファイル（`storageFileIds`は最大20件）、読取り専用ツール（最大10件）、候補のWeb参照元が追加されました。利用不可モデルは実行前に`model_not_allowed`で拒否されます。対応する比較経路がない旧バックエンドでは、モデル一覧は失敗し、添付は空で、モデル利用権限の確認は行われません。
 
-`objects.define(id).bulkDelete(recordIds)`も追加されました。最大1,000件で、削除できない対象が1件でもあれば全件削除せず失敗し、存在しないIDはスキップされます。`object:delete`が必要です。現行productionでは、これはPRSブラウザのObject経路では確認できますが、公開APIの`DELETE /api/v1/objects/:objectId/records/bulk`は確認できません。直接Project APIキーで使えると案内せず、経路を確認してください。
+`objects.define(id).bulkDelete(recordIds)`も追加されました。最大1,000件で、削除できない対象が1件でもあれば全件削除せず失敗し、存在しないIDはスキップされます。`object:delete`が必要です。2026-11-11時点で、これはPRSブラウザのObject経路では確認できますが、本番の公開APIの`DELETE /api/v1/objects/:objectId/records/bulk`は提供を確認できていません（開発中の版には実装があります）。直接Project APIキーで使えると案内せず、利用する環境で提供されていることを確認してください。
 
 ### 0.9.0（2026-10-23）
 

@@ -12,7 +12,6 @@ Pageは、Project内で利用するWeb画面です。作成者・開発者は、
 - [Pageのサーバー処理・環境変数・Secret参照](../development/page-server-env-and-secrets.md)
 - [Project Secretを登録・更新・削除する](../operations/manage-project-secrets.md)
 - [制限・提供条件の索引](../operations/limits-and-availability-index.md)
-- [制限・提供条件の索引](../operations/limits-and-availability-index.md)
 - [Pageのビルド・起動・表示に失敗する](../troubleshooting/page-build-start-display-failures.md)
 
 ## この記事の範囲

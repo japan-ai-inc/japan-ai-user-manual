@@ -45,7 +45,7 @@ AIへ依頼した後も、対象Pageを「プレビュー」で開き、表示�
 
 ## 3. SDKを選ぶ場面
 
-型チェックと再利用可能な処理を重視してStudioリソースをコードから扱うならStudio SDKを選びます。`createClient()`から、`agents`、`datasets`、`members`、`objects`、`scheduledTasks`、`storage`、`workflows`を利用できます。`datasets`は読取り専用です。`scheduledTasks`は開発者管理のProject APIキーでProject固有のWorkflowを予定実行するときに使います。SDK 0.11.0では、対応するPRS実行環境で、Pageからの`agents.getTurnCredits()`などの利用量確認、候補比較、データセット読取りを行えます。インストール済みAppのPageでは、`platform.openAppSettings()`で設定画面を開けます。
+型チェックと再利用可能な処理を重視してStudioリソースをコードから扱うならStudio SDKを選びます。`createClient()`から、`agents`、`datasets`、`members`、`objects`、`scheduledTasks`、`storage`、`workflows`を利用できます。SDKの`datasets`モジュールは読取り専用（`list()`と`search()`）で、公開APIは[Datasets API](../api/datasets-api.md)にまとめています。`scheduledTasks`は開発者管理のProject APIキーでProject固有のWorkflowを予定実行するときに使います。SDK 0.11.0では、対応するPRS実行環境で、Pageからの`agents.getTurnCredits()`などの利用量確認、候補比較、データセット読取りを行えます。インストール済みAppのPageでは、`platform.openAppSettings()`で設定画面を開けます。
 
 ```ts
 import { createClient } from "@japan-ai-inc/studio-sdk";

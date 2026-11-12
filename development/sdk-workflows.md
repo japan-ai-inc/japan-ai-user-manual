@@ -119,7 +119,7 @@ if (result.status === "SUCCEEDED" || result.status === "PARTIAL_SUCCEEDED") {
 
 `run()`は常に即時に戻る送信専用の呼出しではありません。タイムアウト時は`responseBody`の`runId`で`getRunResult()`を続け、直ちに再送しません。
 
-完了まで待つだけなら、`runAndWait()`またはCLIの`run-and-wait`を使えます。SDKの`timeoutMs`は既定で**60,000ms**、範囲は**1,000〜270,000ms**です。CLIの`--timeout`は秒単位で**1〜270**です。
+完了まで待つだけなら、`runAndWait()`またはCLIの`run-and-wait`を使えます。SDKの`timeoutMs`は既定で**60,000ms**、範囲は**1,000〜270,000ms**です。CLIの`--timeout`は秒単位で**1〜270**です。通信の猶予時間を確保するため、REST APIを直接呼ぶ場合の上限（300秒）より短くしています。
 
 ```bash
 jai-studio workflows run '<workflow-id>' --input '{"documentUrl":"https://example.invalid/input.pdf"}'

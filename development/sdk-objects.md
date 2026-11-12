@@ -83,7 +83,7 @@ await contacts.bulkCreate([
 
 `bulkDelete(recordIds)`（SDK 0.10.0以降）は、対応する公開APIがある接続先で、最大1,000件のレコードを1回で削除します。キーには`object:delete`スコープが必要です。削除不能なレコードが1件でもあれば全件を削除せずに失敗します。すでに存在しないIDはスキップされ、結果の`skippedIds`と`skippedCount`で確認できます。
 
-SDK 0.11.0は`DELETE /api/v1/objects/:objectId/records/bulk`を送ります。確認できた公開REST APIには、同じパスの一括**作成**（`POST`）はありますが、削除の実装は確認できていません。利用前に、接続先がこの削除経路を提供することを確認してください。
+SDK 0.11.0は`DELETE /api/v1/objects/:objectId/records/bulk`を送り、本文は`[{ "recordId": "..." }]`形式です。空配列はSDKが送信せず、0件の結果を返します。2026-11-11時点で、本番の公開REST APIには同じパスの一括**作成**（`POST`）はありますが、この一括削除は提供を確認できていません。開発中の版には実装があるため、提供開始の時期は接続先ごとに異なります。利用前に、接続先がこの削除経路を提供することを確認してください。
 
 ```ts
 const result = await contacts.bulkDelete(["record-id-1", "record-id-2"]);

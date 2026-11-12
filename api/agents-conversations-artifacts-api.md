@@ -88,6 +88,9 @@ curl -sS -X POST "$JAI_API/chat/v2" \
 | `GET /api/v1/agents/rooms/{roomId}/messages` | `agent:read` | `roomId`：パス、必須／`limit`：任意、1〜100、既定50／`cursor`：任意 | `roomId`、`messages`、`totalCount`、`nextCursor`、`state` | 200、400、401、403、404 |
 | `GET /api/v1/agents/rooms/{roomId}/canvas-artifacts` | `agent:read` | `roomId`：パス、必須／`limit`：任意、1〜100、既定50／`cursor`：任意 | `roomId`、`canvasArtifacts`、`nextCursor` | 200、400、401、403、404 |
 | `GET /api/v1/agents/rooms/{roomId}/canvas-artifacts/{canvasArtifactId}` | `agent:read` | `roomId`、`canvasArtifactId`：パス、必須 | `canvasArtifact` | 200、401、403、404 |
+| `PUT /api/v1/agents/rooms/{roomId}/canvas-artifacts/{canvasArtifactId}` | `agent:execute` | `roomId`、`canvasArtifactId`：パス、必須／本文：`name`、`content` | 作成または置換したCanvas | 200、400、403、404、409、413 |
+| `PUT /api/v1/agents/rooms/{roomId}/canvas-artifacts/{canvasArtifactId}/publication/{scope}` | `agent:execute` | `roomId`、`canvasArtifactId`、`scope`：パス、必須 | 公開結果 | 200、403、404、409 |
+| `DELETE /api/v1/agents/rooms/{roomId}/canvas-artifacts/{canvasArtifactId}/publication` | `agent:execute` | `roomId`、`canvasArtifactId`：パス、必須 | 公開停止の結果 | 200、403、404 |
 
 メッセージは`id`、`role`、`content`、`createdAt`、`feedback`を含みます。ページング中に新しいメッセージが追加され得るため、`id`で重複を除外します。roomが対象Projectから読めない場合も404になり得ます。
 
@@ -97,7 +100,7 @@ Canvas一覧は本文を返さず、`id`、`name`、`documentType`、`contentSiz
 
 ### SDK 0.11.0でCanvasへ書き込み・公開する
 
-SDK 0.11.0では、Pageのサインイン済み利用者が、公開API経由で作成したroomのCanvasへhslides形式のデッキを書込み・公開できます。`putCanvasArtifact(roomId, canvasArtifactId, { name, content })`は指定したCanvas IDで作成または置換します。`content`はHTML文字列そのものではなく、`{ document_type: "hslides", text: "..." }`形式です。結果が不明な書込みは、同じIDで状態を確認してから扱います。APIキーでは実行できず、対応していないデプロイでは404になります。
+SDK 0.11.0では、Pageのサインイン済み利用者が、公開API経由で作成したroomのCanvasへhslides形式のデッキを書込み・公開できます。`putCanvasArtifact(roomId, canvasArtifactId, { name, content })`は指定したCanvas IDで作成または置換します。`content`はHTML文字列そのものではなく、`{ document_type: "hslides", text: "..." }`形式です。結果が不明な書込みは、同じIDで状態を確認してから扱います。これらの書込み・公開は、Pageのサインイン済み利用者向けです。Project APIキーなど利用者を特定できない認証では403になり、対応していないデプロイでは404になります。
 
 公開は`publishCanvasArtifact(roomId, canvasArtifactId, scope)`を使い、`scope`は`"PUBLIC"`または`"ORGANIZATION"`です。`PUBLIC`は組織で公開共有が許可されていないと拒否され、`ORGANIZATION`は公開roomでは拒否されます。`unpublishCanvasArtifact()`はroomの共有範囲へ戻します。SDKとPage実行環境の対応バージョンをそろえ、Canvas本文・リンク・添付に秘密情報を含めません。
 

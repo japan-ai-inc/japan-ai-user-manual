@@ -31,7 +31,7 @@ JAPAN AI Studio（以下「Studio」）の使い方を、**使う人・作る人
 | ハンズオン | 架空のデータで操作しながら学ぶ実習 | 9 |
 | 管理・運用 | 権限、メンバー、接続、Secret、APIキー、定期実行、利用状況、削除と引き継ぎ | 18 |
 | Appの配布 | ProjectからAppへの配布、組織内導入、Marketplace公開 | 5 |
-| 開発・リファレンス | Page開発、SDK、CLI、公開API、Hosted Page API、Object SQL | 41 |
+| 開発・リファレンス | Page開発、SDK、CLI、公開API、Hosted Page API、Object SQL | 42 |
 | トラブルシューティング・お知らせ | 症状別の切り分け、問い合わせ時の情報、リリースノート、非推奨・移行 | 11 |
 
 ## このマニュアルについて

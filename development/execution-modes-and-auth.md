@@ -30,7 +30,7 @@ Project APIキーの発行・失効・スコープは[Project APIキーを管理
 
 ## データセットと予定実行の認証境界
 
-`datasets`は読み取り専用です。`datasets.list({ scope: "project" })`はProject APIキーまたはPRSセッションで使えますが、`scope: "organization"`は、Projectにリンクされていない組織データセットを読み取り可能な**署名済みPRSブラウザ利用者**だけが指定できます。Project APIキーで`organization`を指定すると403になります。`search()`は、Projectにリンクされたデータセット、またはその利用者が読める組織データセットだけを検索できます。
+SDKの`datasets`モジュールは読み取り専用（`list()`と`search()`）です。公開APIは[Datasets API](../api/datasets-api.md)を参照してください。`datasets.list({ scope: "project" })`はProject APIキーまたはPRSセッションで使えますが、`scope: "organization"`は、Projectにリンクされていない組織データセットを読み取り可能な**署名済みPRSブラウザ利用者**だけが指定できます。Project APIキーで`organization`を指定すると403になります。`search()`は、Projectにリンクされたデータセット、またはその利用者が読める組織データセットだけを検索できます。
 
 `scheduledTasks`は、開発者管理のProject APIキーでのみ使います。Appリリースのマニフェストでは`task:*`スコープを宣言できないため、PRSサーバーのプラットフォーム管理キーに移して回避することはできません。各タスクはキーの作成者として動作し、作成者が実行時に必要な権限を持たなければ失敗します。
 
