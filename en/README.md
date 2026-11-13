@@ -6,18 +6,7 @@ You do not need to read everything from the beginning. Choose the article in the
 
 ## Start from your goal
 
-| What you want to do | Article to read first |
-|---|---|
-| Use an App you were told about | [Open an Installed App and Get Started](use/open-installed-app.md) |
-| Use the features of a shared Project | [Get Started in a Shared Project](use/start-with-shared-project.md) |
-| Build something that fits your own work | [Choose Features by Goal](getting-started/choose-features-by-goal.md) |
-| Select an App and roll it out in your organization | [Choose an App on the Marketplace](use/choose-marketplace-app.md) |
-| Manage members, permissions, and connections | [Understand Organization, Project, and App Permissions](operations/understand-org-project-app-permissions.md) |
-| Develop with code, the SDK, or the API | [Choose Between the Web UI, AI Assistance, SDK, CLI, and API](development/choose-dev-path.md) |
-| Deliver an App you built to users | [Design App Distribution from a Project](distribution/design-app-distribution-from-project.md) |
-| Learn by working through exercises | [Your First Project and Agent](labs/first-project-and-agent.md) |
-| Something is not working or an error appears | [Something Is Not Visible or You Cannot Join](troubleshooting/not-visible-cannot-join.md) |
-| Check the meaning of a term | [Glossary](getting-started/studio-glossary.md) |
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Use an App you were told about</strong></td><td>Open an Installed App and Get Started</td><td><a href="use/open-installed-app.md">use/open-installed-app.md</a></td></tr><tr><td><strong>Use the features of a shared Project</strong></td><td>Get Started in a Shared Project</td><td><a href="use/start-with-shared-project.md">use/start-with-shared-project.md</a></td></tr><tr><td><strong>Build something that fits your own work</strong></td><td>Choose Features by Goal</td><td><a href="getting-started/choose-features-by-goal.md">getting-started/choose-features-by-goal.md</a></td></tr><tr><td><strong>Select an App and roll it out in your organization</strong></td><td>Choose an App on the Marketplace</td><td><a href="use/choose-marketplace-app.md">use/choose-marketplace-app.md</a></td></tr><tr><td><strong>Manage members, permissions, and connections</strong></td><td>Understand Organization, Project, and App Permissions</td><td><a href="operations/understand-org-project-app-permissions.md">operations/understand-org-project-app-permissions.md</a></td></tr><tr><td><strong>Develop with code, the SDK, or the API</strong></td><td>Choose Between the Web UI, AI Assistance, SDK, CLI, and API</td><td><a href="development/choose-dev-path.md">development/choose-dev-path.md</a></td></tr><tr><td><strong>Deliver an App you built to users</strong></td><td>Design App Distribution from a Project</td><td><a href="distribution/design-app-distribution-from-project.md">distribution/design-app-distribution-from-project.md</a></td></tr><tr><td><strong>Learn by working through exercises</strong></td><td>Your First Project and Agent</td><td><a href="labs/first-project-and-agent.md">labs/first-project-and-agent.md</a></td></tr><tr><td><strong>Something is not working or an error appears</strong></td><td>Something Is Not Visible or You Cannot Join</td><td><a href="troubleshooting/not-visible-cannot-join.md">troubleshooting/not-visible-cannot-join.md</a></td></tr><tr><td><strong>Check the meaning of a term</strong></td><td>Glossary</td><td><a href="getting-started/studio-glossary.md">getting-started/studio-glossary.md</a></td></tr></tbody></table>
 
 For how to read the manual by role, see [How to Read This Manual by Role](getting-started/reading-by-role.md).
 

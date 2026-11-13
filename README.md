@@ -6,18 +6,7 @@ JAPAN AI Studio（以下「Studio」）の使い方を、**使う人・作る人
 
 ## 目的から読み始める
 
-| やりたいこと | 最初に読む記事 |
-|---|---|
-| 案内されたAppを使いたい | [導入済みAppを開いて利用を始める](use/open-installed-app.md) |
-| 共有されたProjectの機能を使いたい | [共有されたProjectで利用を始める](use/start-with-shared-project.md) |
-| 自分の業務に合う仕組みを作りたい | [目的から機能を選ぶ](getting-started/choose-features-by-goal.md) |
-| Appを選定し、組織に導入したい | [MarketplaceでAppを選ぶ](use/choose-marketplace-app.md) |
-| メンバー・権限・接続を管理したい | [組織・Project・Appの権限を理解する](operations/understand-org-project-app-permissions.md) |
-| コードやSDK・APIで開発したい | [Web UI・AI支援・SDK・CLI・APIを選ぶ](development/choose-dev-path.md) |
-| 作ったAppを利用者に届けたい | [ProjectからAppへの配布設計](distribution/design-app-distribution-from-project.md) |
-| 操作しながら学びたい | [最初のProjectとAgent](labs/first-project-and-agent.md) |
-| うまく動かない・エラーが出る | [表示されない・参加できない](troubleshooting/not-visible-cannot-join.md) |
-| 用語の意味を確認したい | [用語集](getting-started/studio-glossary.md) |
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>案内されたAppを使いたい</strong></td><td>導入済みAppを開いて利用を始める</td><td><a href="use/open-installed-app.md">use/open-installed-app.md</a></td></tr><tr><td><strong>共有されたProjectの機能を使いたい</strong></td><td>共有されたProjectで利用を始める</td><td><a href="use/start-with-shared-project.md">use/start-with-shared-project.md</a></td></tr><tr><td><strong>自分の業務に合う仕組みを作りたい</strong></td><td>目的から機能を選ぶ</td><td><a href="getting-started/choose-features-by-goal.md">getting-started/choose-features-by-goal.md</a></td></tr><tr><td><strong>Appを選定し、組織に導入したい</strong></td><td>MarketplaceでAppを選ぶ</td><td><a href="use/choose-marketplace-app.md">use/choose-marketplace-app.md</a></td></tr><tr><td><strong>メンバー・権限・接続を管理したい</strong></td><td>組織・Project・Appの権限を理解する</td><td><a href="operations/understand-org-project-app-permissions.md">operations/understand-org-project-app-permissions.md</a></td></tr><tr><td><strong>コードやSDK・APIで開発したい</strong></td><td>Web UI・AI支援・SDK・CLI・APIを選ぶ</td><td><a href="development/choose-dev-path.md">development/choose-dev-path.md</a></td></tr><tr><td><strong>作ったAppを利用者に届けたい</strong></td><td>ProjectからAppへの配布設計</td><td><a href="distribution/design-app-distribution-from-project.md">distribution/design-app-distribution-from-project.md</a></td></tr><tr><td><strong>操作しながら学びたい</strong></td><td>最初のProjectとAgent</td><td><a href="labs/first-project-and-agent.md">labs/first-project-and-agent.md</a></td></tr><tr><td><strong>うまく動かない・エラーが出る</strong></td><td>表示されない・参加できない</td><td><a href="troubleshooting/not-visible-cannot-join.md">troubleshooting/not-visible-cannot-join.md</a></td></tr><tr><td><strong>用語の意味を確認したい</strong></td><td>用語集</td><td><a href="getting-started/studio-glossary.md">getting-started/studio-glossary.md</a></td></tr></tbody></table>
 
 役割ごとの読み方は、[役割別の読み方](getting-started/reading-by-role.md)にまとめています。
 
