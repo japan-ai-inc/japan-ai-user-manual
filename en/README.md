@@ -2,7 +2,7 @@
 
 This manual explains how to use JAPAN AI Studio ("Studio") from the perspective of **people who use it, build with it, administer it, develop on it, and distribute from it**.
 
-You do not need to read everything from the beginning. Choose the article in the table below that is closest to what you want to do now.
+You do not need to read everything from the beginning. Choose the article in the cards below that is closest to what you want to do now.
 
 ## Start from your goal
 
