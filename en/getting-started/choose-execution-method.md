@@ -4,7 +4,7 @@ When running processing in Studio, think separately about **"what to run" and "w
 
 For example, having a Workflow that creates a weekly report does not make it run every week by itself. Choose whether a person runs it, it runs at a specified date and time, or it runs when data changes.
 
-This article explains when to use Workflow triggers and date-and-time starts managed in "Tasks," including manual runs as a comparison before you begin automation. Specific setup steps and the list of supported events are covered in the respective setup articles.
+This article explains when to use Workflow triggers and date-and-time starts configured in a Project's Task Scheduler, including manual runs as a comparison before you begin automation. Specific setup steps and the list of supported events are covered in the respective setup articles.
 
 ## Separate these two decisions first
 
@@ -20,7 +20,7 @@ If you want to start by selecting features such as Agents and Workflows, see [Ch
 | Work condition | First choice | Why to choose it |
 |---|---|---|
 | A person decides the input and whether it is appropriate to run each time | **Manual run** | The person can check the input and target before starting. |
-| Run at a specified date and time or on a cycle such as daily or weekly | **Date-and-time start managed in "Tasks"** | You can manage execution tasks for Agents or Workflows based on the date and time. |
+| Run at a specified date and time or on a cycle such as daily or weekly | **Project Task Scheduler** | You can manage execution tasks for Agents or Workflows based on the date and time. |
 | Run in response to an event, such as receiving an email or changing data | **Workflow event trigger** | You can configure the target event and conditions, and pass its information to the processing. |
 | Run in response to a notification from an external system | **Consider a Webhook trigger** | If available, it can use an incoming HTTP request from an external source. You must confirm the connection, authentication, and input format. |
 
@@ -42,9 +42,9 @@ For Workflows, distinguish between a creator testing a draft and a user running 
 
 Also, starting processing manually is different from asking for human approval at each operation during processing. Design the processing to include the necessary review points.
 
-## 2. Use "Tasks" when the date and time are fixed
+## 2. Use the Task Scheduler when the date and time are fixed
 
-Manage execution tasks that start at a date and time on the "Tasks" page. There, check and configure the Agent or Workflow to run and the date, time, and recurrence conditions.
+Manage date-and-time execution tasks in "Task Scheduler" in the target Project's settings. Check and configure the Agent or Workflow to run and the date, time, and recurrence conditions. This is a different configuration location from event triggers in a Workflow start node.
 
 For example, the following work may be a candidate:
 
@@ -103,7 +103,7 @@ Decide based on what you want the processing to align with.
 | Process data after source data preparation is complete | Check whether an event representing completion is available. Merely delaying the time does not guarantee preparation is complete. |
 | Many exceptions require deciding the target or whether to run each time | Keep a manual run, or automate only standardized parts. |
 
-Date-and-time starts managed in "Tasks" and Workflow triggers are classifications that distinguish the purpose and entry point configured by users. They do not mean that they use separate execution infrastructure internally.
+Date-and-time starts configured in the Task Scheduler and Workflow triggers are classifications that distinguish the purpose and entry point configured by users. They do not mean that they use separate execution infrastructure internally.
 
 If you configure both a date-and-time start and an event start for the same processing, check whether the same target might be processed twice. Adding execution methods does not necessarily make the process more reliable.
 

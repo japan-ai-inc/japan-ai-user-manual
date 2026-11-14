@@ -100,7 +100,7 @@ Project内のナビゲーションには、「AGENT」「PAGE」「WORKFLOW」�
 | 用意された業務画面で入力・確認する | ホームPage、または「PAGE」などにある対象Page | [Pageから業務を進める](work-with-pages.md) |
 | AIに依頼する・質問する | ホーム画面のAgent、または「AGENT」の対象Agent | [Agentと会話して結果を確認する](chat-with-agents.md) |
 | 共有された会話を確認する | Projectホームの共有された会話、または案内された会話リンク | [Agentと会話して結果を確認する](chat-with-agents.md) |
-| 用意された処理を実行する | 「その他の機能」から「タスク」を開き、「探す」で対象の公開済みWorkflowを確認してタスクを作成する。作成済みのタスクは「使っているもの」から実行する | [公開済みWorkflowを実行する](run-published-workflow.md) |
+| 用意された処理を実行する | Project内の「ワークフロー」で対象の公開済みWorkflowを確認するか、担当者が案内した実行用のリンクを開く | [公開済みWorkflowを実行する](run-published-workflow.md) |
 | 業務データを閲覧・入力・更新する | 「OBJECT」の対象Object、またはそのデータを扱うPage | [Objectのデータを閲覧・更新する](view-and-update-object-records.md) |
 | ファイルを取得・保存する | 「STORAGE」の対象ファイルやフォルダ | [Storageのファイルを利用する](use-storage-files.md) |
 

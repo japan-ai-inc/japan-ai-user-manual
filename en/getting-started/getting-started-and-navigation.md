@@ -34,7 +34,7 @@ Follow your organization's procedures for sign-in methods and additional authent
 
 ## 3. Choose the entry point for your goal
 
-The basic entry points are **Apps, Studio Workspace, and Tasks**. Open organization-wide Tasks from "Other features" > "Tasks," and pin them to the sidebar as needed. Available entry points, including the Apps and Workspace views, vary by availability conditions and screen configuration.
+The basic entry points for Studio are **Apps and Studio Workspace**. Available entry points vary by availability conditions and screen configuration.
 
 | What you want to do | Where to open or what to check |
 |---|---|
@@ -42,7 +42,6 @@ The basic entry points are **Apps, Studio Workspace, and Tasks**. Open organizat
 | Use a shared Project | Open the provided Project link. Even when finding it from the Studio Workspace list, check the target name. |
 | Create or manage Agents, Workflows, Pages, and more | Open the target Project in Studio Workspace |
 | Consider installing a new App | Check the Marketplace list in Apps if it is available |
-| Check organization-wide execution tasks or published Workflows | Open "Tasks" from "Other features." Pin it to the sidebar as needed. |
 
 **Using an App and installing from Marketplace are separate tasks.** A user does not necessarily need to install an App again to use an installed App.
 

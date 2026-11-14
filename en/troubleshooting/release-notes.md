@@ -6,7 +6,7 @@ We will guide you through changes to Studio and how to confirm them. SDK/CLI, St
 - [SDK/API version migration](../development/sdk-api-version-migration.md)
 ## Scope of this article
 The SDK/CLI history to be posted is 0.2.0 to 0.11.0 in `CHANGELOG.md` included in npm package `@japan-ai-inc/studio-sdk`. The SDK and CLI are the same package, and the CLI name is `jai-studio`. Since the SDK is less than 1.0, there may be breaking changes even in the minor version. Please pin the full verified version instead of range specification or `latest`.
-- **Studio UI**: Only one screen change will be listed below. Listing here does not indicate availability in your environment.
+- **Studio UI**: Check the articles for Studio Projects and installed Apps for screen operations. This article does not cover changes to organization-wide screens outside Studio.
 - **Public API/Page runtime**: Usability is not determined only by updating the SDK. Check the route, authentication mode, authority, and organization settings in the target environment.
 ## How to read release notes
 Divide the target into Studio UI, SDK/CLI, public API, and Page runtime, and check the conditions for providing the function and the authentication mode to be used.
@@ -51,15 +51,6 @@ Optimistic concurrency control using the Object field validation rule type and r
 Fixed PRS browser Object search to comply with public filtering and sorting agreements. It is not listed as a behavior change for the direct public API.
 ### 0.2.0 (2026-08-10)
 `jai-studio skill install` and included skills have been added. Object updates require a fully typed payload and omitted regular fields are not preserved. Workflow wait input has been changed from `timeout` to `timeoutMs` (milliseconds). Node SDK and CLI are Node.js 22 or higher.
-## Studio screen change history
-### Integration into "Tasks" (Studio UI)
-| Item | Contents |
-|---|---|
-| Target/Version | Studio UI organization “task” screen |
-| Date | Date not stated (Contents confirmed as of November 9, 2026. This is not the release date or start date). |
-| Change summary | The tabs are "Used", "Search", and "Create". The old Workflow/Scheduled Tasks screen redirects users who have permission and access to the task to `/tasks`, and the old screen also provides instructions for opening the task. |
-| Impact/Required Work | Materials guiding the old screen names will be updated to the "Task" line. However, the display, redirection, and operation will differ depending on the authority and provision conditions of the organization. |
-| Details/Migration destination | [Set task scheduler](../build/configure-task-scheduler.md), [Debug with Workflow execution history](../build/debug-workflow-run-history.md), [Change/stop/inherit periodic execution](../operations/change-stop-handover-scheduled-runs.md) |
 ## Common Misconceptions
 - **Use new features just by updating the SDK**: Check public API, PRS runtime, authentication mode, permissions, and organization settings separately.
 - **npm publication date is production release date**: Varies. Don't confuse publish dates, merges, deployments, and enablement in each environment.

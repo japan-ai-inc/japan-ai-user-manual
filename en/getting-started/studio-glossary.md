@@ -54,14 +54,14 @@ For how to use the features differently, see [Roles of the Components](studio-co
 | **RAG** | A method where AI searches for related information and generates an answer using the results as a reference. | A Dataset groups materials; RAG is a method that uses search results in answers. It does not mean every material is read in full each time or guarantee answer completeness. |
 | **Storage** | A feature for storing and managing files and folders. | PDFs, images, CSV files, and generated reports. Saving a file alone does not make it searchable in a Dataset. |
 
-> **"Task" has different meanings depending on the context.** It may mean one record in an Object for work management, work requested from an Agent, or an execution setting managed on the "Tasks" page. Articles distinguish these by adding a qualifier, such as "business task" or "execution task."
+> **"Task" has different meanings depending on the context.** It may mean one record in an Object for work management, work requested from an Agent, or an execution setting managed in a Project's Task Scheduler. Articles distinguish these by adding a qualifier, such as "business task" or "execution task."
 
 ## 4. Stages of starting, running, and providing
 
 | Term | Meaning | Common point of confusion |
 |---|---|---|
 | **Trigger** | An event or condition that starts processing. | Consider separately the Workflow definition of what to process and when and in response to what it starts. |
-| **Task** | A page that manages Workflows and the legacy Task Scheduler together. Use "In use" to check the status and results of created tasks, "Find" to create tasks from published Workflows, and "Build" to create and publish Workflows. | Open it from "Other features" and pin it to the sidebar as needed. Distinguish it from "tasks" in business data. |
+| **Task Scheduler** | A feature for configuring run conditions, such as dates and recurrence, for Agents and Workflows in a Project, and checking the task list and history. | Distinguish it from Workflow configuration, publishing, and start-node event settings. It is also different from tasks in business data or Project build conversations. |
 | **Webhook** | A mechanism that notifies a specified receiver of an event through an HTTP request. | The receiving side requires settings such as authentication, input content, and the processing to start. |
 | **Run / run history** | Running defined processing / a record of its status, results, and more. | Saving a definition and the result of processing actually running are different. Review history before deciding about failures or reruns. |
 | **Draft / test** | Content being edited / an operation that checks how that content works. | Even a test may cause external sending or data updates. A draft does not necessarily have no impact. |

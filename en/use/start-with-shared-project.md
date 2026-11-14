@@ -100,7 +100,7 @@ You do not need to open every feature in order. Begin with the target provided b
 | Enter information and review it in a prepared business screen | The home Page, or the target Page in "PAGE" or a similar area | [Move Your Work Forward from a Page](work-with-pages.md) |
 | Ask AI to do something or ask a question | The Agent on the home screen, or the target Agent in "AGENT" | [Chat with an Agent and Review the Results](chat-with-agents.md) |
 | Review a shared conversation | A shared conversation on the Project home, or the conversation link you were given | [Chat with an Agent and Review the Results](chat-with-agents.md) |
-| Run a prepared process | Open "Tasks" from "Other features," check the target published Workflow in "Find," and create a task. Run created tasks from "In use." | [Run a Published Workflow](run-published-workflow.md) |
+| Run a prepared process | Find the published Workflow in "Workflows" within the Project, or open the run link provided by the person in charge. | [Run a Published Workflow](run-published-workflow.md) |
 | View, enter, or update business data | The target Object in "OBJECT," or a Page that handles its data | [View and Update Object Data](view-and-update-object-records.md) |
 | Obtain or save files | The target file or folder in "STORAGE" | [Use Files in Storage](use-storage-files.md) |
 

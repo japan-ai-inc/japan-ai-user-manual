@@ -86,7 +86,7 @@ In the dashboard or App navigation, look for the following entry points. What is
 | Review or continue a previous conversation | "Chat Rooms" | [Chat with an Agent and Review the Results](chat-with-agents.md) |
 | Run a prepared Workflow | The relevant Workflow in "Automations" | [Run a Published Workflow](run-published-workflow.md) |
 
-"Automations" in an App may show Workflows and run tasks. Read the process name and description, and select the item you were given by the person in charge. To check organization-wide Workflows and tasks, open "Tasks" from "Other features." In "Tasks," create a task from a published Workflow in "Find," and check runs, history, and settings in "In use." You can pin "Tasks" to the sidebar as needed, but you do not need to change automatic execution settings for first-time use.
+"Automations" in an App may show Workflows and run tasks. Read the process name and description, and select the item you were given by the person in charge. You do not need to change automatic execution settings for first-time use.
 
 When you use Object data or files in Storage, follow the Page or operation flow prepared in that App. Not every App has a menu for directly operating Objects or Storage.
 

@@ -5,19 +5,17 @@ When a Workflow does not work as expected, use **Run history** to check the inpu
 - To test a draft: [Test a Workflow Draft](test-workflow-drafts.md)
 - To check results as a user: [Run a Published Workflow](../use/run-published-workflow.md)
 
-## Use the 2 histories differently
+## Use the history for the execution method
 
 Where you view Workflow history differs depending on the version you want to check.
 
 | Where to view | Target | Main purpose |
 |---|---|---|
 | "Run history" on the editing screen | Draft tests run from the editing screen | Verify behavior before publishing |
-| "History" under **"Tasks" > "In use"** | Runs of created Tasks | Check run results for each Task |
-| Workflow run logs | When an administrator checks runs of the published version | Investigate problems after publishing |
+| "History" in "Task Scheduler" in the Project settings | Runs from the Project Task Scheduler | Check the task, time, status, and result |
+| "Execution History" in the Project's Workflows screen | Published Workflow runs | Investigate problems after publishing |
 
 > Check test runs on the editing screen separately from the history of the published version or Tasks. Where a run is displayed varies depending on the entry point used to run it, permissions, and Workflow configuration.
->
-> In environments where you can open the old Workflow page URL, you may see guidance for moving to "Tasks." Do not treat the old screen as the primary entry point for checking history. First, open the history corresponding to the run you want to check from "Tasks" or the editing screen.
 
 ## Before you begin
 
@@ -27,16 +25,16 @@ Where you view Workflow history differs depending on the version you want to che
 
 ## 1. Find the target run
 
-### When checking from Tasks
+### When checking from the Project Task Scheduler
 
-1. From **"Other features"** in navigation, open **"Tasks."**
-2. In **"In use,"** find the target Task. Compare its status, run, next run, and previous result.
-3. From the menu for the target row, select **"History."** To investigate all of your Tasks together, select **"Run history (all tasks)."**
-4. Compare the status, date and time, and target Task to identify the run to investigate.
+1. Open "Task Scheduler" in the target Project's settings.
+2. Select the "History" tab.
+3. Compare the task name, date and time, and status to identify the run to investigate.
+4. If a link to the Workflow result is displayed, open it to check the run details.
 
 ### When checking from Workflow run logs
 
-To investigate runs of the published Workflow as an administrator, check the target Workflow under **"Build"** in "Tasks," and open **"Run history"** if it is available. Run logs display runs of published Workflows.
+Open "Execution History" in the target Project's Workflows screen. Filter by Workflow name, date and time, runner, and status. Run logs display published-version runs and exclude draft tests from the editing screen.
 
 Runs with "Automated run" as the runner are started by triggers, schedules, or other means without direct human action.
 
@@ -75,7 +73,7 @@ Check Steps in order from the first node and find the **node where the value fir
 | AI output format breaks down | Insufficient instructions or an ambiguous output format specification | Prompt for the relevant node |
 | Error in an external service | An expired connection, insufficient permissions, or restrictions at the other service | Connection status and administrator |
 | Does not start from a trigger | Not published, an expired connection, or filtering conditions | [Configure Workflow Triggers](configure-workflow-triggers.md) |
-| A Task cannot run | Disabled, stopped organization-wide, or missing connection, input, or Webhook secret | Status and "Settings" under "Tasks" > "In use" |
+| A Project task cannot run | Task or execution-target status, input, connection, or run-condition issues | Task List and History in the Project Task Scheduler |
 
 ## 4. Save run data
 
@@ -94,7 +92,7 @@ If a run started by an event such as a trigger fails, "Retry" may be displayed o
 
 - A retry runs with the **saved input**. You cannot change the input.
 - If writes completed before the failure (such as saving to an Object), **rerunning may duplicate data.** Check the target data before running it.
-- "Retry" may be displayed only for failed runs started by events. To retry a failed manual run, run it again from the normal execution screen or **"Run"** under "Tasks."
+- "Retry" may be displayed only for failed runs started by events. To retry a failed manual run, run it again from "Manual run" in the Project's Workflow list or the App's run screen.
 
 ## 6. Correct and verify
 
@@ -102,14 +100,14 @@ If a run started by an event such as a trigger fails, "Retry" may be displayed o
 2. Save the draft and test with values close to the input that caused the problem ([Test a Workflow Draft](test-workflow-drafts.md)).
 3. Check the test result in "Run history" on the editing screen.
 4. When the problem is resolved, publish it ([Publish a Workflow](publish-workflow.md)).
-5. Check the run result of the published version in Tasks or the post-publishing run logs.
+5. Check post-publishing results in the Project's Workflow Execution History or Task Scheduler History.
 
 > Publishing corrections does not change the results of runs that already failed. Rerun or manually run them as needed.
 
 ## Checklist
 
 - [ ] I distinguished whether the run I want to investigate is a published version, a Task, or a draft test.
-- [ ] I identified the target in "History" under "Tasks" > "In use" or in the run logs.
+- [ ] I identified the target in the Project's Workflow Execution History or Task Scheduler History.
 - [ ] I checked the Result and Steps.
 - [ ] I identified the node where the value first differed from what I expected.
 - [ ] I saved and shared JSON carefully to protect confidential information.

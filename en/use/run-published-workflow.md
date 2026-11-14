@@ -30,18 +30,18 @@ If you have not opened where you will use it yet, begin with one of these articl
 3. Check that the name and description match the process you need.
 4. Open the input and run screen from the relevant card or "Run."
 
-In addition to Workflows, "Automations" in an App may list run tasks. Do not select a different run target just because its name is similar. To check organization-wide Workflows and tasks, open "Tasks" from "Other features." In "Tasks," create a task for yourself from a published Workflow in "Find," and check runs, history, and settings in "In use."
+In addition to Workflows, "Automations" in an App may list run tasks. Do not select a different run target just because its name is similar.
 
 For an App that opens a home Page for business use, follow the entry point on the Page or the person in charge's guidance. Not every App displays the same list.
 
 ### Open it from a Project
 
 1. Open the shared Project.
-2. Open "Tasks" from "Other features." Pin it to the sidebar if needed.
-3. For a Workflow you are using for the first time, check the target published Workflow in "Find" and select "Create task." If connection or input settings are required, complete them according to the screen guidance.
-4. Check the task you created in "In use," then open the input screen for running it from "Run" on that row.
+2. Open the Workflow list within the Project.
+3. Check the target Workflow and its publication status.
+4. Select "Manual run" on the target row to open the input screen. If the action appears in the row menu, select it there.
 
-Editing a Workflow in "Build" and running a task in "In use" are separate actions. For ordinary business use, you do not need to change the process in the editing screen or publish it again.
+Editing a Workflow and running it manually from the list are separate actions. For ordinary business use, you do not need to change the process in the editing screen or publish it again.
 
 When opening from a link you were given, also check the displayed App, Project, and Workflow names.
 
