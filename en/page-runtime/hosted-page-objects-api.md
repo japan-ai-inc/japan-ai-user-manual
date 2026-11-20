@@ -35,12 +35,12 @@ The SDK Objects API sends from a Page to relative paths rooted at `/api/v1/objec
 |---|---|---|
 | Object definitions | `list()`, `get()`, `create()`, `update()`, `delete()` | `GET` and `POST /api/v1/objects`; `GET`, `PATCH`, and `DELETE /api/v1/objects/{objectId}` |
 | Records | `define<T>()`, `list()`, `get()`, `create()`, `update()`, `delete()`, `bulkCreate()`, `bulkDelete()` | `GET` and `POST /api/v1/objects/{objectId}/records`; `GET`, `PATCH`, and `DELETE /api/v1/objects/{objectId}/records/{recordId}`; `POST` and `DELETE /records/bulk` |
-| Search | `search()` | In the SDK PRS browser, search conditions are sent as query strings to `GET /api/v1/objects/{objectId}/records`. |
+| Search | `search()` | In the Page runtime browser, the SDK sends search conditions as query strings to `GET /api/v1/objects/{objectId}/records`. |
 | Fields | `listFields()`, `createField()`, `updateField()`, `deleteField()` | `GET` and `POST /api/v1/objects/{objectId}/fields`; `PATCH` and `DELETE /api/v1/objects/{objectId}/fields/{fieldId}` |
 
 `/api/records` is not registered as an Objects API. Do not conflict or confuse it with another API provided by the Page itself. `/api/custom-objects/...` is a separate compatibility route that validates a format including organization and Project, but it is not the route used by SDK `objects`. To handle Objects in browser implementations for new Pages, use `/api/v1/objects...` or the SDK above.
 
-> Even when calling the same route as the SDK with direct `fetch()`, use only relative paths and do not add an API key or headers identifying a principal. However, normally prioritize the SDK because it handles PRS search conversion, response-key normalization, and error types.
+> Even when calling the same route as the SDK with direct `fetch()`, use only relative paths and do not add an API key or headers identifying a principal. However, normally prioritize the SDK because it handles search conversion in the Page runtime, response-key normalization, and error types.
 
 ## 1. Read and write records
 
@@ -82,7 +82,7 @@ const next = page.hasNextPage && page.cursor
   : undefined;
 ```
 
-For PRS browser searches, the query string created by the SDK must be **8,000 characters or fewer**. If it exceeds that limit, `ObjectsApiError` (status 400) occurs before the request is sent. This is not a limit on search-result count or Object character count. Shorten it by reducing filters and sort orders or dividing the search into stages.
+For searches in the Page runtime browser, the query string created by the SDK must be **8,000 characters or fewer**. If it exceeds that limit, `ObjectsApiError` (status 400) occurs before the request is sent. This is not a limit on search-result count or Object character count. Shorten it by reducing filters and sort orders or dividing the search into stages.
 
 ## Access modes and permissions
 
@@ -105,7 +105,7 @@ For Pages displayed with anonymous access, signed-out users in sign-in-optional 
 | 403 | Check the Page, organization, and Project relationship; Object or record permissions; access mode; and Origin/Referer for writes. Publishing a Page alone does not increase permissions. |
 | 404 | Check `/api/v1/objects...`, Object ID, record ID, and field ID. Do not replace it with `/api/records` or `/api/custom-objects`. |
 | 409 | Check `expectedRevision` and the latest record. Do not resend with the same value; check the latest value and the business-correct change. |
-| 400 | Check Object and field input conditions, search conditions, or the 8,000-character PRS search limit. |
+| 400 | Check Object and field input conditions, search conditions, or the 8,000-character search limit in the Page runtime. |
 | 429, 5xx, or communication failure | Avoid rapid consecutive calls and retry only the minimum necessary after reading. For a failed write, do not resend unconditionally; retrieve the current state and check for duplicates and conflicts. |
 
 SDK HTTP failures, communication failures, and JSON parsing failures can be handled as `ObjectsApiError`. You can use `statusCode` and `responseBody` to separate screen messages, but do not display or record them as-is because response bodies may contain personal information, cookies, or authentication information.

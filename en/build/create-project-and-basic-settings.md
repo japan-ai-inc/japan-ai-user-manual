@@ -29,12 +29,12 @@ If you do not know where to start, see [Prerequisites and Basic Screens](../gett
 
 ## 2. Set the name, description, and icon
 
-Enter the basic information on the creation screen. **Both the project name and description are required when creating it.** You cannot proceed to setup if either is blank or contains only whitespace.
+Enter the basic information on the creation screen. **Both the project name and description are required when creating it.** If either is blank or contains only whitespace, you cannot select "Create" or "Create with a plan."
 
 | Item | What to enter | Examples and notes |
 |---|---|---|
 | Project name | A name that identifies the work or team using it | `sales_department_deal_preparation_validation`, for example. Distinguish production and validation use. |
-| Description | The target work, users, information used, and what you want to achieve | Also describe the initial scope to build and operations not yet to perform. |
+| Description | The target work, users, information used, and what you want to achieve | Also describe the initial scope to build and operations not yet to perform. If you later set "Custom Instructions," the AI receives the custom instructions instead of the description ([Prepare Project Context](prepare-project-context.md)). |
 | Icon | An image to distinguish it in lists and elsewhere. Set it as needed. | Follow the conditions shown on screen. You can create the Project without setting one. |
 
 ### Description example
@@ -56,7 +56,9 @@ Check the member list on the creation screen.
 
 Selecting candidates here adds displayed organization members to the Project. It does not necessarily mean that you can send an organization invitation from here to any email address for a person who is not a candidate.
 
-At least one administrator is required when creating the Project. Do not confuse an organization administrator with a Project administrator, and do not grant more permissions than necessary. Actions actually available also depend on organization and Project permission settings, not just roles.
+At least one administrator is required when creating the Project. Do not confuse an organization administrator with a Project administrator, and do not grant more permissions than necessary. 
+
+Studio Project roles are "Admin," "Editor," and "Member." **There is no read-only role.** Members can run Agents and Workflows and create many resources. Editors cannot manage members. To limit someone to viewing only, restrict permissions with a custom role.
 
 For details on adding, changing, and removing members, see [Manage Project and App Members](../operations/manage-project-and-app-members.md).
 
@@ -68,7 +70,7 @@ After checking the entered information and members, choose a creation method. "C
 |---|---|---|
 | Prepare only the workspace and build later | Select "Create" | The Project is created and you proceed to it. Planning does not start. |
 | Discuss a build plan with AI before proceeding | Select "Create with a plan" | After creating the Project, you proceed to "Project Plan: <Project name>." |
-| Review the name or description | Select "Cancel" and review the entries | This closes the entries before creation; it does not delete an already created Project. |
+| Stop creating | Select "Cancel" | In the first creation dialog, it closes without creating a Project. However, in the dialog reopened with "Back" from the planning screen, the Project is deleted (see the warning below). |
 
 Even in an environment where you can choose templates, do not confuse the choice of creation method with installing or publishing a template.
 
@@ -84,8 +86,12 @@ When you select **"Create with a plan,"** after the Project is created you proce
 |---|---|---|
 | Proceed to the Project without running the plan | Select "Skip" and proceed on the confirmation screen | You move to the Project without running the plan. |
 | Ask AI to build | Check and discuss the plan, then proceed to execution from the "Approve" confirmation screen | This is not simply saving; execution of the plan begins. |
-| Review Project settings | Select "Back" to return to the settings screen, then select "Save & Continue" after revisions | Check the content even after returning to planning. Check member changes in the management screen after creation. |
+| Review Project settings | Select "Back" to reopen the creation dialog in edit mode, then select "Save & Continue" after revisions | **If you select "Cancel" or close this dialog, the newly created Project is deleted without confirmation.** Make member changes in the management screen after creation. |
 | Cancel this creation itself | Read the cancellation confirmation when closing the setup screen | This deletes the created Project; it is not a temporary save for continuing later. |
+
+{% hint style="danger" %}
+**If you close the dialog reopened with "Back" by selecting "Cancel" or closing it, the newly created Project is deleted without any confirmation.** When you only want to review settings, always close it with "Save & Continue." To keep the Project without planning, use "Skip" on the planning screen.
+{% endhint %}
 
 Even if you change members on the screen after selecting "Back," "Save & Continue" does not apply those changes. Add or remove members and change roles in the Project member management screen after finishing setup.
 
@@ -101,7 +107,7 @@ Discuss the purpose, input information, expected results, and permitted scope of
 
 Starting execution does not mean building is complete. [Ask Studio Assistant to Build for You](build-with-studio-assistant.md) covers checking processing results and created content.
 
-> **"Skip" and "Stopped" are different.** The cancellation confirmation displays "The Project and all data will be deleted." This is the action for canceling setup after "Create with a plan." If you want to retain the Project and build later, do not confirm cancellation; use "Skip."
+> **"Skip" and canceling setup are different.** The cancellation confirmation displays "The Project and all data will be deleted." This is the action for canceling setup after "Create with a plan." If you want to retain the Project and build later, do not confirm cancellation; use "Skip." Also, selecting "Cancel" or closing the dialog reopened with "Back" deletes the Project without even this confirmation.
 
 ## 5. Check and revise basic settings after creation
 
@@ -130,7 +136,7 @@ Check completion of basic settings separately from completion of a solution that
 
 - The Project was created in the correct organization and can be opened.
 - The name and description make the purpose and the distinction between validation and production clear.
-- The intended members and roles are set. If you returned to the settings screen during setup, also check the state after saving.
+- The intended members and roles are set. If you used "Back" during setup, check that the Project still exists and check the state after saving.
 - It is clear whether you deferred building through standard creation, skipped planning, or approved and started execution through planning.
 - If you ran AI building, check the created resources and unfinished items.
 
@@ -144,9 +150,10 @@ Creating a Project alone does not mean that all required Agents, Workflows, Page
 | Cannot select "Create" | Check the guidance near the button, contractual availability, the organization's creation limit, and permissions. |
 | Cannot select "Create" or "Create with a plan" | Check that the name and description are entered and do not consist only of whitespace. Correct any input errors. |
 | The person to add is not a candidate | Check the organization and displayed candidates, then check their organization membership and invitation status with the responsible administrator. |
-| Cannot start planning | Check that this is the screen after selecting "Create with a plan," and check the error content. To retain only the workspace, use the displayed "Skip." Do not confuse it with deletion by cancellation. |
+| Cannot start planning | Check that this is the screen after selecting "Create with a plan," and check the error content. To retain only the workspace, use the displayed "Skip." Do not confuse it with deletion by canceling setup or by canceling the dialog reopened with "Back." |
+| A Project you created is not in the list | Selecting "Cancel" or closing the dialog reopened with "Back" deletes the Project without confirmation. Create it again if needed. |
 | Do not know the result of creation or saving | Do not confirm the same action repeatedly; check the list and settings again. Also check whether the Project may already have been created. |
-| Cannot select "Edit" | Check the permission to change settings for the target Project. Viewing permission alone may not allow changes. |
+| Cannot select "Edit" | Check the permission to change settings for the target Project. Being able to open a Project is different from being able to change its settings. |
 
 For inquiries, include the organization name, Project name, screen where you took the action, date and time, displayed error, and results of rechecking the list or settings. Do not include sensitive values such as API keys or passwords.
 

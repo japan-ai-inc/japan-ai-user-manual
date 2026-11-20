@@ -13,15 +13,15 @@ Related articles:
 
 ## Scope of this article
 
-This article covers the following items available on the standard Object screen.
+This article covers the following items for the standard Object screen.
 
 - Input conditions for Object names and field names, display names, and descriptions
-- Structural constraints such as "Field Type," "Allow empty value," "Unique constraint," and "Validation rules"
+- Structural constraints such as "Field Type," "Allow empty value," and "Unique constraint," and validation rules set through the API, SDK, or SQL
 - "Relationship" and conditions for reference targets
 - Record display, CSV "Export" and "Import from CSV," and deletion checks
 - Limits for items, pages, and rules selectable on the screen
 
-Availability conditions by contract plan, features enabled in a particular environment, and detailed conditions for external API and SQL use are not determined here. Features not displayed on the screen may be unavailable because of permission or organization/Project settings.
+This article does not cover availability conditions by contract plan or detailed usage of the API and SQL. See [Objects API](../api/objects-api.md) and [Object SQL DDL](../object-sql/object-sql-ddl.md).
 
 ## Basic specifications
 
@@ -31,14 +31,12 @@ Availability conditions by contract plan, features enabled in a particular envir
 | Display name | The name displayed on the screen. | You can set it for both Objects and fields. Use business terminology users understand. |
 | Description | You can describe the purpose of the Object. | In a field's "Description," state the meaning of the value and input precautions. It is also used for AI Agents to understand the field. |
 | Field name | Required. It must start with a letter and can contain alphanumeric characters and underscores. Spaces and symbols other than underscores cannot be used. | Within the same Object, you cannot create fields with the same field name or the same display name. |
-| Field Type | You can select "Text," "Number," "Boolean," "Date and time," "Array," "JSON," or "Auto-increment." | "Auto-increment" is treated as a number field. Choose the type according to the meaning of the value to save. |
+| Field Type | You can select "Text," "Number," "Boolean," "Date and time," "Array," "JSON," or "Auto-increment." | "Auto-increment" is treated as a number field. `dataType: "email"`, which can be specified through the API or SDK, is an alias of text and is treated as a text field. |
 | "Allow empty value" | When on, empty values are allowed; when off, the field is required. | You cannot change it to required if existing records have empty values. |
-| "Unique constraint" | Prevents duplicate values among records. | You cannot configure it if existing records have duplicate values. Resolve duplicates before use. |
+| "Unique constraint" | Prevents duplicate values among records. | The required index is set automatically. You cannot configure it if existing records have duplicate values. Resolve duplicates before use. |
 | Default value | You can set a value that matches the type. | "Auto-fill current time" enters the time when a record is added. |
 | "Auto-increment" | Starts at 1 and always increases by 1 when a record is added. It cannot be edited manually. | Deleted numbers are not reused. |
-| Maximum length | Can be set only for "Text" fields. | It cannot be set for number fields or similar fields. Use it to limit string length. |
-| Minimum and maximum numbers | Can be set only for "Number" fields. The minimum must be less than or equal to the maximum. | You cannot change the range if existing data is outside it. |
-| "Validation rules" | You can combine character limits, number ranges, regular expressions, allowed values, array element counts, date and time ranges, and custom rules. | You cannot set rules unsupported by the type. You can set only one rule of each type. |
+| Validation rules | You can combine character limits (maximum length), number ranges (minimum/maximum), regular expressions, allowed values, array element counts, date and time ranges, and custom rules. **They can be set only through the API, SDK, or Object SQL (DDL)**; the field screen has no input for them. | You cannot set rules unsupported by the type (maximum length is for text only; minimum/maximum is for numbers only). You can set only one rule of each type. Fields created on the screen have no rules. |
 
 ## Relationship specifications
 
@@ -55,19 +53,18 @@ Setting a relationship does not automatically grant permission to view or update
 
 ## Limits and limit values
 
-The following numbers show only values that can be confirmed in the implementation. This article does not state a limit for items with no numeric value.
 
 | Target | Limit or limit value | Conditions and notes |
 |---|---:|---|
 | Object name, Object display name, field name, and field display name | 255 bytes | This is a UTF-8 byte count. For multibyte characters such as Japanese, it does not match the character count. |
 | Object description | 1,000 bytes | This is a UTF-8 byte count. |
-| "Maximum length" for text fields | 1–65,535 | Specify an integer. Applies only to "Text" fields. |
+| Maximum length for text fields (validation rule) | 1–65,535 | Specify an integer. Applies only to "Text" fields and is set through the API, SDK, or SQL. |
 | Number of records displayed in the record list | 30, 50, or 100 items/page | These are options on the standard Object screen. An unspecified or invalid value becomes 30. This is separate from the CSV export limit. |
 | CSV "Import from CSV" | Up to 1,000 records per import | This excludes the header row. The CSV header must match the current field structure and order. |
 | Internal processing unit for CSV import and export | 1,000 records | CSV export retrieves 1,000 records at a time while a next cursor exists. This does not limit the entire export to 1,000 records. |
 | Record access rules | Up to 100 atomic rules per Object | One rule group on the screen may expand into multiple atomic rules. Creation is rejected if the total exceeds 100. |
 | Record change-history list | 1–200 items/retrieval | The number of items retrieved at one time for an Object with history available. This does not indicate the retention period on the screen. |
-| Priority of record access rules | Integer of 1 or greater | Smaller values take priority. A uniform input limit of 100 has not been confirmed. |
+| Priority of record access rules | Integer of 1 or greater | Smaller values take priority. |
 | Record access rule conditions | 1–20 items/rule | Applies to creation and updates through the UI. |
 | Record access rule assignment targets | 1–200 items/rule | Select from "Role," "Member," and "Agent." |
 
@@ -81,13 +78,17 @@ When editing an existing "Record Access Rules" rule, load the current field defi
 
 "Import from CSV" requires permission to update the Object. You can select only CSV files, and empty rows are excluded when read. The header must **exactly match in column count, order, and names** the current field structure. Using the "Record ID" column included in the template identifies and updates existing records. Even without an ID, a row becomes an update target if the value of a unique field can uniquely identify an existing record. Rows with conflicting identification results are not imported.
 
+{% hint style="warning" %}
+**Watch the character encoding.** On Japanese Windows, the CSV template is exported in Shift-JIS, but "Import from CSV" accepts only UTF-8. Save CSV files edited in Excel or similar tools as UTF-8 before importing.
+{% endhint %}
+
 During import, requirements, field types, unique constraints, and so on are checked for each row. Check the counts and applicable rows for created, skipped, and failed results. Correct input values or field structure before importing again, and avoid registering the same data more than once.
 
 ### Deletion and restoration
 
-Deleting Objects, fields, and records each requires the corresponding deletion permission. Deleting a field also deletes record data saved in that field. Before deletion, check the impact on CSV export, referencing Pages, Agents, Workflows, relationships, and business-required history.
+Deleting Objects, fields, and records each requires the corresponding deletion permission. Records referenced by other records through a relationship cannot be deleted; change or delete the referencing records first. Deleting a field also deletes record data saved in that field. Before deletion, check the impact on CSV export, referencing Pages, Agents, Workflows, relationships, and business-required history.
 
-The screen may show "Move to trash" and "Permanently delete." "Move to trash" indicates that the item will be permanently deleted after 30 days and can no longer be restored. Individual fields cannot be restored.
+When deleting, "Move to trash" and "Permanently delete" are shown. Items moved to the trash are permanently deleted after 30 days and can no longer be restored. Individual fields cannot be restored.
 
 ## Common misconceptions
 
@@ -111,15 +112,15 @@ A relationship links data. It does not inherit access permissions. Whether someo
 
 Individual fields cannot be restored. Deleting a field also affects saved values. If you only want to hide an unnecessary column, use display-field settings rather than deleting the field.
 
-## If you cannot confirm something
+## If something does not work
 
 If buttons or settings do not appear, or you cannot import, export, delete, or restore, check the following in order.
 
 1. Confirm that you have not confused the target Project, Object, or record.
 2. Check with the Project administrator or organization administrator that you have the required view, create, update, delete, and manage permissions.
 3. If the Object is provided by an App, check whether its structure can be changed.
-4. For CSV, export the latest template and review the header, column order, required fields, types, and number of records per import.
-5. If you cannot change a constraint, resolve the displayed validation results, such as empty values, duplicates, character counts, and number ranges in existing records.
+4. For CSV, export the latest template and review the header, column order, required fields, types, number of records per import, and character encoding (UTF-8).
+5. If you cannot change a constraint, resolve the displayed validation results, such as empty values, duplicates, character counts, and number ranges in existing records. If you cannot delete a record, check whether other records reference it.
 6. If action is required after deletion, consult an administrator with the deletion target, deletion date and time, necessary records, and error display. Before deletion, check the impact on business operations.
 
 For an inquiry, share the Project and Object names, operation date and time, information identifying the target, error message, and, for CSV, the header. Do not share values or files containing personal or confidential information more than necessary.

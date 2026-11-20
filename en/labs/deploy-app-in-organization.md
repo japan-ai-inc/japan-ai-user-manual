@@ -23,7 +23,7 @@ In this exercise, you will install the practice Object, Page, and Agent from the
 | Item | Value |
 |---|---|
 | App name | Task Management Practice App |
-| Include | Practice Object, Page, and Agent from [A Task Management App](task-management-app.md) |
+| Include | Practice Object (schema and access settings only), Page, and Agent from [A Task Management App](task-management-app.md) |
 | Page to check | Task management (test) |
 | Agent to check | Task Guide Agent (test) |
 | User question | What is the status of Review demo screen? |
@@ -37,7 +37,9 @@ In this exercise, you will install the practice Object, Page, and Agent from the
 2. Confirm that the Page and Agent do not use connections, Datasets, fixed URLs, or Secrets outside this exercise.
 3. Open **"App publishing"** for the Project, select **"Within organization"** as the publishing destination, and create the App with the name `Task Management Practice App`.
 4. Select only practice resources as publishing resources, then run **"Check app resources."**
-5. Confirm that there are no unresolved references or warnings. If there are any, do not proceed with installation; review dependencies and design.
+5. Confirm that there are no unresolved references or warnings. If there are any, do not proceed with installation; review dependencies and design, then select **"Recheck."**
+
+For Custom Objects, only the schema and access settings are distributed; registered records are not included. You register the fictional task records in the installation destination in Step 3.
 
 For resource selection and checks, see [Creator self-installs within the organization](../distribution/self-install-in-organization.md). **Checkpoint:** The App name and selected resources are only for practice and do not include source-specific values.
 
@@ -46,8 +48,8 @@ For resource selection and checks, see [Creator self-installs within the organiz
 **Goal:** Create an installation destination Project that is separate from the source.
 
 1. Confirm `Task Management Practice App` under **"App in this organization."**
-2. Check the prepared version, included resources, access settings, and credential requirements.
-3. Select **"Install in this organization,"** check the target and changes, and confirm.
+2. Select **"Install in this organization."**
+3. On the confirmation screen, check the version in **"Current → New,"** the **"Included resources,"** the **"Connectors used,"** and access settings, then select **"Install."**
 4. While processing, do not repeat the same action. Confirm that **"Installed version"** and **"Open installed app"** are displayed.
 5. Use **"Open installed app"** to open the installation destination Project, which is different from the source.
 
@@ -60,7 +62,8 @@ For installation details and status checks, see [Creator self-installs within th
 1. If **"Complete setup"** is displayed, check the remaining settings. Do not add connections or Secrets in this exercise.
 2. Do not mistake unconfigured, under review, or loading failure for no configuration needed or already configured. If a required setting is displayed, do not guess a value; check with the responsible person.
 3. Configure the minimum access needed for practice members to open the target App.
-4. Confirm that practice members, not only administrators, can open the App entry point using their own accounts.
+4. Register the three fictional tasks from [A Task Management App](task-management-app.md) in the Object at the installation destination. Records from the source are not distributed.
+5. Confirm that practice members, not only administrators, can open the App entry point using their own accounts.
 
 For initial setup, see [Complete App setup](../use/complete-app-setup.md); for members, see [Manage Project and App members](../operations/manage-project-and-app-members.md). **Checkpoint:** Do not treat a "Configured" display alone as confirmation that users have access.
 
@@ -81,7 +84,7 @@ For using and checking Apps, see [Complete App setup](../use/complete-app-setup.
 
 1. In the source Project, add "For in-organization installation confirmation" to the practice Page heading.
 2. On the App publishing screen, recheck the resources and prepare a new version.
-3. Check changes, access settings, and credential requirements, then update the installed App.
+3. Select **"Update installed app,"** check **"Current → New,"** the **"Included resources,"** and the **"Connectors used"** on the confirmation screen, then select **"Update."**
 4. After checking the installed version in the installation destination, have a practice member check the revised heading and representative question.
 
 For post-update settings and use checks, see [Check App update changes and reconfiguration](../use/check-app-updates.md). **Checkpoint:** Do not treat editing the source alone as completion; a user in the installation destination checks the changed state.
@@ -93,6 +96,7 @@ For post-update settings and use checks, see [Check App update changes and recon
 | In-organization installation adds components to the source Project | Use a separate installation destination Project. |
 | If the App is installed, every user can use it | Check members, access, and individual settings. |
 | Updating the source automatically updates the installation destination | Preparing and applying a new version, then checking it in the installation destination, are required. |
+| Object records are installed too | Only the schema and access settings are distributed. Register records at the installation destination. |
 | A completed-setup display also confirms business use | Separately check the user entry point, connections, and representative operations. |
 
 ## If something does not work

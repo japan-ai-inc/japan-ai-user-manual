@@ -2,19 +2,30 @@
 
 When a Project or App uses the same external service, an administrator prepares a **shared connection** and assigns it to the App when needed.
 
-This article explains how to register a shared connection and configure it under an App's "App-wide connectors." For choosing between types, see [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md). For expiration and reauthentication, see [Handle Expired Connections and Owner Changes](handle-expired-connections-and-owner-changes.md).
+This article explains how to register a shared connection and configure it under an App's "App-wide connectors." Workflows and automatic runs by triggers or Task Scheduler use only shared connections, so a shared connection is required when you use them. For choosing between types, see [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md). For expiration and reauthentication, see [Handle Expired Connections and Owner Changes](handle-expired-connections-and-owner-changes.md).
+
+## Summary: which connection is used
+
+Connections have three layers: personal, Project (shared), and organization-wide.
+
+| What runs | Connection used |
+|---|---|
+| An Agent in a Project | The first one found in this order: the runner's personal connection → the Project's shared connection → the organization-wide connection |
+| A Workflow | Shared connections only (the runner's personal connection is not used) |
+| A connection declared as personal in an App | Only the runner's own personal connection. Even when no person is running it, it does not fall back to a shared connection |
+| Automatic runs by triggers or Task Scheduler | A shared connection is required |
 
 ## Before you begin
 
 - Check the correct organization and target Project or App. Do not confuse environments.
-- Check permission to change connection settings and App-wide settings. Being able to open the target does not necessarily mean you can create or assign a shared connection.
+- Check permission to change connection settings. Only App Admins can configure an App's shared connections.
 - Decide the connection destination, purpose, data, and execution scope.
 - Prepare an account for the external service that is approved for team, department, or business use. Check external service terms and organization operations before using a personal account for shared use.
 - Decide the authentication owner, connection administrator, and contact for expiration.
 
 > Processing that uses a shared connection is affected by the permissions of the authentication account at the external service. Use a business account with minimum required permissions, and do not casually share personal permissions.
 
-Screen entry points and operation scope vary according to organization settings, permissions, and App configuration. If an item is not shown, do not create another connection; ask the responsible administrator.
+If an item is not shown, do not create another connection; ask the responsible administrator.
 
 ## Separate connection users from the authentication account
 
@@ -30,10 +41,10 @@ Configuring a shared connection does not grant management permission to users. O
 
 ## 1. Open Project "Connector Settings"
 
-1. Open the target Project, then open **"Connector Settings"** from the settings screen. If there is an App-wide requirement, you may also be able to open connection settings from **"Settings"** in the target App.
+1. Open the target Project, then open **"Connector Settings"** from the settings screen. For an App, open connection settings from **"Settings"** in the target App.
 2. Check **"Project connectors."** Connections there are candidates for shared use in the Project.
 3. Check existing connections for the same service, their names, authentication accounts, purposes, and connection types.
-4. If candidates available from the organization are displayed, also check **"Organization-wide connectors."** However, whether you can choose an organization-wide candidate or it is copied to the Project varies by permission and configuration.
+4. Also check **"Organization-wide connectors."** Organization-wide connections are used by Agents in the Project when no personal or shared connection is found.
 
 Do not duplicate connections for the same service; check existing connections before adding one.
 
@@ -57,7 +68,7 @@ When using an existing personal connection from a candidate list, **"Copy"** or 
 When an App requires a shared connection, creation in a Project alone may not complete the setup. In App settings, select and assign the required connection.
 
 1. Open the target App and check connection requirements from **"Settings."**
-2. In **"App-wide connectors,"** check services that are not set and their status. Statuses may include **"Not set,"** **"Checking,"** **"Configured,"** **"Disabled,"** and **"Stopped."**
+2. In **"App-wide connectors,"** check services that are not set and their status. Statuses include **"Not set,"** **"Checking,"** **"Configured,"** **"Disabled,"** and **"Stopped."**
 3. Select the configuration action for the target service, then select the shared connection checked in step 2 from **"Connectors available for this App."**
 4. Select **"Configure"** and wait for completion to appear. To use an organization-wide candidate, select it from **"Organization-wide connectors,"** then check and execute the displayed **"Copy and configure."**
 5. Return to the App connection requirements and check that the target service is **"Configured."**
@@ -66,17 +77,18 @@ If "Connector was created, but configuration for the App failed" appears, do not
 
 ## Which connection an Agent or Workflow selects
 
-Connection selection is not determined solely by the person operating the screen. Handling of shared and personal connections varies according to where the Agent or Workflow runs and the type of connection required by the App.
+Connection selection is fixed as shown in the "Summary" table at the top. Administrators check the following for each situation.
 
-| Execution situation | Guideline for connection selection | What an administrator checks |
+| Execution situation | Connection used | What an administrator checks |
 |---|---|---|
-| Test an Agent or Workflow in a Project | A personal or shared connection may be used. | Do not conclude from the test result alone that the same connection will be used after publishing. |
-| A user operates an Agent or business screen in an installed App | Required connections vary by App configuration. | Check guidance such as "Connection required." |
-| Workflow or automatic execution in an installed App | A shared connection may be required. | Check whether the account can be used with no executor present and check send/update destinations. |
+| Test an Agent in a Project | The tester's personal connection takes priority if it exists; otherwise the shared connection, then the organization-wide connection | A successful test with your own personal connection does not show what users without a personal connection get; they use the shared connection. Check results with the shared connection as well. |
+| Test a Workflow in a Project | Shared connections only | Whether a shared connection is configured |
+| A user operates an Agent or business screen in an installed App | Connections the App declares as personal use only the user's own personal connection. "App-wide connectors" requirements use the assigned shared connection | Check guidance such as "Connection required." |
+| Workflows and automatic runs by triggers or Task Scheduler | Shared connections only | Check whether the account can be used with no executor present and check send/update destinations. |
 
-Even for the same external service, required connections can differ between Agents and Workflows and between manual and automatic execution. Having a shared connection does not necessarily mean that every user no longer needs personal authentication. Guide users who need a personal connection to [Connect Your Own External Accounts](connect-your-external-accounts.md).
+A shared connection cannot substitute for a connection the App declares as personal. Guide users who need a personal connection to [Connect Your Own External Accounts](connect-your-external-accounts.md).
 
-> If automatic execution uses a shared connection, processing at the external service may occur with the shared authentication account's permissions rather than the executor's own permissions. For email sending, record updates, file changes, and similar operations, check the target and result with a small amount of approved data before expanding use.
+> Processing that uses a shared connection runs at the external service with the shared authentication account's permissions, not the executor's own permissions. For email sending, record updates, file changes, and similar operations, check the target and result with a small amount of approved data before expanding use.
 
 ## 4. Check operation and management responsibility before use
 
@@ -99,7 +111,7 @@ Even when it is "Configured," it can fail because of insufficient permission at 
 | The App remains "Not set" or "Checking" | Do not stop after creating the connection. Check that you assigned it under the App's "App-wide connectors" and display the status again. |
 | It says the sharing scopes do not match | Check that you selected a shared rather than personal connection, that it belongs to the target Project, and that it is the service required by the App. |
 | It becomes "Disabled" or "Stopped" | Check the external service account, consent, expiration, and management status. Do not repeatedly disconnect or recreate it; for expiration handling, see [Handle Expired Connections and Owner Changes](handle-expired-connections-and-owner-changes.md). |
-| An Agent or Workflow fails | Check the feature that ran, when personal or shared connections are used, external service permission, target data, and the error at execution. |
+| An Agent or Workflow fails | Check the feature that ran and which connection the "Summary" table says is used, external service permission, target data, and the error at execution. Workflows and automatic runs require a shared connection. |
 
 For an inquiry, include the organization name, Project or App name, connection destination service, connection name, operation time, displayed status/message, target Agent/Workflow, and operations already checked. Do not send passwords, API keys, tokens, or confidential information from authentication screens.
 

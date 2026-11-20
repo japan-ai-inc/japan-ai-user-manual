@@ -15,11 +15,11 @@ Object SQLは、Objectをテーブル、フィールドを列、レコードを�
 
 - 対象の組織・Project、変更対象のObject・フィールド・既存レコードを確認します。
 - Objectまたはフィールドの作成・削除・変更には、対象ごとの対応する権限が必要です。閲覧権限だけではDDLを実行できません。
-- 画面の「カスタムオブジェクトSQL」Workflowノードでは、「SQL」に1文だけ指定できます。「エージェントと会話してSQLを生成」はSQL作成の補助であり、実行前に生成内容を確認してください。AgentのObject SQLツールでもDDLを実行できます。
+- 画面の「カスタムオブジェクトSQL」Workflowノードでは、「SQL」に1文だけ指定できます。「エージェントと会話してSQLを生成」はSQL作成の補助であり、実行前に生成内容を確認してください。Studio ProjectのすべてのAgentにはObject SQLツールが自動で付与されており、AgentからもDDLを実行できます。Agentに構造変更をさせたくない場合は、Objectのロール権限で制御します。
 
-> DDLは1回の実行で1つのSQL文だけを受け付けます。`CREATE TABLE ...; CREATE INDEX ...`のような複数文は、`Only a single SQL statement is allowed`として拒否されます。変更は文ごとに確認し、必要なら個別に実行してください。
+> DDLは1回の実行で1つのSQL文だけを受け付けます。`CREATE TABLE ...; CREATE INDEX ...`のような複数文は、`Only a single SQL statement is allowed`として拒否されます。この記事のコード例に複数の文が並んでいる場合も、まとめて貼り付けると失敗します。1文ずつ実行してください。
 
-確認した範囲では、公開REST API、Studio SDK、Studio CLIにObject SQLの実行API／コマンドはありません。SDK・CLIではObject定義を、HTTP APIではObjects APIを利用します。WorkflowまたはAgent以外から直接利用する手順は、本記事では案内しません。
+公開REST API、Studio SDK、Studio CLIにObject SQLの実行API／コマンドはありません。SDK・CLIではObject定義を、HTTP APIではObjects APIを利用します。WorkflowまたはAgent以外から直接利用する手順は、本記事では案内しません。
 
 ## 1. `CREATE TABLE`でObjectとフィールドを作成する
 
@@ -46,15 +46,16 @@ CREATE TABLE tasks (
 | `DATE`、`TIMESTAMP`、`DATETIME` | 日時 | `CURRENT_TIMESTAMP`／`NOW()`を既定値にできるのはこの型だけです。 |
 | `JSON`、`JSONB` | JSON |  |
 | `TEXT[]`などの配列型 | 配列 |  |
-| `SERIAL`、`BIGSERIAL`、`AUTO_INCREMENT` | 自動採番の数値 | 自動採番として扱われます。 |
+| `SERIAL`、`BIGSERIAL` | 自動採番の数値 | 自動採番として扱われます。`AUTO_INCREMENT`は型ではなく列オプションです（後述）。 |
 
 ### 列で指定できる制約
 
 | 構文 | 動作・条件 |
 |---|---|
 | `NOT NULL`／`NULL` | 必須／任意を設定します。 |
+| `AUTO_INCREMENT` | 自動採番を指定する列オプションです。型ではありません。 |
 | `UNIQUE` | ユニーク制約とインデックスを設定します。`JSON`と配列には指定できません。 |
-| `DEFAULT <リテラル>` | 数値、文字列、真偽値、`NULL`を既定値にできます。式は指定できません。 |
+| `DEFAULT <リテラル>` | 数値、文字列、真偽値、`NULL`を既定値にできます。式は指定できません。`DEFAULT -1`は使えません。 |
 | `DEFAULT CURRENT_TIMESTAMP` | 日時型の作成時または列追加時だけ指定できます。 |
 | `CHECK (列名 IN (...))` | 同じ列に対するリテラル値の許可リストになります。`NOT IN`、空のリスト、`NULL`を含むリスト、別列や式を使う条件は拒否されます。許可値は100件までです。 |
 | `REFERENCES object_name(field_name)` | リレーションを設定します。参照先Objectとフィールドが存在し、参照先フィールドがユニークで、両フィールド型が一致する必要があります。 |
@@ -69,7 +70,7 @@ CREATE TABLE orders (
 );
 ```
 
-`ON UPDATE`や複数列への`REFERENCES`は対応していません。参照先が存在しない、ユニークでない、または型が異なる場合は拒否されます。リレーションによって参照先の権限は付与されません。
+`ON UPDATE`や複数列への`REFERENCES`は対応していません。`ON DELETE`はエラーにならず、**黙って無視されます**。参照先が存在しない、ユニークでない、または型が異なる場合は拒否されます。リレーションによって参照先の権限は付与されません。
 
 ## 2. `ALTER TABLE`で1項目だけ変更する
 
@@ -104,7 +105,7 @@ DROP TABLE IF EXISTS obsolete_tasks CASCADE;
 
 `DROP INDEX`には`ON object(field)`が必要で、`CASCADE`は使えません。ユニーク制約によるインデックスは削除できません。
 
-`DROP TABLE`は1つのObjectだけを対象にし、`CASCADE`を付けます。`IF EXISTS`を付ければ存在しないObjectは警告付きで変更しません。削除後、Objectを参照するSQLは失敗します。SQLによる復元構文は確認できないため、削除と復元の運用・影響は[Objectの仕様・制限](../build/object-specs-and-limits.md)を参照してください。
+`DROP TABLE`は1つのObjectだけを対象にし、`CASCADE`を付けます。`IF EXISTS`を付ければ存在しないObjectは警告付きで変更しません。削除後、Objectを参照するSQLは失敗します。削除と復元の運用・影響は[Objectの仕様・制限](../build/object-specs-and-limits.md)を参照してください。
 
 `COMMENT ON TABLE tasks IS '説明';`はObjectの説明を設定または更新します。`COMMENT ON COLUMN`など、テーブル以外への`COMMENT`は拒否されます。
 
@@ -127,7 +128,7 @@ DROP TABLE IF EXISTS obsolete_tasks CASCADE;
 | `REFERENCES`が失敗する | 参照先Object・フィールドの存在、参照先のユニーク制約、両者のフィールド型、既存レコードの値を確認します。 |
 | WorkflowでDDLが失敗する | 「カスタムオブジェクトSQL」ノードの「SQL」、対象Project、Workflowの実行主体に必要な権限、実行履歴のエラーを確認します。構造変更を許可しない実行コンテキストでは、DDLは拒否されます。 |
 
-変更前後にフィールド構成、既存レコード、リレーション、Page・Agent・Workflowの代表操作を確認してください。DDLの検証のみを行う機能の利用者向け入口は、この確認範囲で確定できません。
+変更前後にフィールド構成、既存レコード、リレーション、Page・Agent・Workflowの代表操作を確認してください。Object SQLには、DDLを適用せずに検証する`dry_run`モードがあります。
 
 ## 次に読む記事
 

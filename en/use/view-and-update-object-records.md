@@ -9,7 +9,7 @@ This article explains how to find a target record in an existing Object, check i
 ## Before you begin
 
 - Check the Project or App you will use and the Object's name and purpose.
-- Prepare information that identifies the target record. Checking an administration number, customer, or similar detail as well as the name helps prevent confusion.
+- Prepare information that identifies the target record. Preparing an administration number, customer, or similar detail as well as the name helps prevent confusion.
 - Check which actions you may perform: viewing only, updating, or creating a new record.
 - For work in which an update triggers subsequent processing such as notifications or Workflows, check the impact with the person in charge.
 
@@ -55,13 +55,13 @@ For example, when you know an administration number, search by that field using 
 
 If you cannot find the record, clear the search filters and check the target Object and the value you entered. Also check page switching when the results span multiple pages.
 
-**An empty search result does not necessarily mean the data does not exist.** It may not be visible because of search filters or your viewing scope. Do not create a new record for the same data until you have confirmed it.
+**An empty search result does not necessarily mean the data does not exist.** It may not be visible because of search filters or your viewing scope. Do not create a new record for the same data before finding out why it is not shown.
 
 ### Adjust displayed fields
 
 If "Select display fields" is available, display the items you want to check. For example, displaying an administration number, person in charge, and status in addition to a name makes it easier to verify the target.
 
-Selecting displayed columns and deleting a field are separate actions. Do not use "Delete field" or change Object settings to hide a column.
+Selecting displayed columns and deleting a field are separate actions. Do not use "Move to Trash" on a field or change Object settings to hide a column.
 
 ## 3. Check record details
 
@@ -112,7 +112,7 @@ If a confirmation screen is displayed when you cancel changes, check the content
 | Related fields | Whether you selected a different record with the same name |
 | Fields that do not allow duplicates | Whether an administration number or similar value duplicates an existing record |
 
-If there is an input error, correct the field indicated in the message. Some fields, such as system fields, are not normally editable. Do not change a field definition or access settings to modify a field you cannot edit.
+If there is an input error, correct the field indicated in the message. Some fields, such as system fields, are not normally editable. Do not change a field definition or access settings to modify a field you cannot edit. Input conditions (validation rules) are set through the API, SDK, or SQL and cannot be set or changed on the Object screen.
 
 ## 5. Create a new record only when necessary
 
@@ -155,6 +155,7 @@ For business work that also requires checking external integration or automatic 
 | Required, type, date, or similar error | The field and input format specified in the message |
 | Error that a value is duplicated | Whether existing data has the same administration number or similar value. Do not resolve it by removing the constraint. |
 | You are notified that another user or process updated it | Reload the latest data, check the changed content, then make only the necessary correction. |
+| You cannot delete a record | Whether it is referenced by other records. A referenced record cannot be deleted |
 | Saving fails or you do not know whether it completed | Check the current saved state. Note necessary input before reloading, and avoid duplicate registration or overwriting a newer value. |
 
 When you see a concurrent-update notification, do not resend the content from an older screen unchanged. Not only other users, but processes such as Agents or Workflows may be updating it.
@@ -165,7 +166,7 @@ When consulting the person in charge, collect the following information.
 - A number that identifies the target record, or a URL within the scope you may share
 - The action you wanted to perform and target field
 - The date and time and error message
-- The state you could confirm before and after editing
+- The values and state before and after editing
 
 Do not share values or screens containing confidential information more broadly than necessary.
 
@@ -174,6 +175,9 @@ Do not share values or screens containing confidential information more broadly 
 - **Being able to view data and being able to update, register, or delete it are different.** Do not determine your action scope based on a role name alone; check actual permissions and business rules.
 - Do not select deletion of an Object or field when you intend to change a value.
 - CSV import, bulk deletion, restoration, and similar actions affect multiple data items or the current state. Do not use them instead of an ordinary one-record update; follow separately established operational procedures.
+  - On Japanese Windows, the CSV template is exported in Shift-JIS, but only UTF-8 can be imported. If you edit the template, save it as UTF-8 before importing.
+  - The CSV column name "レコード ID" (Record ID) contains a space.
+- A record referenced by other records cannot be deleted.
 - Do not use closing the screen as a way to cancel saving or stop processing.
 
 ## Completion criteria

@@ -9,7 +9,7 @@ A Skill is a folder that groups instructions, code, and resources to reuse for a
 
 This article describes the file structure of Skills handled in the on-screen "Skill Builder," the `SKILL.md` frontmatter, uploads, tools, visibility scope, adding Skills to Agents, and editing permissions. For Agent instructions, authentication, and post-addition checks, see [Configure tools, Skills, and Datasets for an Agent](configure-agent-tools-skills-datasets.md). For design and creation procedures, see [Create and use a Skill](create-and-use-skills.md).
 
-The displayed items, choices, and available operations vary by organization, Project, permissions, and availability status. The numbers in this article apply to input validation confirmed in the implementation; they do not indicate contractual limits or future availability conditions.
+The displayed items, choices, and available operations vary by organization, Project, permissions, and availability status.
 
 ## Specifications and prerequisites
 
@@ -19,10 +19,10 @@ The displayed items, choices, and available operations vary by organization, Pro
 |---|---|---|
 | Required file | A `SKILL.md` file is required in the Skill root. | Without it, the Skill cannot be saved or imported. In the body, specify the purpose, decision criteria, procedure, output format, and how to handle exceptions. |
 | Frontmatter | YAML frontmatter is required at the beginning of `SKILL.md`. | Enclose it in `---`. If the format cannot be read, correct it before saving. |
-| `name` | Required. Corresponds to the on-screen "Skill ID" and must be 3–128 characters. | Use only lowercase English letters, numbers, and underscores. Hyphens, spaces, and uppercase letters cannot be used. Also avoid duplicating an existing Skill ID. |
-| `description` | Required. | Do not leave it blank. Use a description that makes clear what the Skill does, its target, and its deliverable. The maximum number of characters for the description could not be confirmed from the implementation in scope. |
+| `name` | Required. Corresponds to the on-screen "Skill ID" and must be 3–128 characters. | Use only lowercase English letters, numbers, and underscores. Spaces and uppercase letters cannot be used. On import, hyphens in `name` are converted to underscores (for example, `meeting-summary` → `meeting_summary`). Also avoid duplicating an existing Skill ID. |
+| `description` | Required. | Do not leave it blank. Use a description that makes clear what the Skill does, its target, and its deliverable. |
 | Optional fields | You can include `display_name`, `agent_prompt`, and `tools` in the frontmatter. | `display_name` is the Display Name, and `tools` is a list of tool names. The on-screen "Display Name," "Description," and "Tools" and `SKILL.md` are handled in sync, so check the content after changing only one of them. |
-| Supporting files and folders | You can place templates, reference materials, scripts, and similar files in the same folder as `SKILL.md`. | Ensure file names and relative locations referenced in the body match the actual structure. Do not include unnecessary credentials or confidential information. |
+| Supporting files and folders | You can place templates, reference materials, scripts, and similar files in the same folder as `SKILL.md`. | Ensure file names and relative locations referenced in the body match the actual structure. The file types and sizes an Agent can read are limited (see the next section). Do not include unnecessary credentials or confidential information. |
 
 This is a minimal example. In `description`, write the usage scenario and result specifically.
 
@@ -36,6 +36,19 @@ description: Organize decisions, owners, and deadlines from meeting notes
 # Procedure
 ...
 ```
+
+### What an Agent can read in a Skill
+
+An Agent reads files in a Skill with the `skill_read` tool. The readable range is as follows.
+
+| Item | Range |
+|---|---|
+| Readable file types | `.md`, `.json`, `.yml`, `.py`, `.js`, `.ts`, `.tsx`, and `.css` only |
+| Size per file | Up to 100KB |
+| Per read | Up to 300KB and 3 files in total |
+| `SKILL.md` over 100KB | Skipped |
+
+An Agent cannot read other formats (images, PDFs, Office documents, and so on) with `skill_read`, even if they are included in the Skill. Put procedures and reference information the Agent should read in a supported format, split into files of 100KB or less.
 
 ### "Upload Skill" and folder handling
 
@@ -61,7 +74,7 @@ description: Organize decisions, owners, and deadlines from meeting notes
 
 ## Limits and limit values
 
-The following values are limits confirmed for Skill input, ZIP files, and icons. "Less than or equal" includes the maximum value, while values that exceed it are rejected. When you select a folder, it is also validated after conversion to ZIP.
+The following values are limits applied to Skill input, ZIP files, and icons. "Less than or equal" includes the maximum value, while values that exceed it are rejected. When you select a folder, it is also validated after conversion to ZIP.
 
 | Item | Limit or limit value | Conditions and notes |
 |---|---|---|
@@ -70,25 +83,27 @@ The following values are limits confirmed for Skill input, ZIP files, and icons.
 | Total size after extraction | 100MB or less | Applies to the total after extracting files in the ZIP. |
 | Individual file size after extraction | 50MB or less | Applies to on-screen ZIP content validation. |
 | Compression ratio | 100 times or less | This is the total size after extraction divided by the compressed ZIP size. If the compressed size is 0, the ratio is not validated. |
-| Skill icon | 1MB or less; PNG, JPEG/JPG, or WebP; each dimension 10,000px or less | This limit applies only when you set an icon. Confirm that both the input image and converted image are 1MB or less. You can save without an image. |
+| Skill icon | Selectable image: 5MB or less; PNG, JPEG/JPG, or WebP; each dimension 10,000px or less. The image after cropping to 400×400px must be 1MB or less | This limit applies only when you set an icon. You can save without an image. |
+| Number of Skills in the organization | Organization-level limit | You can check the current count and limit in the usage bar on the Skills list screen. |
 
 ## Common misconceptions
 
 - **Creating a Skill does not make it available in every Agent.** Add it to "Plugins" for the Agent that will use it, and confirm that its visibility scope is accessible to users.
 - **Setting it to "Organization" does not give everyone permission to operate external services.** Check the Skill visibility scope, Agent sharing, tool authentication, and permissions for data at the connected service separately.
 - **Placing only `SKILL.md` does not mean the content can be arbitrary.** The frontmatter requires `name` and `description`, and the Skill ID has format and duplication restrictions.
+- **An Agent cannot read every file you put in a Skill.** `skill_read` reads only files with supported extensions up to 100KB. A `SKILL.md` over 100KB is skipped.
 - **Selecting a folder does not bypass size limits.** The folder is converted to ZIP and undergoes the same ZIP validation.
 - **Selecting a tool for a Skill does not mean it will always run.** Check the Agent instructions, request content, authentication and permissions, and runtime conditions, then validate results with low-impact input.
 - **You cannot directly update a past version while it is open.** Past versions are read-only.
 
-## If you cannot confirm it
+## If the screen differs from this article
 
 If the screen display or save result differs from this article, do not treat the work as complete. Check the following.
 
 1. Record the target organization, Project, Skill name, Agent name, and visibility scope: "Organization" or "Private."
 2. Check the `SKILL.md` frontmatter, the location of `SKILL.md` in the ZIP, the size and number of files, and the selected "Tools."
 3. Record the date and time of the operation, steps performed, displayed errors, and results after reopening following the save. Do not share credentials, Secrets, or the contents of confidential files.
-4. Check permissions, availability status, and visibility scope with an administrator. For limits, contract conditions, or availability not guaranteed as specifications, see [Index of limits and availability conditions](../operations/limits-and-availability-index.md) or contact the responsible person.
+4. Check permissions, availability status, and visibility scope with an administrator. For contract conditions or availability, see [Index of limits and availability conditions](../operations/limits-and-availability-index.md) or contact the responsible person.
 
 ## Next articles to read
 

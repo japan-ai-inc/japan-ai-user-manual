@@ -11,7 +11,7 @@ In applications that use `@japan-ai-inc/studio-sdk` and the public API, updating
 
 ## Scope of this article
 
-This article is for developers using the SDK and public API from Node.js applications, CI, the `jai-studio` CLI, or Studio Pages. The SDK version checked is **0.11.0**.
+This article is for developers using the SDK and public API from Node.js applications, CI, the `jai-studio` CLI, or Studio Pages. This manual is based on SDK **0.11.0**.
 
 Here, an SDK version means the npm package version of `@japan-ai-inc/studio-sdk`, and a public API version means the API generation included in a URL. For example, SDK clients for Object, Storage, Page, Agent, Workflow, and Member call public APIs under `/api/v1/`. In contrast, `v1` attached to a published Workflow definition represents a published Workflow snapshot, not a public API generation. Do not confuse update procedures even when the names are the same.
 
@@ -57,11 +57,13 @@ Read `CHANGELOG.md` and extract changes related to modules, types, CLI, and exec
 | Workflow wait setting in 0.2.0 | Processing that waits for run completion | Replace `timeout` with `timeoutMs` and check the unit as milliseconds. |
 | Concurrent Object update in 0.3.0 | Processing that updates the same record | Check updates and deletes using `revision` and conflict handling. |
 | Canvas/Workflow features in 0.4.0 | Processing that retrieves Canvas or creates and publishes Workflows | Check that the connection's public API provides required routes and responses. |
-| PRS Agent features in 0.5.0 to 0.7.0 | Candidate comparison, Storage attachments, Canvas publication, credits, and App settings | Check PRS-browser-only features and connection support, and specify Canvas publication scope as the third argument. |
-| Datasets and scheduled runs in 0.8.0 | Page RAG references and Workflow scheduled runs | Check the `datasets` scope and PRS route, plus `task:*` scope and executor for `scheduledTasks`. |
+| Response comparison in 0.5.0 | Candidate comparison in the Page browser | `compare()`, `adoptCandidate()`, and `getTurns()` are for the Page browser only. Check that response comparison is enabled for the organization. |
+| Storage attachments and Canvas writing in 0.6.0 | File attachments in Agent calls, writing and publishing HTML slides | `storageFileIds` and Canvas writing and publication are for the browser of a Studio-hosted Page. |
+| Canvas publication, credits, and App settings in 0.7.0 | Canvas publication, usage display, opening App settings | `publishCanvasArtifact()` requires the visibility scope as the third argument (a breaking change). Use `requestId`, the credit APIs, and `platform.openAppSettings()` in the Page browser. |
+| Datasets and scheduled runs in 0.8.0 | Page RAG references and Workflow scheduled runs | Check the `datasets` scope and what is available in the Page runtime, plus `task:*` scope and executor for `scheduledTasks`. |
 | Agent definitions and Object rules in 0.8.0 | Agent building and Object access settings | Check `agent:write`, `object:policy`, key-creator permissions, and update semantics for array replacement and `null` clearing. |
 | Object search in 0.9.0 | Lists and searches that display counts | With `includeCount: false`, `total` is 0, so handle pagination and count display separately. |
-| Bulk deletion and candidate comparison in 0.10.0 | Large-volume deletions and comparison UI in PRS | Check that `bulkDelete()` succeeds or fails for all records, the availability of the deletion route, and support for comparison models, attachments, tools, and references. |
+| Bulk deletion and candidate comparison in 0.10.0 | Large-volume deletions and comparison UI in the Page browser | Check that `bulkDelete()` either succeeds or fails for all records (the key needs the `object:delete` scope), and support for comparison models, attachments, tools, and references. |
 | Candidate-specific effort in 0.11.0 | Comparison UI and candidate selection | Check `candidateEfforts` and `effortSupported`, and present effort only for candidates meeting both conditions. When the connection response is `candidateEfforts: false`, do not offer duplicate models or effort as options. |
 
 New APIs and types do not necessarily appear in an existing environment merely by updating the SDK. With an older connection, unavailable routes can return 404, additional input can be ignored, and response fields can be missing. Verify new features with a supporting connection.

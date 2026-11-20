@@ -4,6 +4,8 @@ This article explains how **administrators organize availability conditions and 
 
 For authentication ownership scope, see [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md). For Agent configuration, see [Configure Tools, Skills, and Datasets for an Agent](../build/configure-agent-tools-skills-datasets.md).
 
+> **When you register an MCP server with OAuth or Bearer token authentication in a Project, the registrant's credentials are saved as shared credentials for the Project.** Every time any Project member runs that MCP tool, the registrant's token is used. Do not register it with an administrator's personal account; register it with a dedicated account that has only the minimum required permissions.
+
 ## Related articles
 
 - [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md)
@@ -14,7 +16,7 @@ For authentication ownership scope, see [Choose Between Personal Connections, Sh
 
 This article covers where organization and Project settings are managed, who can change them, and what to check before they can be used by an Agent. It does not cover connection procedures for individual services or Agent instructions.
 
-The items displayed and whether settings can be changed vary by plan, feature availability, permissions, and App configuration. Do not conclude that a service not in this article can be connected, or that a feature not in the list is unavailable.
+The items displayed and whether settings can be changed vary by plan, feature availability, permissions, and App configuration.
 
 > Registering an external tool, storing authentication information, adding it to an Agent, and succeeding in business use are separate checks. For features that update or send information, check the connection target, run permissions, and scope of impact.
 
@@ -32,13 +34,13 @@ A "Plugin" is an Agent feature, a "Connector" is an external connection, and a "
 
 ### Items managed in the organization
 
-Organization-wide external tools may be available from organization "Plugins." Even if a tool exists in the organization, Project access, sharing scope, Agent configuration, and authentication may still be required separately.
+Organization-wide external tools are managed in organization "Plugins." Even if a tool exists in the organization, Project access, sharing scope, Agent configuration, and authentication are still required separately.
 
 ### Items managed in a Project
 
 Manage work-unit external tools, Datasets, and connections used by an App in the target Project. Check items such as "Data Integration," "Tool Settings," and "Connectors" shown in the Project or App settings.
 
-To add an MCP tool to a Project, you may need required IAM permissions in addition to at least being a Project Editor or Admin. Even at the organization level, you may not be able to create it in an organization where IAM operation controls are enabled. If the screen says "You need Editor or Admin permission to create tools," ask a person with permission.
+To add an MCP tool to a Project, you must be a Project Editor or Admin. In organizations where IAM operation controls are enabled, the required IAM permissions are also needed, including for organization-level settings. If the screen says "You need Editor or Admin permission to create tools," ask a person with permission.
 
 > Even if you can change organization settings, you cannot necessarily change external data for every Project. Confirm the owner and intended use before adding or changing anything.
 
@@ -52,9 +54,9 @@ External tool candidates and setting screens are not necessarily always displaye
 4. In a Project, check Editor or Admin conditions and IAM permissions if needed.
 5. In an App, check whether installation is active, its settings screen is not read-only, and required sharing-scope functionality is available.
 
-Plans and feature availability may affect adding Plugins or creating custom tools. Ask the administrator about contract details.
+Adding Plugins and creating custom tools are restricted by plan and feature availability. Ask the administrator about contract details.
 
-For data integrations too, the App settings tab and importing resources into a Project may be displayed or executable differently according to feature availability and Project update permissions. Do not treat a missing display as meaning no configuration is needed.
+For data integrations too, the App settings tab and importing resources into a Project are displayed or executable differently according to feature availability and Project update permissions. Do not treat a missing display as meaning no configuration is needed.
 
 ## What to check when adding an MCP server
 
@@ -63,17 +65,17 @@ MCP is a setting for extending external tools that AI Agents can use through cus
 1. Check whether the addition target is the organization or target Project so that you do not register it in the wrong scope.
 2. Enter "Tool Name," "Tool Description," and "Endpoint."
 3. Under "Authentication Method," select the method that matches the server requirements.
-4. For OAuth, check the destination service and the account and permissions to authorize. For a Bearer token, enter only an approved token.
+4. For OAuth, check the destination service and the account and permissions to authorize. For a Bearer token, enter only an approved token. When registering in a Project, these credentials become shared credentials for everyone in the Project. Use a dedicated account with minimum permissions.
 5. Check the connection validation result on registration. Confirm not only that it was registered in the list but also that it can retrieve the required tools.
 6. Add it in the target Agent settings, then check the result with a permitted, small operation.
 
-MCP registration may validate the URL format, detect duplicates, detect the authentication method, or validate the connection. If "MCP server is unreachable," "Failed to detect MCP server authentication," or "Failed to validate MCP server connection" appears, do not keep trying guessed URLs or authentication methods. Ask the server administrator.
+MCP registration validates the URL format, detects duplicates, and detects the authentication method or validates the connection. If "MCP server is unreachable," "Failed to detect MCP server authentication," or "Failed to validate MCP server connection" appears, do not keep trying guessed URLs or authentication methods. Ask the server administrator.
 
-> A "Bearer Token" is authentication information. Do not paste it into Agent instructions, Skill content, chat, inquiries, or screen sharing. When connecting through OAuth, do not treat an administrator's personal account as shared authentication. For authentication ownership scope, see [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md).
+> A "Bearer Token" is authentication information. Do not paste it into Agent instructions, Skill content, chat, inquiries, or screen sharing. When you register an MCP server with OAuth or a Bearer token in a Project, the account used at registration becomes the shared credentials for everyone in the Project, and it is used in other members' runs no matter how carefully you operate. Register with a dedicated account that has minimum permissions, and when the owner changes, register it again with the dedicated account. For authentication ownership scope, see [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md).
 
 ## Make it usable by an Agent
 
-Registering an external tool or MCP does not necessarily make existing Agents run it automatically. On the Agent edit screen, choose the intended tool or Skill under "Plugins" and check that it was saved.
+Registering an external tool or MCP does not make existing Agents run it automatically. On the Agent edit screen, choose the intended tool or Skill under "Plugins" and check that it was saved.
 
 Datasets use a different procedure. On the Agent edit screen, select the target under "Data Integration" and choose "Apply."
 
@@ -98,13 +100,13 @@ A data integration selects a Dataset and has a different entry point and confirm
 
 ### Registering MCP immediately makes it usable by everyone
 
-MCP server registration, addition to an Agent, authentication, and access for the Project, App, and user are separate conditions.
+MCP server registration, addition to an Agent, and access for the Project, App, and user are separate conditions. However, when an OAuth or Bearer MCP server is registered in a Project, the registrant's authentication is shared with everyone. Users do not need to authenticate individually, but everyone operates the external service with the registrant's permissions.
 
 ### Successful connection validation means business processing will succeed safely
 
 Validation checks the connection and authentication stage. Also check the run target, send and update permissions, and external-service limits.
 
-## If you cannot confirm it
+## If a setting screen is missing or setup fails
 
 If you cannot find "Plugins," "Data Integration," "MCP Servers," or the add operation, or authentication or validation fails, check the following.
 

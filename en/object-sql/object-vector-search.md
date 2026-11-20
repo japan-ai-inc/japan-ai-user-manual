@@ -15,7 +15,7 @@ For basic Object SQL reading, updating, and deletion, see [Object SQL DML](objec
 
 This article describes vector search in Object SQL, which treats Objects as tables, fields as columns, and records as rows. It covers defining fields to search, `SELECT` syntax, combinations with normal conditions, constraints, and how to account for the wait until results are reflected.
 
-The confirmed entry points are the Workflow "Custom Object SQL" node and an Agent's Object SQL tool. In the Workflow node, enter a statement in "SQL," and SELECT results can be output to "Query result array" and "Total count (SELECT queries)." A public interface for directly executing Object SQL could not be confirmed in the SDK, CLI, or public REST API. Do not assume execution from an external application.
+The entry points are the Workflow "Custom Object SQL" node and an Agent's Object SQL tool (automatically given to every Agent in a Studio Project). In the Workflow node, enter a statement in "SQL," and SELECT results can be output to "Query result array" and "Total count (SELECT queries)." The SDK, CLI, and public REST API do not have a public interface for directly executing Object SQL.
 
 > Vector search is not a feature that works automatically for every Object or every string column. At least one field to search is required, and generation and processing of search data must be available in your environment. If the screen or execution entry point is not shown, ask an administrator about permissions, the Project, and organization availability conditions.
 
@@ -24,7 +24,7 @@ The confirmed entry points are the Workflow "Custom Object SQL" node and an Agen
 - Check the target Object, the field containing text to search, and the Workflow or Agent that will use the results.
 - Use only string fields as fields to search. You cannot specify number, Boolean, date/time, array, or JSON fields as search targets.
 - When validating records immediately after creation or update, design the test to wait for search results to be reflected.
-- Prepare the search term as a fixed string literal. You cannot pass a column name, variable, or expression as an argument to `vector_score()`.
+- The argument to `vector_score()` is **one string value**. You can use a string literal, a parameter (such as `$1`), or a Workflow variable. Columns and expressions cannot be passed.
 
 ## 1. Define fields to search
 
@@ -51,7 +51,7 @@ ALTER TABLE tickets
 
 ## 2. Retrieve semantically similar records
 
-The function name is `vector_score()`. Its argument must be **one string literal** that is not only whitespace. Usually, give the function an alias, sort descending by that alias, and specify the number of records with `LIMIT`.
+The function name is `vector_score()`. Its argument must be **one string value** that is not only whitespace. In addition to a string literal, you can use a parameter (for example, `vector_score($1)`) or a Workflow variable enclosed in quotation marks (for example, `vector_score('{{#node_id.variable_name#}}')`). Parameters are embedded as string literals before semantic analysis. Column names and expressions cannot be arguments. Usually, give the function an alias, sort descending by that alias, and specify the number of records with `LIMIT`.
 
 ```sql
 SELECT
@@ -75,7 +75,7 @@ ORDER BY similarity DESC
 LIMIT 10;
 ```
 
-When you write the search term in multiple places, make every occurrence exactly the same string. A search term is limited to 8,000 characters after trimming leading and trailing whitespace. An empty string, whitespace-only string, column reference, or placeholder cannot be an argument.
+When you write the search term in multiple places, make every occurrence exactly the same string (or the same parameter). A search term is limited to 8,000 characters after trimming leading and trailing whitespace. An empty string, whitespace-only string, column reference, or expression cannot be an argument.
 
 ## 3. Combine with normal conditions
 
@@ -135,15 +135,15 @@ For Dataset RAG references, import materials, confirm processing is complete, th
 |---|---|
 | An error indicates there is no field to search | Check that the target Object has at least one string search target field, such as `TEXT EMBEDDING`. |
 | A record saved just now does not appear | Asynchronous search data generation may not be complete. Wait briefly and check again with the same fixed search term; also check that the target field value was saved. |
-| SQL has a validation error | Use `LIMIT 1`-`LIMIT 50`, one string literal, `DESC`, and one similarity order. Remove `OFFSET`, `JOIN`, subqueries, `OR`, aggregation, and `DISTINCT`. |
+| SQL has a validation error | Use `LIMIT 1`-`LIMIT 50`, one string value (literal, parameter, or Workflow variable), `DESC`, and one similarity order. Remove `OFFSET`, `JOIN`, subqueries, `OR`, aggregation, and `DISTINCT`. |
 | Candidates without a required term are returned | Do not rely only on semantic search. Add normal conditions such as `AND subject ILIKE '%term%'`, as well as state, assignee, and date conditions. |
-| The entry point is not shown or cannot run | Check the target Project, Workflow or Agent settings, permissions, and organization availability conditions. Ask an administrator before substituting equivalent SQL execution through a public API, SDK, or CLI. |
+| The entry point is not shown or cannot run | Check the target Project, Workflow or Agent settings, permissions, and organization availability conditions. The public API, SDK, and CLI provide no way to execute Object SQL. |
 
 ## Checklist
 
 - [ ] I defined a string field to search with `EMBEDDING`
 - [ ] I designed for waiting until search data for new or updated records is reflected
-- [ ] I passed exactly one nonempty fixed string to `vector_score()`
+- [ ] I passed exactly one nonempty string value (literal, parameter, or Workflow variable) to `vector_score()`
 - [ ] I specified `LIMIT` from 1 to 50 and sorted only similarity with `DESC`
 - [ ] I narrowed mandatory business conditions with normal `AND` conditions
 - [ ] I treated `similarity_score` as candidate ranking and checked record text and business conditions

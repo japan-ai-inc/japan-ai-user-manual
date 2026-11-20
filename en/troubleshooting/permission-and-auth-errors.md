@@ -1,53 +1,101 @@
 # Permission and Authentication Errors
-This is to identify when the operation should be possible but is refused, the API/SDK returns 401/403, the external service connection cannot be used, or the page requires re-authentication after opening. The target audience is users and administrators. Even though the symptoms are similar, the user's role, Project API key, external connection, and Page session are different causes. Isolate which path failed before replacing credentials or expanding privileges.
+
+Use this page when an operation that should be possible is refused, the API/SDK returns 401 or 403, an external service connection cannot be used, or a Page asks you to authenticate again after opening. It is for users and administrators. Even when symptoms look similar, **the user's role, the Project API key, external connections, the identity used by automated runs, and the Page session** are different causes. Identify which path failed before replacing credentials or broadening permissions.
+
 ## Related articles
+
 - [Understand organization/Project/App permissions](../operations/understand-org-project-app-permissions.md)
 - [Respond to connection expiry/change of person in charge](../operations/handle-expired-connections-and-owner-changes.md)
 - [Manage Project API keys](../operations/manage-project-api-keys.md)
-## Scope of this article
-This article is a guide to distinguish between rejections or authentication failures regarding roles, API keys, external connections, and Page sessions. Issuance, switching, and revocation of keys are handled in [Manage Project API keys](../operations/manage-project-api-keys.md), repair and transfer of external connections are handled in [Respond to connection expiration and change of person in charge](../operations/handle-expired-connections-and-owner-changes.md), and page access mode settings are handled in [Register and publish Pages from the screen](../build/register-and-publish-pages.md). This article alone does not conclude that failures in building or displaying the Page itself, communication failures, or errors in input content are due to authentication/authorization problems.
-## Check first
-- [ ] We have identified the failed target (screen operation, external linkage, Page, API/SDK) and the organization/Project/App name.
-- [ ] The user who performed the operation, the user account, the API key usage name, or the connection name were recorded separately.
-- [ ] The HTTP status, displayed message, date and time of occurrence, and steps to reproduce were recorded.
-- [ ] The actual values ​​of API keys, passwords, tokens, cookies, and Secrets are not included in logs, screen sharing, and inquiries.
-- [ ] Before deleting, reissuing, or re-authenticating connections/keys, we checked the affected automatic processes and users.
-> To resolve the error, do not accept other people's authentication information, put the key in browser-side code, create a full-scope key, or share it with everyone. Confirm by narrowing down the necessary targets, operations, and responsibilities.
-## Sort by symptom
-| Symptoms/Displayed Messages | Main Causes | Checks/Treatments | Detailed Articles |
-|---|---|---|---|
-| "You do not have permission to perform this operation" "Access is denied" "You do not have permission to use this agent. Please contact your administrator." | Organization role, Project role, IAM, or individual resource sharing/policy is missing | Separate the target organization/project/resource from the failed operation such as viewing/executing/editing. The administrator checks the basic role, project participation, and IAM and sharing scope if necessary. Users make requests without changing their roles at their own discretion. | [Understand permissions for organizations, projects, and apps](../operations/understand-org-project-app-permissions.md) |
-| The screen opens, but you cannot edit, delete, or change settings. | You have permission to view and execute, but you do not have the role or IAM permissions to perform modification operations. | Record which button or target failed. Don't assume that you can make changes based solely on participating in a project or being an organization administrator. Request the minimum necessary operations to the administrator. | [Understand permissions for organizations, projects, and apps](../operations/understand-org-project-app-permissions.md) |
-| API/SDK returns 401 (Unauthorized) or "Authentication is required" | Authentication information may be unspecified, malformed, invalid, or the required authentication method may not be passed in the request path | Check the execution destination, authentication method, and target Project. Re-paste the key value and check the approved storage and setting destinations without sharing. Before reissuing, check the expiration, expiration date, and usage of the existing key. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
-| API/SDK returns 403 (Forbidden) | Even if you have been authenticated, you may not have the necessary scope or execution privileges, or the status of the key, organization, or creator may not meet the usage conditions | Check the requested target/operation with the scope set for the key. Only if the required range is insufficient, a new key with the minimum scope and new deadline will be issued, and the old key will be invalidated after switching. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
-| API/SDK returns a response indicating an invalid/expired key, or fails after revocation | Key value mix-up, deletion/expiration, or creator loses access to the project, etc. | Record the response body and check the target project, key name, expiration date, whether it has been deleted or revoked, the creator, and the system used. Since you can only see the actual value at the time of creation, issue a new key and switch safely without trying to restore the lost actual value from the list. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
-| "Re-authentication required" "Linkage has been disabled. Please re-authenticate with the same account." or "Authentication failed. If the problem persists, please contact the administrator." Connectors added or changed during app installation/update may not have been configured | Check whether it is a personal connection or a shared connection, the connection destination, connection name, and authenticated account. For personal connections, the person himself/herself re-authenticates using the same account. Users do not replace shared connections with other personal connections; administrators review the scope of impact and take action. Immediately after installing or updating the app, check the connector requirements and the person in charge of setting them. | [Respond to connection expiration and change of person in charge](../operations/handle-expired-connections-and-owner-changes.md) |
-| Authentication is required while operating a Page; it may or may not be available after reloading | Sign-in or Page session may have expired or become invalid depending on the Page's access mode | First, check the Page URL, access mode, user account, and previous operation. Reload the page or perform the authentication as instructed, and if the same symptoms persist, do not repeat the issue and contact the Page administrator. Use the authentication route provided on the external customer authentication page. | [Register and publish Pages from the screen](../build/register-and-publish-pages.md), [Understand permissions for organizations, projects, and apps](../operations/understand-org-project-app-permissions.md) |
-## Distinguish between 401 and 403
-HTTP status is the entry point for identification. Since the cause cannot be uniquely determined for every API/screen, check the response body, execution path, and target operation as well.
-| Status | Basic meaning | Things to check first |
+- [Configure Shared Connections for a Project or App](../operations/configure-shared-connections.md)
+- [Manage External Tools, Data Integrations, and MCP](../operations/manage-external-tools-integrations-mcp.md)
+- [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md)
+
+## Key points: whose permissions and credentials are used
+
+| Path | Permissions/credentials used | What to know |
 |---|---|---|
-| 401 (Unauthorized) | Authentication information is missing, invalid, or authentication may not be possible through that route. | Check the authentication method, setting destination, target Project, and validity of the authentication information. |
-| 403 (Forbidden) | Possibility of not being allowed even after authentication or not meeting the usage conditions for a protected route | Check the required scope, role, project participation, key expiration date, creator, and organizational status. |
-In some implementations that use Project API keys, 403 results may occur due to unspecified keys, invalid keys, expired keys, or lack of required scopes. Conversely, depending on the public API operation, invalid or unspecified API keys will be reported as 401, and missing required scopes will be reported as 403. **Do not automatically decide that if it is 401, recreate the key, or if it is 403, maximize privileges. ** Check the specifications of the request destination and the message returned.
+| Screen operations | The operator's organization role, Project role, and IAM | Project roles are Admin, Editor, and Member. There is no Viewer (read-only) role; a custom role is required for read-only access. Members can run Agents and Workflows and create many resources. Editors cannot manage members. |
+| Project API key | The key's scopes and the key's creator | A key is valid only while its creator is an active member of the Project. If the creator is removed from the Project, all keys they created return 403. Scopes cannot be changed after creation. Scheduled runs created with the SDK/API run as the key's creator. |
+| External connections of Agents in a Project | The runner's personal connection → the Project's shared connection → the organization-wide connection, in that order | The first connection found is used. |
+| External connections of Workflows | Project shared connections only | Personal connections are not used. Automated runs require a shared connection. |
+| Connections declared as personal in an App | The personal connection of the person running it | Does not fall back to a shared connection when there is no person running it. |
+| MCP registered in a Project with OAuth/Bearer authentication | The registrant's credentials (shared in the Project) | The account used at registration becomes the shared credential for everyone in the Project and is used for all members' runs. Register with a dedicated least-privilege account. |
+| Workflow trigger | The person who first published that start node | Republishing by someone else does not change the run identity. |
+| Task Scheduler task | The task's creator | Editing the task does not change the run identity. |
+| Triggers and tasks | — | They are automatically disabled when the owner leaves the organization. |
+
+## Scope of this article
+
+This article helps you distinguish refusals and authentication failures related to roles, API keys, external connections, automated runs, and Page sessions. Issuing, switching, and revoking keys is covered in [Manage Project API keys](../operations/manage-project-api-keys.md); repairing and handing over external connections in [Respond to connection expiration and change of person in charge](../operations/handle-expired-connections-and-owner-changes.md); and Page access mode settings in [Register and publish Pages from the screen](../build/register-and-publish-pages.md). Do not conclude from this article alone that Page build/display failures, network failures, or input errors are authentication or permission problems.
+
+## Check first
+
+- [ ] Identified the failed target (screen operation, external integration, automated run, Page, API/SDK) and the organization/Project/App name.
+- [ ] Recorded the user, account, API key purpose name, or connection name separately.
+- [ ] Recorded the HTTP status, displayed message, the `requestId` in the response body, date and time, and steps to reproduce.
+- [ ] Did not include actual values of API keys, passwords, tokens, cookies, or Secrets in logs, screen sharing, or inquiries.
+- [ ] Before deleting, reissuing, or re-authenticating connections/keys, checked the affected automated processes and users.
+
+> To resolve an error, do not accept other people's credentials, put a key in browser-side code, create a full-scope key, or share it with everyone. Narrow down the required target, operation, and owner.
+
+## Isolate by symptom
+
+| Symptom/displayed message | Main cause | Check/action | Detailed article |
+|---|---|---|---|
+| "You do not have permission to perform this operation", "Access denied", "You do not have permission to use this agent. Please contact your administrator." | Missing organization role, Project role, IAM, or sharing/policy on the individual resource | Separate the target organization/Project/resource and the failed operation (view/run/edit). Administrators check the base role, Project membership, and, if needed, IAM and sharing scope. Users ask for changes instead of changing roles themselves. | [Understand organization/Project/App permissions](../operations/understand-org-project-app-permissions.md) |
+| The screen opens but you cannot edit, delete, or change settings | Missing role or IAM permission for the change operation | Record which button/target failed. Since no default Project role is read-only, check whether a custom role or IAM restricts the operation. Request only the minimum operation needed. | [Understand organization/Project/App permissions](../operations/understand-org-project-app-permissions.md) |
+| You cannot add or change Project members | Editors and Members cannot manage members | Ask a Project Admin. Changing someone to Editor does not solve this. | [Understand organization/Project/App permissions](../operations/understand-org-project-app-permissions.md) |
+| The API/SDK returns 401 (Unauthorized) or "Authentication is required" | No credentials were sent at all (only some routes return 401) | Check that the key is attached to the request. In the CLI, the precedence of endpoint/key settings is fixed as flag > environment variable > profile, so also check that an unintended setting is not used. Do not repaste and share the key value. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
+| The API/SDK returns 403 with "Invalid API key" | Wrong key value, deleted/revoked key, or the key's creator is no longer an active Project member | Check the target Project, key name, deletion/revocation, and the creator's Project membership. If the creator was removed, all keys they created are invalid. The actual value is shown only at creation, so issue a new key and switch safely. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
+| The API/SDK returns 403 with "API key has expired" | The key has expired | Issue a new key with the minimum scopes and a new expiration, switch to it, then revoke the old key. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
+| The API/SDK returns another 403 (Forbidden) | Missing scope or no permission on the target | Compare the requested target/operation with the key's scopes. Scopes cannot be changed after creation, so only if a scope is missing, issue a new key with the minimum scopes, switch, and revoke the old key. | [Manage Project API keys](../operations/manage-project-api-keys.md) |
+| "Re-authentication required", "Linkage has been disabled. Please re-authenticate with the same account." or "Authentication failed. If the problem persists, please contact the administrator." | The external service authorization expired, was revoked, or the account changed, or permissions changed on the external service. A connector added or changed by an App install/update may not be configured. | Check whether it is a personal or shared connection, the destination, connection name, and authenticated account. The owner re-authenticates a personal connection with the same account. Users do not replace a shared connection with their own personal connection; administrators assess the impact. Workflows use only shared connections, so re-authenticating a personal connection does not fix a Workflow failure. | [Respond to connection expiration and change of person in charge](../operations/handle-expired-connections-and-owner-changes.md) |
+| An MCP tool runs with another account's permissions instead of the runner's | When an OAuth/Bearer MCP is registered in a Project, the registrant's credentials become the shared credentials for everyone in the Project | This is the expected behavior. If it was registered with a personal account, register it again with a dedicated least-privilege account. | [Manage External Tools, Data Integrations, and MCP](../operations/manage-external-tools-integrations-mcp.md) |
+| Triggers or scheduled runs stop or fail with permission errors after the owner changes role or leaves | Triggers run as the person who first published the start node; tasks run as their creator. They are automatically disabled when the owner leaves the organization. | Republishing or editing by a successor does not change the run identity. Delete and re-add the trigger node (the Webhook URL and Email by JAI address change), or recreate the task. | [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md) |
+| Authentication is requested while using a Page; it works or does not work after reloading | The sign-in or Page session required by the Page's access mode has expired or become invalid | Check the Page URL, access mode, account, and previous operation. Reload or authenticate as instructed once; if the symptom continues, do not repeat it and contact the Page administrator. For Pages with external customer authentication, use the authentication route provided. | [Register and publish Pages from the screen](../build/register-and-publish-pages.md), [Understand organization/Project/App permissions](../operations/understand-org-project-app-permissions.md) |
+
+## Distinguish between 401 and 403
+
+| Status | Meaning | Check first |
+|---|---|---|
+| 401 (Unauthorized) | No credentials were sent at all. Only some routes return 401. | Check that the key is attached and where it is set (flag, environment variable, profile). |
+| 403 "Invalid API key" | The key is invalid (wrong value, deleted/revoked, or the creator is not an active Project member) | Check the key state and the creator's Project membership. |
+| 403 "API key has expired" | The key has expired | Issue a new key and switch to it. |
+| Other 403 | Missing scope, role, or IAM permission | Check the scopes/permissions required for the operation. |
+
+Invalid and expired keys return 403, not 401. **Do not mechanically decide "401 means recreate the key, 403 means maximize permissions."** Use the message in the response body. Studio API error responses include a `requestId`. The CLI removes it from its default output, so take it from the API/SDK response body for inquiries.
+
 ## Steps to isolate the cause
-1. Check the person's role. ** If only certain editing/management operations fail in the browser, check the organization role, project role, IAM, and sharing scope. Participation in a project and operation privileges for individual resources are different.
-2. **Check if it is an API key. ** If the API/SDK fails, check the target project, key usage name, expiration date, deletion/revocation, required scope, and setting destination. We do not assume that the key value or scope will be edited later, and if changes are necessary, we will safely issue a new key, switch it, or revoke the old key.
-3. **Check if it is an external connection. ** For "re-authentication required", "unlinked", etc., check the connection owner and the account/authority of the external service. During a change of responsibility, the successor prepares his or her own connections rather than inheriting the personal connections of the predecessor.
-4. Check if it is a **Page session. ** If it occurs only while viewing or operating a page, check the account or external authentication that matches the access mode, and record the status after reloading and reauthenticating. There is no workaround by changing the Page to public settings.
-5. **Check the reproduction range. ** Distinguish between only the same users, all members of the same project, or only the same external service, API key, or page. Avoid duplicate reruns and multiple key issuances.
-## Common Misconceptions
-- **Joining a Project does not necessarily mean that you can perform all operations**. Separately check roles, IAM, individual resource sharing/policies, and permissions on the external service side.
-- **Not all APIs can be called with an API key**. The target project, scope, expiration date, and organization terms and conditions are relevant.
-- **If it is "connected", it does not necessarily mean that the external process will be successful**. Also check the data permissions, authentication account, and connection status on the external service side.
-- **It does not necessarily mean that you should increase your privileges once you are re-authenticated by Page.** Identifies whether the problem is the access mode and Page session, or the permissions of the function to be executed.
-## Before consulting with administrator/support
-Record the following: For details on how to collect information, please refer to [Collect information required for inquiries](collect-info-for-support.md).
-- Organization, Project, App/Page/API target name, user or key usage name (excluding actual value)
-- Failed operation/request destination, HTTP status, display message, date and time of occurrence, steps to reproduce
-- User role confirmation results, required operations, individual/shared connection, and whether re-authentication is performed
-- API key: expiration date, scope, deletion/revocation, switching status; page: URL, access mode, status after re-authentication
-## Read next article
+
+1. **Check whether it is a user role.** If only certain edit/management operations fail in the browser, check the organization role, Project role, IAM, and sharing scope. Project membership (the Project appears under "Joined Projects") and permission on individual resources are different.
+2. **Check whether it is the API key.** If the API/SDK fails, check the response message, target Project, key purpose name, expiration, deletion/revocation, the creator's Project membership, required scopes, and where the key is set. Scopes cannot be changed after creation; if a change is needed, issue a new key, switch, and revoke the old one.
+3. **Check whether it is an external connection.** For "Re-authentication required" or "Not linked", use the key-points table to see which connection was used, then check the connection owner and the account/permissions on the external service. When responsibility changes, the successor prepares their own connection or a shared connection instead of inheriting the predecessor's personal connection.
+4. **Check the run identity of automated runs.** If only triggers or tasks fail, check whether the run identity (first publisher, task creator, or key creator) is still in the organization/Project.
+5. **Check whether it is the Page session.** If it occurs only while viewing or using a Page, check the account or external authentication that matches the access mode and record the state after reloading/re-authenticating. Do not work around it by making the Page public.
+6. **Check the scope of reproduction.** Distinguish whether it affects only one user, everyone in the Project, or only one external service, API key, or Page. Avoid duplicate reruns and issuing multiple keys.
+
+## Common misconceptions
+
+- **Assigning a Viewer role makes a user read-only**: Projects have no Viewer role. Even the default Member can run Agents and Workflows and create many resources. Read-only access requires a custom role.
+- **An API key can call every API**: The target Project, scopes, expiration, and the creator's Project membership all matter.
+- **401 means a key problem and 403 means a permission problem**: Invalid and expired keys also return 403. Use the response message.
+- **Re-authenticating a personal connection also fixes Workflows**: Workflows use only shared connections.
+- **If a successor republishes, automated runs use the successor's permissions**: Triggers keep running as the first publisher, and tasks as their creator.
+- **"Connected" means external processing will succeed**: Also check data permissions, the authenticated account, and the destination's state on the external service.
+- **If a Page asks you to re-authenticate, you should raise permissions**: Distinguish an access mode/Page session problem from a permission problem with the function being run.
+
+## Before consulting an administrator or support
+
+Record the following. For details, see [Collect information required for inquiries](collect-info-for-support.md).
+
+- Organization, Project, App/Page/API target name, and user or key purpose name (no actual values)
+- Failed operation/request destination, HTTP status, displayed message, `requestId`, date and time, and steps to reproduce
+- Results of checking the user's role, the required operation, personal/shared connection, and whether re-authentication was done
+- For API keys: expiration, scopes, deletion/revocation, creator's membership, and switching status; for automated runs: the run identity; for Pages: URL, access mode, and state after re-authentication
+
+## Read next
+
 - [Understand organization/Project/App permissions](../operations/understand-org-project-app-permissions.md)
 - [Respond to connection expiry/change of person in charge](../operations/handle-expired-connections-and-owner-changes.md)
 - [Manage Project API keys](../operations/manage-project-api-keys.md)

@@ -18,7 +18,16 @@ This article explains how developers creating a distributable Page can separate 
 
 Here, configuration means how a Page identifies referenced resources and the boundary for values supplied for each installing Project. UI labels, installable resource types, connection sharing scope, and availability vary by organization settings, permissions, and App configuration.
 
-The distribution mechanism resolves declared Page resources to entities in the installing Project. It does not, however, transfer IDs embedded in arbitrary strings or browser artifacts, destinations and data of external services, or other values. Identify in advance the configuration that must be recreated in the installing Project.
+Distribution works as follows.
+
+| Target | Handling at publication and installation |
+|---|---|
+| Resources declared in `app.refs.json` | Resolved to entities in the installing Project. `workflows` accepts object format as well as logical-name strings. |
+| Provider IDs in the root `.env` | Replaced at publication. |
+| Resource references in the browser | Resources resolved in the installing Project are referenced through `__PRS_APP__.resource_handles`. |
+| IDs embedded in JavaScript, HTML, URLs, and so on; destinations and data of external services | Not transferred. |
+
+Identify in advance the configuration that must be recreated in the installing Project.
 
 ## Before you begin
 
@@ -26,7 +35,7 @@ The distribution mechanism resolves declared Page resources to entities in the i
 - Divide each value into a logical name, an identifier resolved in the installing Project, a Secret or connection configured in the installing Project, and a fixed value specific to the external service.
 - Determine the target environments and test data so you do not confuse the provider, verification, and installing Projects. Do not include the provider Project's real data, API keys, or tokens in artifacts, logs, or inquiries.
 
-> Do not fix a Project ID, Page ID, organization ID, or Page host in screen JavaScript, URLs, `.env`, or build-time constants. A Page's entry URL also differs in the installing Project. Use relative URLs as the basis for navigation within a Page; for details, see [Page Navigation and Deep Links](page-navigation-and-deep-links.md).
+> Do not fix a Project ID, Page ID, organization ID, or Page host in screen JavaScript, URLs, or build-time constants. A Page's entry URL also differs in the installing Project. Use relative URLs as the basis for navigation within a Page; for details, see [Page Navigation and Deep Links](page-navigation-and-deep-links.md).
 
 ## Separate configuration
 
@@ -53,13 +62,16 @@ A distributed Page can list logical names for Workflows, Agents, Custom Objects,
 }
 ```
 
-A Page without `app.refs.json` declares no references. Declare dependent resources by the same logical names on the release side, and check that there are no unresolved references before publishing.
+Besides an array of strings as shown above, `workflows` can also be written in object format. A Page without `app.refs.json` declares no references. Declare dependent resources by the same logical names on the release side, and check that there are no unresolved references before publishing.
 
 > `app.refs.json` is not a file for arbitrary configuration. Its targets are Workflows, Agents, Custom Objects, and Storage roots; it does not migrate Datasets, external services, arbitrary HTTP URLs, or connections themselves.
 
 ### When an ID is needed at runtime
 
-Do not write the installing Project's IDs in source code. Pass resolved values from the Page execution context or server-side configuration. Even when using the Studio SDK in external server processing, obtain the installing Project's list, validate the business identifier, and then use the target ID.
+Do not write the installing Project's IDs in source code; use resolved values.
+
+- **Browser**: Reference resources resolved in the installing Project through `__PRS_APP__.resource_handles`.
+- **Server processing**: Provider IDs written in the root `.env` are replaced at publication. You can also use a Project API key with the Studio SDK to obtain the installing Project's list, validate the business identifier, and then use the target ID.
 
 ```ts
 // Example that runs only on the server side. Do not pass apiKey to the browser.
@@ -70,11 +82,13 @@ if (!customer) throw new Error("The installing Project does not have a customer 
 const handle = studio.objects.define(customer.objectId);
 ```
 
-The SDK's `objects.list()` and `objects.define()` are public APIs. However, this example alone does not guarantee uniqueness of an Object name, permission to retrieve the list, or an execution environment where a Page can call the SDK directly. Check selection rules, permissions, pagination, and what to display when not found for each App. Do not place Project API keys in browsers, public environment variables, source control, or logs.
+This "list by name" method is for server processing that uses a Project API key and cannot be used in Pages that run only in the browser. For browser-only Pages, use `__PRS_APP__.resource_handles`. Design Object-name uniqueness, pagination, and what to display when not found for each App. Do not place Project API keys in browsers, public environment variables, source control, or logs.
+
+An environment variable for a Project API key (such as `JAI_PROJECT_API_KEY`) is not injected automatically. The developer chooses the variable name in the root `.env`, and when the App is published, its value is replaced with a platform-managed key.
 
 ## 2. Treat environment variables as values resolved in the installing Project
 
-A `.env` or `.env.<name consisting of alphanumeric characters, underscores, and hyphens>` at the artifact root is read as a server-side environment-variable template during distribution and excluded from delivered files. `.env.local` and `.env.*.local` are for local development and are not included in templates. Do not use variable expansion (for example, `${HOST}/api`); specify a concrete value or reference for each variable.
+A `.env` or `.env.<name consisting of alphanumeric characters, underscores, and hyphens>` at the source root is read as a server-side environment-variable template when the App is published and excluded from delivered files. Provider IDs in `.env` are replaced at publication. `.env.local` and `.env.*.local` are for local development and are not included in templates. Do not use variable expansion (for example, `${HOST}/api`); specify a concrete value or reference for each variable.
 
 ```dotenv
 # Do not write a value in the distribution; reference the Secret selected in the installing Project.
@@ -84,9 +98,9 @@ CRM_TOKEN=${secret:crm_token}
 CRM_REGION=jp
 ```
 
-`${secret:name}` is not the actual value of a Project Secret; it declares a Secret name that must be satisfied in the installing Project. A Secret name must start with a lowercase English letter and use lowercase English letters, numbers, and underscores. A public environment-variable name cannot contain a Secret reference, an installing Project resource ID, or a Project API key, because it may be expanded into the browser.
+`${secret:name}` is not the actual value of a Project Secret; it declares a Secret name that must be satisfied in the installing Project. A Secret name must start with a lowercase English letter and use lowercase English letters, numbers, and underscores. A public environment-variable name (beginning with `NEXT_PUBLIC_`, `VITE_`, `REACT_APP_`, or `PUBLIC_`) cannot contain a Secret reference, an installing Project resource ID, or a Project API key, because it may be expanded into the browser. Reserved keys such as `PORT`, `NODE_ENV`, and `PRS_*` are excluded.
 
-After installation, check required items in the App's "Required App Secrets," create or select the target Project's "Project Secrets," and associate them using "Select secret." Do not copy Secret values from the provider. For creating, updating, and deleting Secrets, see [Register, Update, and Delete Project Secrets](../operations/manage-project-secrets.md).
+In the App flow, after installation, check required items in the App's "Required App Secrets," create or select the target Project's "Project Secrets," and associate them using "Select secret." Do not copy Secret values from the provider. This binding step exists only in the App flow; for a directly uploaded Page, `${secret:name}` is resolved by name as is to the target Project's Secret ([Page Server Processing, Environment Variables, and Secret References](page-server-env-and-secrets.md)). For creating, updating, and deleting Secrets, see [Register, Update, and Delete Project Secrets](../operations/manage-project-secrets.md).
 
 ## 3. Reauthenticate connections in the installing Project
 
@@ -97,25 +111,26 @@ If an App requires a shared external connection, the installing Project may show
 3. Check incomplete connections and Secrets in the App's "Setup." Do not infer and add items that are not displayed; check with an administrator or the App guidance.
 4. Separately verify reading, updating, and external transmission using a test account with minimum permissions and test data in the installing Project.
 
-Do not put connection IDs, OAuth tokens, cookies, passwords, or Project API keys in `app.refs.json`, `.env`, JavaScript, URLs, or logs. Whether activation or republishing is required after reauthenticating a connection, and whether it is immediately reflected in running processing, varies by configuration and cannot be determined within this verification scope.
+Do not put connection IDs, OAuth tokens, cookies, or passwords in `app.refs.json`, `.env`, JavaScript, URLs, or logs. Do not put Project API keys in `app.refs.json`, JavaScript, URLs, or logs either. After reauthenticating a connection, do not assume immediate reflection; recheck representative operations.
 
 ## Checklist before distribution
 
-- [ ] I did not fix the provider Project ID, Page ID, organization ID, URL, or resource UUID in the artifact
+- [ ] I did not fix the provider Project ID, Page ID, organization ID, URL, or resource UUID in JavaScript, HTML, or URLs
+- [ ] In browser-only Pages, resources are referenced through `__PRS_APP__.resource_handles`
 - [ ] I organized Workflow, Agent, Custom Object, and Storage dependencies by logical name and declared required items in `app.refs.json`
 - [ ] The declared logical names match items provided in the same release
 - [ ] I declared only Secret names and did not include values, API keys, or tokens in ZIP files, public environment variables, or logs
 - [ ] I determined the authentication owner, minimum permissions, sharing scope, and representative operation for each connection in the installing Project
 - [ ] I have a plan to check initial display, resource retrieval, updates, external transmission, and behavior when permissions are insufficient in the installing Project
 
-## When you cannot confirm
+## If something does not work
 
 Do not work around the following states by fixing IDs, moving Secrets to the browser, or loosening access settings.
 
 - A reference is unresolved during distribution, or an error related to UUIDs or environment variables occurs.
-- You cannot check "Required App Secrets" or connection configuration status in the installing Project.
+- "Required App Secrets" or connection configuration status is not displayed in the installing Project.
 - The Page opens, but only data retrieval, updates, or external transmission fail.
-- You cannot determine whether the connection is shared or personal, required external-service permissions, or who is responsible for reauthentication.
+- Whether the connection is shared or personal, required external-service permissions, or who is responsible for reauthentication has not been decided.
 
 Record the target App, Page, installing Project, logical name, Secret name excluding its value, connection destination, occurrence time, displayed message, and representative operations already performed; then check with the administrator or provider. Do not attach Secret values, API keys, tokens, cookies, or real data to an inquiry.
 

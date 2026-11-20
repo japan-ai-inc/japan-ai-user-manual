@@ -1,8 +1,8 @@
 # Page Navigation and Deep Links
 
-A Page is displayed from `/app/{organization ID}/{Project ID}/{Page ID}` on the Page host. Design navigation within the Page so the application handles the path, query string, and fragment that follow this base URL. For example, to share a URL that opens a detail screen directly, append a screen state such as `/orders/42?tab=history#notes` after the Page base URL.
+Within Studio and with "Sign-in required," a Page is displayed from `/app/{organization ID}/{Project ID}/{Page ID}` on the Page host. The Public URL shared for "Sign-in optional" and "Anonymous only" is in `/p/{token}` format. Design navigation within the Page so the application handles the path, query string, and fragment that follow this base URL. For example, to share a URL that opens a detail screen directly, append a screen state such as `/orders/42?tab=history#notes` after the Page base URL.
 
-The availability conditions do not specify whether the Page host always returns the base file when you open an uploaded ZIP at a deep path. Do not assume that client routing alone will work. Verify direct access, reloads, and return after sign-in on the registered Page.
+Static Pages have an SPA fallback, so opening a deep path directly returns the base HTML, and `<base href>` is inserted automatically. For Pages that run as Node/Bun servers, the response to deep paths is determined by your server's routing. In either case, verify direct access, reloads, and return after sign-in on the registered Page.
 
 ## Related articles
 
@@ -17,15 +17,17 @@ The availability conditions do not specify whether the Page host always returns 
 - For each screen that users should open directly, decide whether to place state in the path, query string, or fragment. Do not include sensitive information, such as search criteria, the item being edited, or a return destination, in a URL. URLs may remain in history, shares, access logs, Referer headers, and elsewhere.
 - Review Page links and assets such as JavaScript, CSS, and images to ensure they do not use root-fixed local paths beginning with `/`. They may fail to load after registration if the Page base subpath is lost.
 
-> Do not write the organization ID, Project ID, Page ID, or Page host placed after `/app/` as fixed values in source code. They will no longer match when you register the Page in another Project, recreate the Page, or change the distribution destination.
+> Do not write the organization ID, Project ID, Page ID, or Page host placed after `/app/` as fixed values in source code. They will no longer match when you register the Page in another Project, recreate the Page, or change the distribution destination. Also, links built in `/app/...` format for "Sign-in optional" or "Anonymous only" users do not work. To share, use the "Public URL" (`/p/{token}`) displayed in "Access settings."
 
 ## URL structure and path design
 
-A normal Page base URL has the following format. The Page host name is determined by organization and environment settings, so this article does not fix an example host name.
+The Page base URL within Studio and with "Sign-in required" has the following format. The Page host name is determined by organization and environment settings, so this article does not fix an example host name.
 
 ```text
 https://{Page host}/app/{organization ID}/{Project ID}/{Page ID}
 ```
+
+The Public URL for "Sign-in optional" and "Anonymous only" is in `/p/{token}` format. Do not build this URL yourself; use the value displayed in "Access settings."
 
 Use what follows the base URL as application-specific routes within the Page.
 
@@ -36,7 +38,7 @@ Use what follows the base URL as application-specific routes within the Page.
 | Search and display conditions | `…/orders?status=open&sort=created` | Reads the query string and validates value formats and permissions. |
 | Position within the same screen | `…/orders/42#notes` | Uses the fragment for position or state in the browser. Do not assume it is sent to the server. |
 
-Make asset and navigation references relative to the current Page base URL whenever possible. Avoid absolute paths to the host root such as `/assets/app.js`, because they lose the Page base URL. If your build tool requires a base-path setting, verify that setting using the actual URL after registration.
+Make asset and navigation references relative to the current Page base URL whenever possible. Avoid absolute paths to the host root such as `/assets/app.js`, because they lose the Page base URL. For static Pages, `<base href>` is inserted automatically, so relative URLs resolve against the Page base URL. If your framework requires a `basePath` setting, verify that setting using the actual URL after registration.
 
 ## 1. Design for opening deep screens
 
@@ -45,7 +47,7 @@ Make asset and navigation references relative to the current Page base URL whene
 3. Before putting search criteria or similar data into a query string, URL-encode it and validate input values. Do not determine access only by ID; also verify permissions in the API or processing called by the Page.
 4. After registering the ZIP, navigate from the Page base URL and open the same deep URL directly in another tab. Then reload the browser.
 
-> The response to a nonexistent path, whether a base file is required, and recommended routers for each framework are not specified as availability conditions. If direct access or reload results in a 404, blank screen, or failed asset load, do not publish based on assumptions. Check the subpath setting of the build tool you used and reference paths in the output.
+> If direct access or reload results in a 404, blank screen, or failed asset load, do not publish based on assumptions. Check the framework's `basePath` setting, asset reference paths, and (for Pages with a server) server-side routing.
 
 ## 2. Verify return with "Sign-in required"
 
@@ -64,7 +66,7 @@ Do not leave authentication values themselves in URLs, screens, logs, or inquiri
 
 If a Page displayed in Studio requires authentication renewal, Studio obtains new authentication information and reloads the Page. Within the same origin of the same Page, it returns to the path, query string, and fragment passed by the Page. The same renewal method does not necessarily work for externally shared URLs, direct access, or custom authentication methods.
 
-To open a Studio Task from browser code in a Page, you can use the beta `platform` module in the released SDK 0.11.0. Use Node.js 22 or later in the development environment that installs and builds the SDK. This is browser-only within PRS and cannot be used outside a Page, so confirm availability before calling it.
+To open a Studio Task from browser code in a Page, you can use the beta `platform` module in the released SDK 0.11.0. Use Node.js 22 or later in the development environment that installs and builds the SDK. This is browser-only within the Page runtime. It works only when embedded in JAPAN AI; when the Page is opened on its own, it is rejected with `UNSUPPORTED`. Check availability with the result of `waitForReady()` before calling it.
 
 ```ts
 import { createClient } from "@japan-ai-inc/studio-sdk";
@@ -86,16 +88,17 @@ if (context) {
 ## Checklist
 
 - [ ] Designed screen routes after the Page base URL `/app/{organization ID}/{Project ID}/{Page ID}`
+- [ ] Shared the `/p/{token}` Public URL with anonymous and sign-in-optional users instead of building `/app/...` links
 - [ ] Did not fix the organization ID, Project ID, Page ID, or Page host in the output
 - [ ] Made assets and internal links load from the subpath after registration
 - [ ] Verified direct access and reload for deep URLs on a registered Page
 - [ ] Verified that paths, query strings, and fragments return after sign-in with "Sign-in required"
 - [ ] Did not leave tokens, personal information, or confidential information in URLs, logs, or inquiries
-- [ ] When using SDK `platform`, verified availability within PRS and the pinned version
+- [ ] When using SDK `platform`, verified availability within the Page runtime and the pinned version
 
-## When it cannot be confirmed
+## If something does not work
 
-The available router, base-path settings for each build tool, and the Page host response for arbitrary deep URLs are not specified as availability conditions. Also, "Sign-in optional," "Anonymous only," and "External customer auth" do not necessarily use the same authentication return path as "Sign-in required."
+"Sign-in optional" and "Anonymous only" are opened from the Public URL (`/p/{token}`), so their entry point differs from "Sign-in required." For these modes and "External customer auth," verify direct access and reloads starting from each Public URL or Access URL.
 
 If direct access, reload, or authentication return fails, record the target Project and Page name, access mode, SDK version, failing path (excluding authentication values), query key names, occurrence time, reproduction steps, and browser network failure. Do not share authentication information or Cookie values. For isolating build, start, and display issues, see [Page Build, Start, or Display Failures](../troubleshooting/page-build-start-display-failures.md).
 

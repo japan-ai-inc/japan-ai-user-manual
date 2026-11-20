@@ -20,12 +20,16 @@ For creating a Project and configuring its name and icon, see [Create a Project 
 | Location for information | What to write mainly | Do not confuse with |
 |---|---|---|
 | Project "Description" | What the Project is for, who uses it, target business operations, and scope | Make it an overview that communicates the purpose, not merely a supplement to the name |
-| Settings field when "Custom Instructions" are available | Terminology, output formats, and decision policies to follow in common in the Project | Save it separately from the Project description. Changing the description does not automatically rewrite old instructions left here |
+| Settings field when "Custom Instructions" are available | Terminology, output formats, and decision policies to follow in common in the Project | Saved in the same Project context as the description. **Once custom instructions are set, the description is no longer passed to the AI**, so also write the purpose and scope the AI needs in the custom instructions |
 | Individual Agent instructions | Work handled by that Agent, and its specific procedures and output | Do not layer content that conflicts with Project-wide policy |
 | Request in a conversation | This target, materials to use, scope of work, and expected result | Do not treat content merely conveyed in conversation as saved in the Project's common settings |
 | Business materials and data | Detailed regulations, reference materials, and business information that changes | Do not put all materials into the description field. Storing materials and configuring AI to reference them are separate |
 
 Even if a screen or material says "Project Context," check what feature it manages in the current environment. Do not assume that descriptions, common instructions, materials, and Memory all have the same storage location and sharing scope.
+
+{% hint style="warning" %}
+**The description and custom instructions do not complement each other.** Both are saved in the same Project context, and while custom instructions are set, the AI receives the custom instructions instead of the description. Keep the description as an overview for users, and put the purpose, scope, and policies the AI needs into the custom instructions.
+{% endhint %}
 
 **Saving descriptions or instructions does not guarantee that AI reads everything every time and always follows it.** You must also manage permissions and connection settings for allowed and prohibited operations and data-viewing scope.
 
@@ -58,7 +62,7 @@ You can leave a description empty after creation, but we recommend retaining an 
 
 ## 3. Organize common instructions
 
-While a description communicates "what this place is for," common instructions make "how you want it to respond" specific.
+Common instructions make "how you want it to respond" specific. Because the description is no longer passed to the AI once custom instructions are set, also include the premises the AI needs, such as the Project purpose and out-of-scope operations written in the description.
 
 ### Writing guidance
 
@@ -96,11 +100,11 @@ Do not paste API keys, passwords, Secret values, or confidential information for
 5. Select **"Save."**
 6. Check the successful-save notification and the text returned in the displayed field. If necessary, reopen the settings screen and confirm that the change remains.
 
-Descriptions and custom instructions are saved separately. Do not conclude that an in-progress custom instruction was also saved by selecting "Save" for the description field.
+Descriptions and custom instructions are each saved in their own field. Do not conclude that an in-progress custom instruction was also saved by selecting "Save" for the description field.
 
 You cannot select "Save" if there is an input error, no change, insufficient permission, or similar issue. **If you select "Cancel" while editing custom instructions, unsaved input is not saved. A discard confirmation like the one for description edits does not necessarily appear, so retain any needed draft before operating.**
 
-The custom-instruction input shows a character count. However, a save error may occur even within the displayed count. Limit long text to common key points and check the save result. If you cannot save, preserve the input content and tell the person responsible whether the operation is adding or editing, the character count, and the displayed error. Do not avoid the issue by deleting and recreating existing instructions.
+The character limit for custom instructions is **20,000 characters when adding and 5,000 characters when editing and saving existing instructions**. Instructions longer than 5,000 characters can be added but cannot be saved after editing. If you may edit them later, keep them within 5,000 characters and limit long text to common key points. If you cannot save, preserve the input content and check the character count and the displayed error.
 
 ### When "Custom Instructions" does not appear
 
@@ -165,11 +169,12 @@ When moving from verification to production operation, expanding target business
 | Situation | Check and response |
 |---|---|
 | Cannot find custom instructions | Check the organization's management method and your permissions and role. Do not conclude it is unconfigured merely because it is hidden |
-| Can edit the description but cannot save instructions | The permissions required to change a description and add or update instructions may differ |
+| Can edit the description but cannot save instructions | Check the character count (20,000 when adding, 5,000 when editing), input errors, and permissions |
 | Cannot select "Save" | Check input errors, whether there is a change, and permissions |
-| Long text fails to save | Preserve the draft and organize key points. Do not conclude it can be saved based only on the character-count display |
+| Long text fails to save | Preserve the draft and organize key points. The limit when editing is 5,000 characters |
 | Cannot find content that should have been saved | Check the target Project, save notification, and whether you edited the description or instructions |
 | AI answers differently from instructions | Separate the save result, Agent-specific instructions, conversation assumptions, and materials used |
+| AI ignores what is written in the description | When custom instructions are set, the description is not passed to the AI. Move the needed content into the custom instructions |
 | Does not reference materials | Separately check writing material names in the description and access/reference settings for the materials |
 
 For an inquiry, include the organization name, Project name, edited field, whether it was an addition or update, operation date and time, error, and save and response verification results. Do not include confidential values or customer information.

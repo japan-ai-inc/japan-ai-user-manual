@@ -1,6 +1,6 @@
 # Develop a Page with the SDK and CLI
 
-In this exercise, you will list fictional announcements stored in an Object on a Page. The browser SDK uses a same-origin route as the Page, and you will not put a Project API key in JavaScript. Register the deliverable as a new Page with the CLI, then check access settings, display, and cleanup.
+In this exercise, you will list fictional announcements stored in an Object on a Page. The browser SDK uses a same-origin route as the Page, and you will not put a Project API key in JavaScript. Register a locally built static deliverable as a new Page with the CLI, then check access settings, display, updates, and cleanup.
 
 ## Related articles
 
@@ -14,9 +14,9 @@ In this exercise, you will list fictional announcements stored in an Object on a
 
 ## Before you begin
 
-- Prepare a test Project where you can create and view Pages and Objects. For the CLI, securely manage a Project API key with the minimum permissions needed in that Project. For issuing and revoking keys, see [Manage Project API keys](../operations/manage-project-api-keys.md).
-- Use Node.js 22 or later and the released SDK/CLI **0.11.0**. In 0.11.0, the usage of `createClient({ baseUrl: "" })`, `objects.define()`, and `list()` used in this exercise is unchanged. For installation and version pinning, see [Development environment, versions, and compatibility](../development/dev-environment-and-versions.md).
-- Use an empty working directory. Do not reuse the deliverable directory of an existing Page. In particular, if `.jai-studio/page.json` exists, the CLI may treat it as the update destination for an existing Page.
+- Prepare a test Project where you can create and view Pages and Objects. For the CLI, securely manage a Project API key with the minimum permissions needed in that Project. Deploying a Page requires the `page:write` scope. For issuing and revoking keys, see [Manage Project API keys](../operations/manage-project-api-keys.md).
+- Use Node.js 22 or later and the released SDK/CLI **0.11.0**. This exercise uses `createClient({ baseUrl: "" })`, `objects.define()`, and `list()`. For installation and version pinning, see [Development environment, versions, and compatibility](../development/dev-environment-and-versions.md).
+- Use an empty working directory. Do not reuse the deliverable directory of an existing Page. The CLI saves the Page ID and other metadata in `.jai-studio/page.json` inside the deployed folder, and the next deployment without `--page-id` updates that Page.
 - Do not put keys in HTML, JavaScript, public environment variables, logs, or repositories. Browser Pages do not read CLI profiles.
 
 ## Sample used in this exercise
@@ -57,13 +57,13 @@ For Object creation, see [Design an Object structure](../build/design-object-str
 
 **Goal:** Read the Object by using the Page's relative route without a Project API key.
 
-1. In your existing build process, prepare HTML that displays the list and a browser entry file, then set the practice Object ID.
+1. In your existing build process, prepare HTML that displays the list and a browser entry file, then set the practice Object ID (a UUID). Passing the Object name results in an error (400). Get the ID from the Object screen or with the SDK's `studio.objects.list()`.
 2. In the browser, initialize the SDK and display the list in the following form.
 
    ```js
    import { createClient } from "@japan-ai-inc/studio-sdk";
    const studio = createClient({ baseUrl: "" });
-   const notices = studio.objects.define("Practice Object ID");
+   const notices = studio.objects.define("<Object UUID>");
 
    async function load() {
      const result = await notices.list({ limit: 20 });
@@ -73,16 +73,18 @@ For Object creation, see [Design an Object structure](../build/design-object-str
 
 3. If retrieval fails, display only guidance to check the Object ID, Object view permission, and Page access settings. Do not add API keys, Secrets, or authentication headers.
 
-For SDK Object operations, see [SDK Objects](../development/sdk-objects.md); for PRS browser initialization and permissions, see [Hosted Page Objects API](../page-runtime/hosted-page-objects-api.md). **Checkpoint:** `baseUrl` is an empty string and the browser code contains no API key.
+For SDK Object operations, see [SDK Objects](../development/sdk-objects.md); for initialization and permissions in the browser of a Studio-hosted Page, see [Hosted Page Objects API](../page-runtime/hosted-page-objects-api.md). **Checkpoint:** `baseUrl` is an empty string and the browser code contains no API key.
 
 ## Step 3. Create the deliverable and check its structure locally
 
 **Goal:** Output only distributable HTML, JavaScript, and necessary static files to `dist`.
 
+Studio decides how to handle an upload by its root. If the root has `package.json` and a lockfile, Studio installs dependencies and runs `build` before starting it. If there is no `package.json` but there is `index.html`, it serves the upload as a static Page. Uploads with neither, and Next.js build output, are rejected. In this exercise, you upload the locally built `dist` (a static deliverable with `index.html` at the root). To upload the source folder and let Studio build it, see [Page build, startup, and updates](../development/page-build-start-update.md).
+
 1. With your current build settings, output the HTML and bundled JavaScript to `dist`.
 2. On a local web server, check the heading, static files, and relative paths.
 3. Confirm that `dist` does not contain `node_modules`, `.env`, keys, Secrets, or values that must not be in source maps.
-4. Because the local screen has no PRS session, do not judge Object retrieval success only here.
+4. Because the local screen has no Page runtime session, do not judge Object retrieval success only here.
 
 For local checking and deliverable structure, see [Preview a Page locally and deploy it](../development/local-preview-and-deploy-page.md); for distribution handling, see [Page specifications and limits](../build/page-specs-and-limits.md). **Checkpoint:** `dist` contains only distributable output and no secret values.
 
@@ -98,8 +100,12 @@ For local checking and deliverable structure, see [Preview a Page locally and de
      --name "Announcement list (SDK practice)" --json
    ```
 
-3. Save the successful result's `pageId`, `studioUrl`, `runtimeUrl`, and `version` in a record that only necessary people can view.
-4. If there is no `runtimeUrl`, check the target Page through `studioUrl`. Before using the same `dist` next time, understand that its metadata may indicate an update destination.
+3. Save the successful result's `pageId`, `studioUrl`, `runtimeUrl`, and `version` in a record that only necessary people can view. You will always use `pageId` for later updates.
+4. With the default access mode "Sign-in required," `runtimeUrl` is always `null`. Open the target Page through `studioUrl`.
+
+{% hint style="warning" %}
+`.jai-studio/page.json` is written inside `./dist`. Common bundlers empty `dist` on rebuild, so this file is deleted too. If you then deploy without `--page-id`, the existing Page is not updated and **a new Page is silently created** (with a new Page ID and URL). Always specify `--page-id` when updating.
+{% endhint %}
 
 For deploy arguments, determining initial registration versus updates, and reading results, see [CLI Pages](../cli/cli-pages.md). **Checkpoint:** Do not conclude that the Object was read from CLI success alone; check the new Page target and result URLs.
 
@@ -107,16 +113,22 @@ For deploy arguments, determining initial registration versus updates, and readi
 
 **Goal:** Check access to the Page and Object reading as a signed-in user.
 
-1. Open **"Access settings"** from the Page card, set **"Access Mode"** to **"Sign-in required,"** and save.
+1. Open **"Access settings"** from the Page card, and confirm that **"Access Mode"** is the default **"Sign-in required."**
 2. Open the Page from the intended user entry point and check the two records and displayed count.
 3. If they do not display, check the Object ID, Object view permission, Page access settings, and user in order. Do not work around this by adding a key to the browser.
-4. If you change the heading and build the deliverable again, confirm the update destination before deploying with the CLI, then compare the display and version.
+4. If you change the heading and rebuild, deploy with the `pageId` recorded in Step 4, then compare the display and version.
+
+   ```bash
+   jai-studio --profile lab-page pages deploy ./dist \
+     --page-id "<pageId recorded in Step 4>" --json
+   ```
 
 For access settings, see [Register and publish Pages from the screen](../build/register-and-publish-pages.md); for update checks, see [Page build, startup, and updates](../development/page-build-start-update.md). **Checkpoint:** Opening a Page and reading an Object are separate. Check required conditions for both the Page and Object.
 
 ## Common misunderstandings
 
-- A CLI profile is for the CLI. The PRS browser SDK uses `baseUrl: ""` and does not configure an API key.
+- A CLI profile is for the CLI. The SDK in the browser of a Studio-hosted Page uses `baseUrl: ""` and does not configure an API key.
+- `.jai-studio/page.json` inside `dist` is deleted on rebuild. Always specify `--page-id` when updating.
 - CLI success and successful Object display are separate. Check Page access conditions and Object view permission.
 - Even after upgrading to 0.11.0, initialization, Object definition, and list retrieval in this exercise use the same form. Pin SDK and CLI versions. Version 0.11.0 also has CLI commands for Agent definitions, Object access rules, and scheduled tasks, but do not run them in this Page exercise.
 
@@ -127,8 +139,10 @@ For access settings, see [Register and publish Pages from the screen](../build/r
 | `jai-studio` cannot be found or the version differs | Check Node.js, PATH, and SDK/CLI versions in [Development environment, versions, and compatibility](../development/dev-environment-and-versions.md). |
 | CLI authentication fails | Check the profile, connection destination, and key expiration and permissions in [CLI configuration and profiles](../cli/cli-config-and-profiles.md) and [Manage Project API keys](../operations/manage-project-api-keys.md). |
 | You may update an existing Page when you intended an initial deployment | Check `--page-id` and `dist/.jai-studio/page.json`; do not deploy based on assumptions. See [CLI Pages](../cli/cli-pages.md). |
+| A new Page was created when you intended an update | Rebuilding deleted `dist/.jai-studio/page.json`. Redeploy to the original Page with the recorded `pageId` in `--page-id`, and clean up the Page created by mistake. |
+| CLI deployment fails with a permission error | Check that the Project API key has the `page:write` scope. |
 | The Page cannot read records | Check the Object ID, Object view permission, and Page access settings in [Hosted Page Objects API](../page-runtime/hosted-page-objects-api.md). |
-| The Page does not display | Check the deliverable's HTML, JavaScript, and relative paths, then see [Page build, startup, or display failures](../troubleshooting/page-build-start-display-failures.md). |
+| The Page does not display or the upload is rejected | Check that the root has `index.html` (or `package.json` and a lockfile), and check the deliverable's HTML, JavaScript, and relative paths, then see [Page build, startup, or display failures](../troubleshooting/page-build-start-display-failures.md). |
 
 ## Cleanup
 

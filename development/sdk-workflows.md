@@ -13,11 +13,11 @@ Studio SDKの`workflows`モジュールでは、Workflowの一覧・定義を取
 
 ## 始める前に
 
-- `@japan-ai-inc/studio-sdk` **0.11.0**とNode.js **22以降**を使います。Workflowはローカルの直接開発またはPRSサーバーランタイム向けです。
+- `@japan-ai-inc/studio-sdk` **0.11.0**とNode.js **22以降**を使います。Workflowはローカルの直接開発またはPage実行環境のサーバー処理向けです。
 - 対象ProjectとWorkflow IDを確認し、検証用の入力から始めます。
 - APIキーはサーバー側の安全な設定だけに置き、ブラウザやログへ含めません。
 
-> `workflows`はPRSブラウザ向けモジュールではありません。ブラウザへAPIキーを渡しません。
+> StudioでホストされたPageのブラウザからの`workflows`の呼出しは、Page実行環境が中継するため技術的には可能ですが、現時点ではベータのサポート範囲外です（予告なく変更される可能性があります）。ブラウザへAPIキーを渡さないでください。
 
 ## 1. 一覧と現在の定義を取得する
 
@@ -46,7 +46,7 @@ jai-studio workflows get '<workflow-id>' | jq .definition > ./definition.json
 
 ## 2. 下書きを保存する
 
-定義は`saveDraft()`で保存し、これだけでは公開されません。`create()`は未公開Workflowを作り、`update()`は名前、説明、`enabled`を変更します。`enabled: false`またはCLIの`--disable`はトリガーを無効化します。
+定義は`saveDraft()`で保存し、これだけでは公開されません。`create()`は未公開Workflowを作り、`update()`は名前、説明、`enabled`を変更します。`enabled: false`またはCLIの`--disable`はWorkflowを無効化します。無効化したWorkflowは`list()`に表示されず、実行も403になります。
 
 ```ts
 const workflowId = "更新対象のWorkflow ID";
@@ -119,7 +119,9 @@ if (result.status === "SUCCEEDED" || result.status === "PARTIAL_SUCCEEDED") {
 
 `run()`は常に即時に戻る送信専用の呼出しではありません。タイムアウト時は`responseBody`の`runId`で`getRunResult()`を続け、直ちに再送しません。
 
-完了まで待つだけなら、`runAndWait()`またはCLIの`run-and-wait`を使えます。SDKの`timeoutMs`は既定で**60,000ms**、範囲は**1,000〜270,000ms**です。CLIの`--timeout`は秒単位で**1〜270**です。通信の猶予時間を確保するため、REST APIを直接呼ぶ場合の上限（300秒）より短くしています。
+完了まで待つだけなら、`runAndWait()`またはCLIの`run-and-wait`を使えます。SDKでは`runAndWait()`の**第2引数**で`timeoutMs`を指定し、既定は**60,000ms**、範囲は**1,000〜270,000ms**です。`createClient()`に指定したクライアント全体の`timeoutMs`は`runAndWait()`には効きません。CLIの`--timeout`は秒単位で**1〜270**です。通信の猶予時間を確保するため、REST APIを直接呼ぶ場合の上限（300秒）より短くしています。
+
+> 待機がタイムアウトしても、Workflowの実行は止まりません。サーバーは`runId`つきの408を返します。失敗と判断して再実行すると重複実行になるため、`runId`で状態を確認します。CLIは既定の出力から`runId`を除くため、必要な場合は`--debug`を付けて確認します。
 
 ```bash
 jai-studio workflows run '<workflow-id>' --input '{"documentUrl":"https://example.invalid/input.pdf"}'
@@ -129,7 +131,7 @@ jai-studio workflows run-and-wait '<workflow-id>' --input '{"query":"確認"}' -
 
 ## 5. ProjectのWorkflowを予定実行する
 
-SDK 0.11.0では`scheduledTasks`で、Projectが作成したWorkflowを予定実行できます。各タスクはProject APIキーの作成者として実行され、組織からリンクされたWorkflowは予定実行できません。`list`には`task:read`、作成・更新には`task:write`と`workflow:execute`、削除には`task:delete`が必要です。`scheduledTasks`は直接開発用のモジュールであり、PRSブラウザ・PRSサーバーのSDKでは利用できません。Appリリースのマニフェストでスコープを宣言しても、この実行モードの制約は変わりません。
+SDK 0.8.0以降では`scheduledTasks`で、Projectが作成したWorkflowを予定実行できます。各タスクはProject APIキーの作成者として実行され、組織からリンクされたWorkflowは予定実行できません。`list`には`task:read`、作成・更新には`task:write`と`workflow:execute`、削除には`task:delete`が必要です。Project APIキーは作成者がProjectの有効メンバーである間だけ有効で、作成者をProjectから外すとそのキーは403になります。`scheduledTasks`は直接開発用のモジュールであり、Page実行環境のブラウザ・サーバー処理のSDKでは利用できません。Appリリースのマニフェストでスコープを宣言しても、この実行モードの制約は変わりません。
 
 ```ts
 const createdTask = await studio.scheduledTasks.create({
@@ -144,7 +146,7 @@ const tasks = await studio.scheduledTasks.list({ search: "週次", limit: 20 });
 await studio.scheduledTasks.update(createdTask.taskId, { disabled: true });
 ```
 
-`schedule`は`repeatPattern`または`cronSchedule`のどちらかを指定し、省略すると1回実行です。更新は指定した項目だけを変更し、`inputs`はキー単位でマージします。作成は冪等ではないため、作成前と5xx後の再送前に、名前で`list()`して既存タスクを確認します。ページングは短いページでも`nextCursor`が`null`になるまで続けます。
+`schedule`は`repeatPattern`または`cronSchedule`のどちらかを指定し、省略すると1回実行です。REST APIを直接呼ぶ場合も、`repeatPattern`／`cronSchedule`／`scheduleTimezone`は`schedule`オブジェクトの中に入れます。最上位に置くと400になります。更新は指定した項目だけを変更し、`inputs`はキー単位でマージします。作成は冪等ではないため、作成前と5xx後の再送前に、名前で`list()`して既存タスクを確認します。ページングは短いページでも`nextCursor`が`null`になるまで続けます。
 
 ## よくある誤解
 
@@ -160,10 +162,11 @@ await studio.scheduledTasks.update(createdTask.taskId, { disabled: true });
 
 | 状況 | 確認・対応 |
 |---|---|
-| 一覧に期待するWorkflowがない | `status`、Project、`nextCursor`を確認します。 |
+| 一覧に期待するWorkflowがない | `status`、Project、`nextCursor`、Workflowが無効化（`enabled: false`）されていないかを確認します。 |
 | 保存・公開で`409`になる | 定義を再取得し、最新の`draftUpdatedAt`を使います。 |
 | 公開後にトリガーが動かない | `unregisteredTriggers`、公開状態、接続を確認します。 |
-| 実行がタイムアウトする | `runId`を記録し、`getRunResult()`で確認します。直ちに再実行しません。 |
+| 実行がタイムアウトする | 実行は継続しています。`runId`を記録し、`getRunResult()`で確認します。直ちに再実行しません。 |
+| 実行が403になる | キーのスコープと、Workflowが無効化されていないかを確認します。 |
 | CLIの更新・公開が失敗する | `--file`の`definition`と最新トークンを確認します。 |
 
 問い合わせには、Workflow ID、run ID、SDKまたはCLIの版、実行モード、日時、状態、エラーを記録します。APIキー、Secret、認証ヘッダー、業務データを添付しません。

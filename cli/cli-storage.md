@@ -19,19 +19,19 @@ Storage SDK全体の操作・実行モードは[SDK Storage](../development/sdk-
 
 > `jai-studio storage`には、`upload`および`download`というサブコマンドはありません。ファイル内容を送受信するCLI構文を推測して実行しないでください。SDKの`upload()`・`download()`を使う方法は[SDK Storage](../development/sdk-storage.md)を参照します。
 
-成功時の標準出力はJSONです。`--pretty`を付けると整形表示します。失敗時は標準エラーへJSONが出力され、終了コードは1です。`--debug`はサーバー応答の詳細を表示し得るため、機密情報を含む出力を共有しないでください。
+成功時の標準出力はJSONです。`--pretty`を付けると整形表示します。APIの失敗時は標準エラーへJSONが出力され、終了コードは1です。使い方の誤りでは標準エラーにテキストが出ます。`--debug`はサーバー応答の詳細を表示し得るため、機密情報を含む出力を共有しないでください。
 
 ## コマンド一覧
 
-| コマンド | 用途 | 破壊的操作 |
-|---|---|---|
-| `storage list` | ファイル・フォルダを一覧する | いいえ |
-| `storage metadata` | ファイルのメタデータを取得する | いいえ |
-| `storage download-url` | 期限付きダウンロードURLを取得する | いいえ |
-| `storage delete` | ファイルを削除する | はい |
-| `storage folders list` | 指定フォルダの内容を一覧する | いいえ |
-| `storage folders create` | フォルダを作成する | いいえ |
-| `storage folders delete` | フォルダと配下を削除する | はい |
+| コマンド | 用途 | 必要スコープ | 破壊的操作 |
+|---|---|---|---|
+| `storage list` | ファイル・フォルダを一覧する | `storage:read` | いいえ |
+| `storage metadata` | ファイルのメタデータを取得する | `storage:read` | いいえ |
+| `storage download-url` | 期限付きダウンロードURLを取得する | `storage:read` | いいえ |
+| `storage delete` | ファイルを削除する | `storage:delete` | はい |
+| `storage folders list` | 指定フォルダの内容を一覧する | `storage:read` | いいえ |
+| `storage folders create` | フォルダを作成する | `storage:write` | いいえ |
+| `storage folders delete` | フォルダと配下を削除する | `storage:delete` | はい |
 
 ## 1. ファイルとフォルダを一覧する
 
@@ -43,12 +43,14 @@ jai-studio storage list [--path <path>] [--recursive] [--cursor <cursor>] [--lim
 
 | フラグ | 必須 | 既定値 | 意味 |
 |---|---|---|---|
-| `--path <path>` | いいえ | 指定なし | 対象パスで絞り込みます。 |
-| `--recursive` | いいえ | 指定なし | 再帰的な一覧を要求します。 |
+| `--path <path>` | いいえ | `/` | 対象パスで絞り込みます。 |
+| `--recursive` | いいえ | 再帰しない | 再帰的な一覧を要求します。 |
 | `--cursor <cursor>` | いいえ | 指定なし | 次ページ取得に使うカーソルです。 |
-| `--limit <n>` | いいえ | 指定なし | 1ページの最大項目数です。整数を指定します。 |
-| `--order-by <field>` | いいえ | 指定なし | `name`、`size`、`createdAt`、`updatedAt`で並び順の対象を指定します。 |
-| `--order-direction <dir>` | いいえ | 指定なし | `asc`または`desc`を指定します。 |
+| `--limit <n>` | いいえ | 50 | 1ページの最大項目数です。1〜100の整数を指定します。 |
+| `--order-by <field>` | いいえ | `updatedAt` | `name`、`size`、`createdAt`、`updatedAt`で並び順の対象を指定します。 |
+| `--order-direction <dir>` | いいえ | `desc` | `asc`または`desc`を指定します。 |
+
+既定値は、フラグを省略したときにサーバー側で適用される値です。
 
 ```bash
 jai-studio storage list --path /reports --recursive --limit 50 --order-by updatedAt --order-direction desc --pretty
@@ -83,13 +85,13 @@ jai-studio storage download-url <fileId> [--expires-in-minutes <n>]
 | 位置引数・フラグ | 必須 | 既定値 | 意味 |
 |---|---|---|---|
 | `<fileId>` | はい | — | 対象ファイルのIDです。 |
-| `--expires-in-minutes <n>` | いいえ | 指定なし | URLの有効時間を分単位の整数で要求します。 |
+| `--expires-in-minutes <n>` | いいえ | 60 | URLの有効時間を分単位の正の整数で指定します。最大1,440分で、超える値は1,440分に丸められます。 |
 
 ```bash
 jai-studio storage download-url file-id --expires-in-minutes 30
 ```
 
-返却される`downloadUrl`は恒久URLではありません。`expiresAt`と`expiresInMinutes`を確認し、必要な時点で取得します。指定できる時間の下限・上限はCLIでは検証していないため、未確認の値を前提にしません。
+返却される`downloadUrl`は恒久URLではありません。`expiresAt`と`expiresInMinutes`を確認し、必要な時点で取得します。有効時間の既定値（60分）と上限（1,440分）はサーバー側で適用されます。
 
 > 署名付きURLは認証情報に準じて扱います。チケット、公開ドキュメント、ソースコードへ貼り付けず、期限切れURLを再利用しないでください。
 
@@ -102,9 +104,9 @@ jai-studio storage folders list <folderId> [--recursive] [--cursor <cursor>] [--
 | 位置引数・フラグ | 必須 | 既定値 | 意味 |
 |---|---|---|---|
 | `<folderId>` | はい | — | 対象フォルダのIDです。 |
-| `--recursive` | いいえ | 指定なし | 再帰的な一覧を要求します。 |
+| `--recursive` | いいえ | 再帰しない | 再帰的な一覧を要求します。 |
 | `--cursor <cursor>` | いいえ | 指定なし | ページ取得用カーソルです。 |
-| `--limit <n>` | いいえ | 指定なし | 1ページの最大項目数です。整数を指定します。 |
+| `--limit <n>` | いいえ | 50 | 1ページの最大項目数です。1〜100の整数を指定します。 |
 
 ```bash
 jai-studio storage folders list folder-id --recursive --limit 100
@@ -117,7 +119,7 @@ jai-studio storage folders create --name <name> [--path <path>]
 | フラグ | 必須 | 既定値 | 意味 |
 |---|---|---|---|
 | `--name <name>` | はい | — | 作成するフォルダ名です。 |
-| `--path <path>` | いいえ | 指定なし | 親パスです。 |
+| `--path <path>` | いいえ | `/` | 親パスです。 |
 
 ```bash
 jai-studio storage folders create --name archive --path /reports
@@ -161,7 +163,7 @@ jai-studio storage folders delete folder-id
 
 ### `--limit`に任意の文字列や小数を指定できる
 
-できません。`--limit`と`--expires-in-minutes`は安全な整数として解析されます。ただしCLIはページサイズやURL有効時間の範囲を独自に制限しません。サーバー側の条件に従い、エラー時は値と対象を確認します。
+できません。`--limit`と`--expires-in-minutes`は安全な整数として解析されます。範囲はCLIではなくサーバー側で判定されます（`--limit`は1〜100、`--expires-in-minutes`は最大1,440分）。
 
 ## うまくいかない場合
 

@@ -79,18 +79,22 @@ For Page creation and preview, see [Ask AI to create or modify Pages](../build/a
 
    > Before answering questions about practice tasks, check the current records in `tasks_lab` using the available Object tool. Provide the relevant task, assignee, due date, status, and priority in that order. Do not infer values you cannot confirm; if no matching task exists, say so. This exercise does not create, update, delete, or send externally.
 
-3. In the Agent tool settings, check and add the description and permissions for the option that reads Objects. If no option is available, do not guess at an alternative; ask the responsible person.
+3. No tool needs to be added. Every Agent in a Studio Project automatically receives the `custom_object_sql` tool, which cannot be removed.
 4. In a conversation, ask: "Tell me the assignee, due date, status, and priority for Review demo screen."
 5. Compare the response with the Object record and Page display. Then ask about a task that does not exist and confirm that it does not invent plausible values.
 
-For tool configuration, see [Configure Agent tools, Skills, and Datasets](../build/configure-agent-tools-skills-datasets.md); for testing, see [Test and improve an Agent](../build/test-and-improve-agents.md). **Checkpoint:** Do not treat instructions alone as configuring tools or permissions. Compare the response with the actual record.
+{% hint style="warning" %}
+`custom_object_sql` can run not only SELECT but also INSERT, UPDATE, DELETE, and DDL. The instruction "do not create, update, or delete" is not a technical restriction. To make the Agent read-only, control it with role permissions on the Object.
+{% endhint %}
+
+For testing, see [Test and improve an Agent](../build/test-and-improve-agents.md). **Checkpoint:** Do not treat instructions alone as restricting permissions. Compare the response with the actual record.
 
 ## Common misunderstandings
 
 | Misunderstanding | What to check |
 |---|---|
 | If it appears on the Page, the Object is also updated | Check the updated Object record directly. |
-| Agent instructions alone let it read an Object | Check tool configuration, permissions, and the target Object separately. |
+| If instructions forbid it, the Agent does not update Objects | `custom_object_sql` can also update and delete. Restrict it with role permissions. |
 | Requiring Page sign-in also allows Object access | Page access conditions and Object permissions are separate. |
 | A natural response is correct | Compare current records and the title you asked about. |
 
@@ -100,15 +104,14 @@ For tool configuration, see [Configure Agent tools, Skills, and Datasets](../bui
 |---|---|
 | You cannot create fields or records | Check the Project, Object permissions, and input requirements in [Design an Object structure](../build/design-object-structure.md). |
 | The Page does not display or updates are not reflected | Check the target Object, search criteria, Page settings, and Object-side values. See [Ask AI to create or modify Pages](../build/ask-ai-to-build-pages.md). |
-| The Agent does not check the Object | Check the added tool, target, Agent saved state, and access permission in [Configure Agent tools, Skills, and Datasets](../build/configure-agent-tools-skills-datasets.md). |
+| The Agent does not check the Object | Check that the instructions name the Object `tasks_lab`, the Agent's saved state, and the user's permissions on the Object. |
 | The response differs from the record | Do not use the response for business decisions. Check the question, record, and tool run result in [Test and improve an Agent](../build/test-and-improve-agents.md). |
 
 ## Cleanup
 
 1. If you retain the Page, check its access settings and users, and keep wording in its name and description that identifies it as practice.
-2. If you remove the Object tool from the Agent, confirm removal and saving. Removal does not delete the Object or conversations.
-3. Before deleting the Agent, Page, Object, or records, confirm that other exercises and users do not reference them. Deleting an Object affects its records and references.
-4. If you added external connections, automatic executions, or API keys during the exercise, first confirm that they are stopped, revoked, or unpublished.
+2. Before deleting the Agent, Page, Object, or records, confirm that other exercises and users do not reference them. Deleting an Object affects its records and references.
+3. If you added external connections, automatic executions, or API keys during the exercise, first confirm that they are stopped, revoked, or unpublished.
 
 ## Read next
 

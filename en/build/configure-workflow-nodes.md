@@ -10,7 +10,7 @@ For specific operations for passing values between nodes, see [Configure Workflo
 - When changing an existing Workflow, check its users and the impact of changes. For your first practice, use a test Workflow.
 - Decide the information to input, the processing order, and the final result to return.
 - Check that the models, Agents, Datasets, tools, and other resources to use are available.
-- When operating external services, check the account used for connection and the scope of reading and updates.
+- When operating external services, check the account used for connection and the scope of reading and updates. **Workflow tools use only the Project's shared connections** (the runner's personal connections are not used). Set up the required shared connections first.
 
 > **When editing Workflow nodes, distinguish seeing changes on the screen from saving the draft.** Do not assume the behavior is the same as automatic saving in Agent settings. At each stopping point, select "Save draft" and confirm success.
 
@@ -44,11 +44,21 @@ This is a design example, not a template completed merely by placing nodes. You 
 | Summarize, classify, or generate text | LLM | Configure the model, prompt, and input reference |
 | Ask an existing Agent to perform work | Agent | Check the target Agent, inputs, and use permissions. An Agent with a fixed model runs with its default model and cannot be changed. |
 | Reference information from a Dataset | Data Integration | Configure the Dataset and information to use for searching. Do not treat it as processing that necessarily covers all materials. |
-| Use capabilities such as external services | Tool | Check target operations, inputs, authentication, and external impact. |
+| Use capabilities such as external services | Tool | Check target operations, inputs, and external impact. Only the Project's shared connections are used for authentication. |
 | Split routes by conditions | If / Else, Question Classifier | Configure not only branch conditions but also connections and outputs for each route. See [Configure Workflow Variables and Branches](configure-workflow-variables-and-branches.md) for details. |
 | Return the final result | End | Configure the output name and reference for the value to return. |
 
-Choices also include code and template processing. You do not need to use everything from the beginning. Check candidates displayed in the selection screen and their required input fields before choosing.
+The following nodes are also available. You do not need to use everything from the beginning. Check candidates displayed in the selection screen and their required input fields before choosing.
+
+| Node | Typical use |
+|---|---|
+| Loop | Apply the same processing to each item in a list |
+| Text Extraction | Extract text from files and similar inputs |
+| Sub-workflow | Call another Workflow as part of the processing |
+| Custom Object SQL | Run SQL against the Project's Objects. Write Workflow variables in the SQL as `{{#node.variable#}}` (they are automatically converted to parameters such as `$1` at run time, so writing `$1` directly fails) |
+| JSON Parse | Parse a JSON string and extract values |
+| Code | Transform values with code |
+| Template | Build strings with a template |
 
 ## 2. Create a Workflow
 
@@ -95,8 +105,13 @@ If the initial configuration meets the purpose, you may begin configuration with
 1. Check the connection line at the position where you want to add a node.
 2. Select **"+"** on the connection line. If it is hard to find, point at the line.
 3. From the displayed candidates, select the node type to add. If a search field appears, search by name.
+
 4. After adding it, check that it is connected as preceding node → new node → following node.
 5. Select the new node and enter required settings.
+
+{% hint style="info" %}
+When adding from **"+"** on a connection line, **If / Else, Question Classifier, and End do not appear as candidates.** Add them from another entry point, such as "Add next block" on a node.
+{% endhint %}
 
 When you insert a node in the middle, even if connections are reconfigured, input references in following nodes are not necessarily replaced with the new processing result. To actually use inserted processing later, review the references too.
 

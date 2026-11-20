@@ -8,7 +8,7 @@ For node configuration, see [Configure Workflow nodes](configure-workflow-nodes.
 
 - Check the target organization, Project, and Workflow, and the permissions required to edit and run it.
 - Configure the output of nodes, models, instructions, variables, branches, and end nodes.
-- If you use external services, check the destination and account to use.
+- If you use external services, check the destination and account to use. Workflows use **only the Project's shared connections**, so shared connections must be set up even for tests.
 - Prepare sample input without confidential information and the expected result.
 - If you change a Workflow in use, check the test scope with relevant people.
 
@@ -70,7 +70,11 @@ When there are multiple start nodes, check not only the name but also that the t
 
 Follow the input field settings and on-screen guidance for supported formats, number of items, and capacity. This article does not define limit values common to all Workflows.
 
-What you can confirm with manual test input is not the same as behavior that starts from an actual event, such as receiving an email. Check event-based start conditions separately in [Configure Workflow triggers](configure-workflow-triggers.md).
+What you can test with manual test input is not the same as behavior that starts from an actual event, such as receiving an email. When you select a trigger's start node, test-run input fields are also displayed (for example, with Email by JAI you can enter values corresponding to the email contents for testing). Check event-based start conditions separately in [Configure Workflow triggers](configure-workflow-triggers.md).
+
+### Test a single node
+
+To try only a specific node instead of the whole Workflow, you can also use the **single-node test**. Note that for nodes that send or update externally, processing is actually performed even in a single-node test.
 
 ## 4. Select "Start Execution"
 
@@ -105,7 +109,7 @@ Check displayed information such as status, elapsed time, credits, and errors. I
 
 | Status display | What to check next |
 |---|---|
-| Running | Wait for completion status and observable processing results. Do not run duplicates. |
+| Running | Wait for completion status and displayed processing results. Do not run duplicates. |
 | Succeeded | Whether output content, format, and path meet the acceptance criteria |
 | Failed | Check the error and node inputs and outputs, then isolate the problem location |
 | Partially succeeded | Check what completed and what did not. Do not treat it as overall success. |
@@ -170,7 +174,7 @@ The following template is an example for recording in separate notes or a manage
 | Test input | Input excluding confidential information and identification information for used files |
 | Expected result | Path, required information, format, and external impact |
 | Actual result | Status, output, and node with an issue |
-| Run identification information | Date/time, Test Run number, and other information that can be checked |
+| Run identification information | Date/time, Test Run number, and other information shown on the screen |
 | Judgment and remaining issues | Pass or needs revision, and the reason |
 
 For detailed investigation using run history, see [Debug with Workflow run history](debug-workflow-run-history.md).

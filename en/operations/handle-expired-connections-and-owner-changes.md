@@ -7,6 +7,16 @@ Connections to external services may become unusable because authentication expi
 - Isolate permission and sign-in issues: [Permission and Authentication Errors](../troubleshooting/permission-and-auth-errors.md)
 - Change, stop, or hand over scheduled runs: [Change, Stop, and Hand Over Scheduled Runs](change-stop-handover-scheduled-runs.md)
 
+## Summary: what is affected when the owner changes
+
+| Target | Whose permissions and credentials it runs with | When the former owner leaves the organization or Project | How to hand over |
+|---|---|---|---|
+| Personal connection | The person who connected it (used only by Agents that person runs) | The successor cannot use it | The successor creates their own personal connection |
+| Shared connection | The authenticated business account (Workflows, automatic runs, and Agents of users without a personal connection) | Check the state of the authenticated account at the external service and who can re-authenticate | Re-authenticate with an approved business account, or switch to a new shared connection |
+| Workflow trigger | The person who first published that start node | Automatically disabled. Republishing by someone else does not change who it runs as | The successor deletes and re-adds the trigger node, then publishes |
+| Task (Task Scheduler) | The Task creator. Editing does not change it | Automatically disabled | The successor recreates the Task |
+| Project API key | The key creator. Scheduled runs created with the SDK or API also run as the key creator | When the creator is no longer an active Project member, all of that person's keys return 403 errors | The successor creates a new key and switches the callers |
+
 ## Before you begin
 
 - Confirm the correct organization, Project or App, and connection service. If Projects have the same name or multiple connections exist, also match their purpose.
@@ -33,7 +43,7 @@ Check the wording on the screen and the target, and first determine whether it i
 
 ## Repair and hand over a personal connection
 
-A personal connection authenticates the user's own external account. When a user transfers or leaves, do not assume that a successor can take over and use the former user's personal connection. After the successor's business account and permissions are ready, the successor creates the necessary connections.
+A personal connection authenticates the user's own external account and is used only by Agents that person runs. Workflows and automatic runs do not use personal connections. When a user transfers or leaves, a successor cannot take over and use the former user's personal connection. After the successor's business account and permissions are ready, the successor creates the necessary connections.
 
 ### When the user can re-authenticate
 
@@ -43,7 +53,7 @@ A personal connection authenticates the user's own external account. When a user
 4. Confirm that "Connected" or "Authenticated" is displayed.
 5. Within the permitted scope, run the feature that had failed once and check the result.
 
-If you select a different account during re-authentication, you may not be able to repair the existing connection. If an ownership transfer requires a different account, do not re-authenticate the old connection; instead, have the successor prepare their own connection.
+If you select a different account during re-authentication, you cannot repair the existing connection. If an ownership transfer requires a different account, do not re-authenticate the old connection; instead, have the successor prepare their own connection.
 
 ### When the user or owner changes
 
@@ -62,21 +72,23 @@ Because a shared connection affects common Project or App processing, users shou
 1. In "Connector Settings," open "Project connectors" or the App's "App shared connectors." If "Manage connector" appears in the App, open the target configuration.
 2. Check the connection service, authenticated account, connection type, and current status. If it is "Invalid," "Not set," or "Stopped," record the displayed guidance and target App requirements.
 3. To repair an existing connection, a person with administration permissions selects "Re-authenticate" and uses an external-service shared account that is approved. If guidance asks you to request re-authentication from "the user or administrator who first connected," follow that guidance.
-4. If you need to switch to a successor's business account, prepare a new shared connection. Check the setting result until you can confirm "Settings" for the target App or "Connector configured for this app." For specific registration and assignment, see [Configure Shared Connections for a Project or App](configure-shared-connections.md).
+4. If you need to switch to a successor's business account, prepare a new shared connection. Check the setting result until "Settings" for the target App or "Connector configured for this app" is displayed. For specific registration and assignment, see [Configure Shared Connections for a Project or App](configure-shared-connections.md).
 5. Check dependent Apps, Agents, and Workflows with permitted data. If there is no problem, consider disconnecting the old connection that is no longer needed.
 
 > Changing a shared connection may affect multiple users and automated processes in the same Project or App. A connection cannot be made if its sharing scope does not match App requirements. Do not broaden the sharing scope indiscriminately to avoid insufficient permissions.
 
 ## Check the impact on scheduled runs and triggers
 
-Workflow triggers and automatic Task runs that use connections may stop or fail when authentication expires or an owner leaves. Do not conclude that all automatic runs have resumed merely because you repaired the connection; check each target.
+Workflow triggers and Task Scheduler "Tasks" run as their owner and require a shared connection for external services. They stop or fail when authentication expires or the owner leaves. Do not conclude that all automatic runs have resumed merely because you repaired the connection; check each target.
 
 - For Gmail or Outlook triggers, check for "Needs re-authentication" or "Email error," and select "Refresh connection status" after authentication. The screen guidance says that email reception starts when you "Publish" after connection. Check the Workflow publication status as needed.
-- A Task is tied to its creator, so it will not run when its creator leaves the organization. Check not only the connection owner but also the Task creator.
-- In departure or transfer processing, triggers that use the person's credentials may stop in addition to that person's Tasks. When a successor takes over, check connections, triggers, and Tasks separately.
+- A Task runs as its creator, and editing it does not change that. When the creator leaves the organization, the Task is automatically disabled. For a successor to take over, recreate the Task.
+- A trigger runs as the person who first published that start node. Republishing by someone else does not transfer it, and it is automatically disabled when the owner leaves the organization. For a successor to take over, delete and re-add the trigger node, then publish. The Webhook URL and Email by JAI receiving address change when you do this.
+- Scheduled runs created with the SDK or API run as the creator of the Project API key used. The key is valid only while its creator is an active member of the Project.
+- Check connections, triggers, Tasks, and API keys separately.
 - Check the schedule, notification destination, run target, published Workflow, next run, and history. Follow [Change, Stop, and Hand Over Scheduled Runs](change-stop-handover-scheduled-runs.md) when changing, recreating, or stopping them.
 
-> Checking automatic runs can send email, update data, or register information externally. Check the run target and the impact of duplicate runs, and do not repeat the same process while the result is unknown.
+> Checking automatic runs actually sends email, updates data, or registers information externally. Check the run target and the impact of duplicate runs, and do not repeat the same process while the result is unknown.
 
 ## Checklist
 
@@ -86,7 +98,7 @@ Workflow triggers and automatic Task runs that use connections may stop or fail 
 - [ ] For a personal connection, the user re-authenticated with the same account, or the successor prepared their own connection.
 - [ ] For a shared connection, I checked the approved business account and the App configuration result.
 - [ ] I checked the successor's connection and dependent features before disconnecting the old connection.
-- [ ] I checked triggers, Task creators, schedules, notification destinations, and history.
+- [ ] I checked trigger publishers, Task creators, Project API key creators, schedules, notification destinations, and history.
 - [ ] I checked run results within the permitted scope and notified relevant people of the changes.
 
 ## If it does not work

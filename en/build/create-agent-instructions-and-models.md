@@ -57,7 +57,7 @@ If you cannot use the Create button, tell the administrator the guidance shown f
 
 ## 3. Enter instructions
 
-In the **"Instructions (System Prompt)"** field, write how the Agent should perform its work. If an "Instructions" tab is available, check within that tab.
+In the **"Instructions (System Prompt)"** field, write how the Agent should perform its work. If an "Instructions" tab is available, check within that tab. There is no character limit for instructions, but instructions that exceed the selected model's input length cannot be processed. Keep them focused.
 
 ### Five elements to include in instructions
 
@@ -94,6 +94,7 @@ The following text is an example entry for the "sales meeting note organization"
 - Writing "research internal materials" does not complete the configuration for referencing those materials.
 - Writing "use an external service" does not configure a connection or authentication information.
 - Writing "do not send" does not configure the removal of actual sending permissions.
+- Writing "do not update Objects" does not prohibit updates. Every Agent in a Studio Project is automatically given an Object SQL tool that can read and write Objects, and it cannot be removed. To make Objects read-only for an Agent, control the Agent's permissions in the Object's "Access settings" ([Design Object Structure](design-object-structure.md)).
 - Saving instructions does not guarantee the same response or judgment every time.
 
 Confirm reference sources, executable operations, and access permissions separately. Do not paste API keys, passwords, or Secret values into instructions. For procedures to add tools or material references, see [Configure Tools, Skills, and Datasets for an Agent](configure-agent-tools-skills-datasets.md).
@@ -170,7 +171,7 @@ Example test input:
 >
 > They asked for help organizing inquiry categories.
 >
-> The budget, implementation date, and decision-maker have not been confirmed.
+> The budget, implementation date, and decision-maker are not known yet.
 >
 > Do not send externally or update data; return only the notes.
 

@@ -2,6 +2,10 @@
 
 Page実行環境で動くブラウザ画面は、利用者のPageセッションを使ってAgentとの会話を開始・継続し、表示中の組織・Project・Page・利用者のコンテキストを読めます。Project APIキーをブラウザへ渡さず、画面の入力と会話を接続できることがポイントです。
 
+{% hint style="warning" %}
+Pageのブラウザでは、`isEphemeral`を指定しないと`true`が既定になり、会話履歴を読み書きしません。この状態では`sessionId`を渡しても前の文脈は引き継がれず、`getMessages()`も空になります。**Page内で会話を続けるには`isEphemeral: false`が必須です。**また、Pageのブラウザでは`systemPrompt`と`skipHistory`は指定しても無視されます。
+{% endhint %}
+
 Agentの一般的なSDK呼出しとストリームは[SDK Agents：実行・ストリーム](../development/sdk-agents-invoke-and-stream.md)、roomの履歴と成果物は[SDK Agents：会話履歴・Canvas](../development/sdk-agents-history-and-canvas.md)、利用者の会話操作は[Agentと会話して結果を確認する](../use/chat-with-agents.md)を参照してください。
 
 ## 関連記事
@@ -28,6 +32,7 @@ const studio = createClient({ baseUrl: "" });
 
 const result = await studio.agents.invoke(agentId, {
   prompt: "選択した案件を3点で要約してください",
+  isEphemeral: false, // 会話を続ける・履歴を残す場合に必須
 });
 
 if (result.status === "failed") {
@@ -46,6 +51,7 @@ showAnswer(result.text);
 let text = "";
 for await (const event of studio.agents.invokeStream(agentId, {
   prompt: userInput,
+  isEphemeral: false,
 })) {
   if (event.type === "delta") {
     text += event.content;
@@ -56,29 +62,36 @@ for await (const event of studio.agents.invokeStream(agentId, {
 }
 ```
 
-Page相対には、roomの状態を確認する`/api/agent-chat/status/{roomId}`、履歴を取得する`/api/chat-history/{roomId}`もあります。いずれも有効なPageセッションを前提とし、room IDはUUID形式です。Page向けに返る履歴では、ツール呼び出しの引数（`args`）は含まれません。画面表示や処理でツールの引数を使わないでください。ただし通常の会話継続では、これらの経路を直接組み立てず、`sessionId`とSDKを優先してください。`/api/mentions`は、この確認範囲でPage利用者向けのAPIとして確認できませんでした。
+Page相対には、roomの状態を確認する`/api/agent-chat/status/{roomId}`、履歴を取得する`/api/chat-history/{roomId}`もあります。いずれも有効なPageセッションを前提とし、room IDはUUID形式です。Page向けに返る履歴では、ツール呼び出しの引数（`args`）は含まれません。画面表示や処理でツールの引数を使わないでください。ただし通常の会話継続では、これらの経路を直接組み立てず、`sessionId`とSDKを優先してください。履歴は`isEphemeral: false`で実行した会話にだけ残ります。
 
 SDK 0.11.0では、Page実行環境が対応する場合に限り、実行結果の`requestId`から`getTurnCredits()`でターンのクレジットを、`getRoomCredits()`でroomの合計を取得できます。対応していない実行環境では404になるため、クレジット表示を必須の画面機能にせず、失敗を処理してください。
 
 ### 回答候補を比較する場合
 
-比較は、署名済み利用者のPageでのみ利用できる任意機能です。先に`listCompareModels(agentId)`を呼び、返る`min`、`max`、`models`、`toolsAvailable`に従います。`compare()`には2〜4候補だけを指定し、モデル名を推測して渡しません。候補ごとの添付は`files`または最大20件の`storageFileIds`、副作用のないToolは`tools`で指定できます。`getTurns()`の候補には添付、Tool、参照情報が含まれ得るため、表示前にURL・ファイル名・本文を安全に扱います。
+比較は任意機能で、次の条件をすべて満たす場合にだけ利用できます。
+
+- 組織で回答比較の機能が有効になっている
+- Pageの閲覧者が、サインイン済みのJAPAN AIユーザーである（「匿名アクセス」や「外部顧客認証」、「サインイン任意」の未サインイン状態では使えません）
+
+利用するときは、先に`listCompareModels(agentId)`を呼び、返る`min`、`max`、`models`、`toolsAvailable`に従います。`compare()`には2〜4候補だけを指定し、モデル名を推測して渡しません。候補ごとの添付は`files`または最大20件の`storageFileIds`、副作用のないToolは`tools`で指定できます。`getTurns()`の候補には添付、Tool、参照情報が含まれ得るため、表示前にURL・ファイル名・本文を安全に扱います。
 
 候補ごとの`effort`（`low`、`mid`、`high`、`max`）と同一モデルの異なるeffortでの比較は、`listCompareModels()`の`candidateEfforts`が`true`のときだけ指定します。各モデルの`effortSupported`が`false`なら、effortの選択肢を表示しません。未対応のPage実行環境ではこれらの値は`false`になり得るため、モデル名を1回ずつ指定する通常の比較へ戻します。候補の採用は`adoptCandidate()`で行い、roomがアイドルであることと利用者の権限を確認します。
 
 ## 2. `sessionId`で同じ会話を続ける
 
-最初の成功応答の`sessionId`はroom IDです。画面の状態に保持し、次の入力へ渡すと、同じ会話を続けられます。会話を残して続ける用途で`isEphemeral: true`を指定しないでください。
+最初の成功応答の`sessionId`はroom IDです。画面の状態に保持し、次の入力へ渡します。Pageのブラウザでは`isEphemeral`の既定が`true`のため、**最初の呼び出しと続きの呼び出しの両方に`isEphemeral: false`を指定**しないと、同じ会話として文脈が引き継がれません。
 
 ```ts
 const first = await studio.agents.invoke(agentId, {
   prompt: "この案件の確認事項を挙げてください",
+  isEphemeral: false,
 });
 if (first.status === "failed") throw new Error(first.errorMessage);
 
 const next = await studio.agents.invoke(agentId, {
   sessionId: first.sessionId,
   prompt: "優先度順に並べ替えてください",
+  isEphemeral: false,
 });
 ```
 
@@ -86,7 +99,7 @@ const next = await studio.agents.invoke(agentId, {
 
 ## 3. Pageコンテキストを読む
 
-`platform`はPage実行環境のブラウザ専用です。`isAvailable()`で利用可否を確認でき、同期読取の`getContext()`は利用できない場合に`null`を返します。初期表示で注入が完了していないことがあるため、通常は`waitForReady()`を使います。既定の待機時間は5,000ミリ秒で、利用不可または待機切れでは`null`になります。
+`platform`はPage実行環境のブラウザ専用です。`isAvailable()`で利用可否を判定でき、同期読取の`getContext()`は利用できない場合に`null`を返します。初期表示で注入が完了していないことがあるため、通常は`waitForReady()`を使います。既定の待機時間は5,000ミリ秒で、利用不可または待機切れでは`null`になります。
 
 ```ts
 const context = await studio.platform.waitForReady();
@@ -105,7 +118,7 @@ if (!context) {
 
 ## 4. 画面の選択内容をStudioタスクへ渡す
 
-`openTask()`は、画面で選んだオブジェクトまたは配列と任意の指示をStudioタスクへ渡し、`roomId`を返します。少なくともデータまたは指示のどちらかが必要です。画面内のURL遷移や任意サイトへの移動には使いません。
+`openTask()`は、画面で選んだオブジェクトまたは配列と任意の指示をStudioタスクへ渡し、`roomId`を返します。少なくともデータまたは指示のどちらかが必要です。`openTask()`はJAPAN AIに埋め込まれた状態でしか使えず、Pageを単独で開いた場合は`UNSUPPORTED`で拒否されます。画面内のURL遷移や任意サイトへの移動には使いません。
 
 ```ts
 const selected = { orderId: "42", status: "確認待ち" };
@@ -125,10 +138,10 @@ console.log(task.roomId);
 
 | アクセス設定 | 実装・受入確認 |
 |---|---|
-| 「サインイン必須」 | Pageへ権限を持つ利用者で、コンテキスト、会話開始、継続、エラー表示を確認します。比較回答の候補を読む・採用する`getTurns()`／`adoptCandidate()`は、サインイン済み利用者のPageでのみ確認済みです。 |
+| 「サインイン必須」 | Pageへ権限を持つ利用者で、コンテキスト、会話開始、継続、エラー表示を確認します。比較回答（`compare()`、`getTurns()`、`adoptCandidate()`）は、組織で機能が有効な場合にサインイン済み利用者だけが使えます。 |
 | 「サインイン任意」 | 未サインイン時とサインイン時の両方を確認します。未サインイン利用者のIDや役割がある前提で画面・プロンプトを組み立てません。比較回答の候補を読む・採用する機能は、未サインイン状態では使えないため、通常の会話導線へ分けます。 |
 | 「匿名アクセス」 | 利用者固有の情報、利用者ごとのroom管理、比較回答の候補を読む・採用する機能を前提にしません。公開URLで実際に見える画面、Agentへ渡るデータ、実行できる操作を確認します。 |
-| 「外部顧客認証」 | 外部顧客としてサインインした状態で、画面、会話、コンテキストを確認します。組織メンバーであることを前提にした表示・権限設計にせず、必要なデータだけを渡します。 |
+| 「外部顧客認証」 | 外部顧客としてサインインした状態で、画面、会話、コンテキストを確認します。組織メンバーであることを前提にした表示・権限設計にせず、必要なデータだけを渡します。比較回答は使えません。 |
 
 > Pageのアクセス設定を`platform`、SDK、ブラウザコードで変更することはできません。「アクセス設定」で決めた公開範囲を狭めず、アクセスモードごとに実機で確認してください。
 
@@ -138,8 +151,8 @@ console.log(task.roomId);
 |---|---|
 | `waitForReady()`が`null`になる | Page実行環境のブラウザか、SDKとPage実行環境の対応、初期表示のタイミングを確認します。APIキーを追加して回避しません。 |
 | Agent呼出しが失敗する | 対象Page、アクセス設定、Agent、`status`と`errorMessage`、ストリームの`error`を確認します。処理済みか不明な依頼は再送しません。 |
-| 比較の候補・effortを取得できない | `listCompareModels()`の結果、署名済み利用者、組織・Agentのモデル設定、Page実行環境を確認します。`candidateEfforts`が`false`ならeffortや同一モデルの重複を送信しません。 |
-| 前の会話を踏まえない | 成功応答の`sessionId`を次の呼出しへ渡しているか、永続化が必要なのに`isEphemeral: true`にしていないかを確認します。 |
+| 比較の候補・effortを取得できない | 組織で回答比較が有効か、閲覧者がサインイン済みのJAPAN AIユーザーか、`listCompareModels()`の結果、組織・Agentのモデル設定、Page実行環境を確認します。`candidateEfforts`が`false`ならeffortや同一モデルの重複を送信しません。 |
+| 前の会話を踏まえない、`getMessages()`が空 | すべての呼出しに`isEphemeral: false`を指定しているか（未指定ではPageのブラウザで`true`扱い）、成功応答の`sessionId`を次の呼出しへ渡しているかを確認します。 |
 | roomの状態・履歴を取得できない | Pageセッション、対象Project、room IDの形式を確認します。別のroom IDを試して内容を探索しません。 |
 | `openTask()`が失敗する | データまたは指示を渡しているか、値がオブジェクト・配列・`null`のいずれかか、Page実行環境で使っているかを確認します。 |
 
@@ -149,7 +162,8 @@ console.log(task.roomId);
 
 - [ ] Pageのブラウザコードを`createClient({ baseUrl: "" })`で初期化し、APIキーを置いていない
 - [ ] `invoke()`または`invokeStream()`の成功・失敗を分けて画面へ反映している
-- [ ] 継続する会話では成功応答の`sessionId`を保持している
+- [ ] 継続する会話では、すべての呼出しに`isEphemeral: false`を指定し、成功応答の`sessionId`を保持している
+- [ ] `systemPrompt`と`skipHistory`がPageのブラウザで無視されることを前提に設計した
 - [ ] 比較UIでは`listCompareModels()`の候補・上限・Tool可否・effort可否に従っている
 - [ ] `getContext()`の値をクライアント側の認可判定に使っていない
 - [ ] `waitForReady()`が`null`の場合の画面を用意している

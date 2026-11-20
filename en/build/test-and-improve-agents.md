@@ -54,7 +54,7 @@ When switching from Canvas settings, if a confirmation about saving or unsaved c
 - **A message about usage permissions appears**: Check edit permissions and usage permissions separately. Do not publish to the entire organization just for testing; check the necessary permission scope with the responsible person.
 - **Errors or loading continue**: Record and check the save status, target Agent, and screen error. Do not repeatedly resend.
 
-Being able to use preview does not mean you have confirmed usage by other users or from Apps or Workflows.
+Being able to use preview does not mean other users, Apps, or Workflows can also use the Agent. Test each entry point separately.
 
 ## 3. Run one small test
 
@@ -75,7 +75,7 @@ After sending, check the following in addition to the appearance of the response
 - Whether the fact that emails are checked individually is not mixed with improvement proposals.
 - Whether unrequested processing, such as sending to or updating an external service, was performed.
 
-This test checks the basic behavior of organizing input text. It does not confirm that Dataset referencing, external integrations, or deliverable file generation succeeded.
+This test checks the basic behavior of organizing input text. Test Dataset referencing, external integrations, and deliverable file generation separately.
 
 Even if the response says "Completed" or "Checked the materials," do not mark it as passing based on that text alone. When needed, check the reference destination, processing result, and deliverable itself. For basic conversation and file operations, see [Chat with an Agent and check the results](../use/chat-with-agents.md).
 
@@ -89,7 +89,7 @@ After normal input succeeds, try different conditions that may occur in operatio
 | Missing information | Omit the budget or owner | Whether it can avoid inventing unknowns and request confirmation |
 | Ambiguous target | Assume multiple customers have the same name | Whether it avoids assuming the target and requests confirmation |
 | Out-of-scope request | Ask a note-creation Agent to make an update for which it has not been granted permission | Whether it can explain its scope rather than pretending it completed the operation |
-| Reference materials | Ask about an item whose answer can be verified in prepared materials | Whether the referenced content and response match |
+| Reference materials | Ask about an item whose answer is in the prepared materials | Whether the referenced content and response match |
 | Question not in materials | Ask about a condition not stated in the materials | Whether it can explain that there is no basis |
 | Ongoing conversation | Add conditions to the first response | Whether it can handle the added conditions and prior assumptions |
 | Different user | An intended user runs it with their own account | Whether the scopes of Skills, materials, and connections are appropriate |
@@ -98,9 +98,9 @@ For tests that check permissions, use permitted test data and accounts. Do not e
 
 ### Additional checks when using tools or Datasets
 
-- **Tools**: Check the call result or error and the actual target data. For update tests, agree on the target and changes with the responsible person before performing them.
+- **Tools**: Check the call result or error and the actual target data. For update tests, agree on the target and changes with the responsible person before performing them. Every Agent is automatically given an Object SQL tool that can read and write Objects, so in tests that involve Objects, also check that no unintended updates occur. To prevent updates, restrict the Agent's permissions in the Object's "Access settings."
 - **Skills**: Check whether the expected procedure and format were used. Check that intended users, not only the creator, can use the Skill.
-- **Datasets**: Check the target materials, update status, selection, and reference permissions. Being able to answer one question does not guarantee that all material can be checked without omissions.
+- **Datasets**: Check the target materials, update status, selection, and reference permissions. Being able to answer one question does not guarantee that all material can be referenced without omissions.
 - **Deliverables**: Check that they can actually be opened and that the content and number of items are correct. Displaying a file name alone does not mean completion.
 
 Even if processing appears to have failed, the external service may already have been updated. Check its state before rerunning it.
@@ -156,7 +156,7 @@ Do not use preview conversations as the sole record location. Save test results 
 |---|---|
 | Test ID and date/time | A name identifying the test and the date and time performed |
 | Target | Organization, Project, and Agent; whether it was preview or the regular usage screen |
-| Conditions | User role, confirmed model, material version and update date, and connection type |
+| Conditions | User role, model used, material version and update date, and connection type |
 | Conversation conditions | Whether it was a new or ongoing conversation; required assumptions for an ongoing conversation |
 | Input | Test input usable for rechecking; exclude confidential information |
 | Expected result | Acceptance criteria and operations that must not be performed |

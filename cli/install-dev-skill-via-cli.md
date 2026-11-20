@@ -25,7 +25,7 @@ Skillの導入は、APIキーを必要とする`pages deploy`、`workflows`な�
 
 ## Skillに含まれるもの
 
-導入されるSkill名は`studio_sdk`です。SDK／CLIの公開された利用方法をコーディングエージェントが参照するための`SKILL.md`を必須として、参照用Markdownと補助スクリプトを含むスナップショットがパッケージに同梱されます。内容は、Studio SDK／CLIの認証境界、Agent、Members、Object、Storage、Workflow、Pageのパッケージ化・デプロイ、およびPRS内での公開SDK利用を扱う範囲です。
+導入されるSkill名は`studio_sdk`です。SDK／CLIの公開された利用方法をコーディングエージェントが参照するための`SKILL.md`を必須として、参照用Markdownと補助スクリプトを含むスナップショットがパッケージに同梱されます。内容は、Studio SDK／CLIの認証境界、Agent、Members、Object、Storage、Workflow、Pageのパッケージ化・デプロイ、およびStudioでホストされたPage内での公開SDK利用を扱う範囲です。
 
 導入時に提供元を取得し直すのではなく、公開パッケージ内の同梱Skillをコピーします。
 
@@ -124,7 +124,7 @@ jai-studio skill install --agent codex --scope project --force
 | 導入後もエージェントがSkillを使わない | 導入結果の`path`と`SKILL.md`を確認し、対象エージェントの新しいセッションを開始します。対応外のエージェント用の場所を推測してコピーしません。 |
 | CLI自体が見つからない、または版が違う | `command -v jai-studio`と`jai-studio --version`で実行実体と版を確認し、[開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)に従って再導入します。 |
 
-CLIの失敗時は標準エラーへJSON形式のエラーが出力され、終了コードは1です。`--debug`はサーバー応答の詳細表示用であり、このローカルSkill導入の切り分けには通常不要です。問い合わせにはCLI版、キーを含まない実行コマンド、`--agent`、`--scope`、導入先、エラー内容を記録します。APIキー、トークン、個人用ホームディレクトリの不要な詳細は添付しません。
+CLIの失敗時は標準エラーへエラーが出力され（使い方の誤りではテキスト、それ以外はJSON）、終了コードは1です。`--debug`はサーバー応答の詳細表示用であり、このローカルSkill導入の切り分けには通常不要です。問い合わせにはCLI版、キーを含まない実行コマンド、`--agent`、`--scope`、導入先、エラー内容を記録します。APIキー、トークン、個人用ホームディレクトリの不要な詳細は添付しません。
 
 ## チェックリスト
 

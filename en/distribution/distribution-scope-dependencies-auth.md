@@ -30,27 +30,37 @@ Content selected as a publishing target is prepared as managed resources for the
 | Agents and Skills | The specified version and references required within the release | Individual settings and usage history of the provider Project. Check whether the version is available at the installation destination. |
 | Workflows | Workflow definitions and references to declared resources | Run history, processing in progress, and authentication state for external services. |
 | Pages | Page artifacts, display settings, and declared resource references | Provider Page IDs, URLs, and user sessions. For a design that does not embed fixed IDs, see [Design the Configuration of a Distributable Page](../development/design-distributable-page-config.md). |
-| Custom Objects | Schema (Object, field, relationship, and access definitions), plus explicitly specified initial records when needed | All ordinary business records and records users add or update after installation. Individually decide whether to include initial records. |
-| Storage | Explicitly selected initial files and the logical destination scope (including Project Storage seeds) | All files in the Project, files users add after installation, and provider file IDs. Even if a destination reference becomes unavailable, it may remain as a saved selection until explicitly removed. |
+| Custom Objects | Schema (Object, field, and relationship definitions) and access settings only | Records cannot be distributed (there are no initial records). Register required records at the installation destination. |
+| Storage | Explicitly selected initial files and the logical destination scope (including Project Storage seeds). Only Storage files can be distributed as initial data. | All files in the Project, files users add after installation, and provider file IDs. Even if a destination reference becomes unavailable, it may remain as a saved selection until explicitly removed. |
 | Datasets | The destination container and display information required as a Dataset | The assumption that source Dataset body content, search results, and usage history are copied as-is. Prepare and register required knowledge data after installation. |
 | Custom roles | Role definitions included in the App | Automatic assignment to members at the installation destination. Check the impact of role changes at installation and update. |
 | Automatic execution | Definitions for automatic execution triggered by a schedule or event, and logical references to target resources | Past run results and authentication state for external connections. Check connections, destinations, and update targets before execution. |
 | Connections, Secrets, and API keys | Required credential types, usage scope, and requirements to meet at the installation destination | Connection IDs, OAuth tokens, passwords, Secret values, and actual API key values. The owner at the installation destination configures them. |
 
-Even when including initial Storage or Custom Object data, do not mix in personal information, customer information, credentials, or files in operation used for validation. Select only the minimum truly needed to create the initial state.
+Even when including initial Storage files, do not mix in personal information, customer information, credentials, or files in operation used for validation. Select only the minimum truly needed to create the initial state.
+
+## Configurations that cannot be published and limits
+
+| Item | Condition |
+|---|---|
+| Required resources | At least one Agent, Workflow, or Page must be included. |
+| Individual selections | Up to 1,000 items per type. |
+| Storage initial data | Up to 1,000 files and 100 MB. |
+| Custom Objects | Up to 50 Objects and 500 fields. |
+| Items that cannot be included | Agents not shared with the organization, organization-only tools, triggers based on Datasets or Speech, and similar items. Releases that include them cannot be published. |
 
 ## How to select connectors and resources
 
-When you can select connectors on the publishing screen, candidates include connectors derived from the provider and connectors that can be added. Check them by search, icon, and personal/shared display. When you identify an external account or connector required by the App, do not move the provider's connection; decide who configures it at the installation destination and how.
+When you can select connectors on the publishing screen, candidates include connectors derived from the provider and connectors that can be added. They are shown with search, icons, and a personal/shared indication. When you identify an external account or connector required by the App, do not move the provider's connection; decide who configures it at the installation destination and how.
 
-For individual resource selection, check Agents, Workflows, Pages, Skills, automatic execution, Datasets, Custom Objects, custom roles, and Project Storage for each target. Individual selections and Storage seeds have limits on the number of items and data volume for each target, so check the publishing screen and validation results. If an item is not shown in search results or a saved Storage reference becomes unavailable, check its name, storage destination, and necessity before explicitly removing the selection.
+For individual resource selection, check Agents, Workflows, Pages, Skills, automatic execution, Datasets, Custom Objects, custom roles, and Project Storage for each target. The limits on counts and data volume are listed in "Configurations that cannot be published and limits" above. If an item is not shown in search results or a saved Storage reference becomes unavailable, check its name, storage destination, and necessity before explicitly removing the selection.
 
 ## 1. Inventory publishing targets and dependencies
 
 1. List the Agents, Skills, Workflows, Pages, Custom Objects, Datasets, Storage, and automatic executions used by the App.
 2. For each item, separate the "definition" to distribute, "initial data" needed only for initialization, and "business data and credentials" created at the installation destination.
 3. Select the required types in **"Resources to publish."** Do not omit dependencies that are not directly displayed, such as a Workflow called by a Page or an Agent or Dataset used by a Workflow.
-4. When including initial files or records, check whether it remains safe if data with the same name conflicts at the installation destination and what content you want to retain during updates.
+4. When including initial files, check whether it remains safe if data with the same name conflicts at the installation destination and what content you want to retain during updates.
 5. Before publishing, list connections, Secrets, and user-specific connections to reconfigure at the installation destination.
 
 > "Include all" does not specify inclusion of credentials or production data. However, we recommend narrowing distribution to the scope required for App functionality so that unnecessary definitions and initial data are not distributed.
@@ -74,17 +84,27 @@ New resource identifiers are created at the installation destination, so impleme
 
 A release can show the installation destination the requirements for credentials, but it does not duplicate the provider's credentials themselves. Design shared credentials and credentials set per user separately.
 
+The connection used at run time is determined as follows.
+
+| What runs | Connection used |
+|---|---|
+| An Agent in a Project | The first found in this order: the executing user's personal connection → the Project's shared connection → the organization-wide connection |
+| A Workflow | Shared connections only (the executing user's personal connection is not used) |
+| A connection declared as personal in an App | The executing user's personal connection. Even in automatic execution with no executing user, it does not fall back to a shared connection |
+
+If automatic execution uses an external service, declare that connector as shared and configure a shared connection at the installation destination.
+
 1. For each external service, decide whether a shared connection, personal connection, or Project Secret is required. For guidance, see [Choose Between Personal Connections, Shared Connections, and Secrets](../operations/choose-personal-shared-connections-and-secrets.md).
 2. When a shared connection is required, decide the operational account at the installation destination, minimum permissions, and re-authentication owner. Follow [Configure Shared Connections for a Project or App](../operations/configure-shared-connections.md) for creation and assignment to the App.
 3. When values such as API keys or tokens are needed, create or select a Project Secret at the installation destination and map it to the item required by the App. For value management, see [Register, Update, and Delete Project Secrets](../operations/manage-project-secrets.md).
 4. For features that require each user's own connection, guide each user to configure it with their own account. Do not substitute an administrator's personal connection.
 5. After installation, check the status of **"Connectors"** and **"Secret Management"** in the App's **"Settings,"** then perform representative operations with approved test data. For the overall checking order, see [Complete the Initial Setup of an App](../use/complete-app-setup.md).
 
-> Even if a connection or Secret is shown as "Configured," external-service permissions, target data, destinations, and each user's own connection are not necessarily verified. For Apps that include automatic execution, also check shared connections used when no user is executing it.
+> Even if a connection or Secret is shown as "Configured," external-service permissions, target data, destinations, and each user's own connection are not necessarily verified. For Apps that include automatic execution, also make sure the shared connections are configured.
 
 ## Pre-publish checks and displayed errors
 
-On the publishing screen, use **"Pre-publish check"** to check selections and dependencies. You may be unable to complete the check or create the release when there are unresolved Page references, references containing provider IDs, undeclared Dataset references, versions of dependencies that are not fixed, inconsistencies in initial-data references, or similar issues. The screen may display **"The pre-publish check could not be completed. Review the content and run it again."** or **"The release could not be created. Review the content and try again."**
+On the publishing screen, use **"Pre-publish check"** to check selections and dependencies. You cannot complete the check or create the release when there are unresolved Page references, references containing provider IDs, undeclared Dataset references, versions of dependencies that are not fixed, inconsistencies in initial-data references, or similar issues. The screen displays **"The pre-publish check could not be completed. Review the content and run it again."** or **"The release could not be created. Review the content and try again."**
 
 In that case, correct the issue in the following order:
 
@@ -93,6 +113,7 @@ In that case, correct the issue in the following order:
 3. For Dataset, Storage, and Custom Object data, separate definitions and initial data that can be distributed from data to prepare after installation.
 4. Do not work around the issue by adding credential values to artifacts. Instead, review required connections and Secrets and the installation procedure.
 5. After correction, run **"Run pre-publish check again."** If a resource was deleted or changed after selection, update the selection before checking.
+6. If a value that looks like a fixed ID is flagged but can be used as-is at the installation destination (such as a public URL), you can pass it with **"Recheck as reviewed."**
 
 ## Common misconceptions
 
@@ -102,10 +123,12 @@ In that case, correct the issue in the following order:
 | Selecting a connection as a publishing target means no authentication is needed at the installation destination | What is distributed is the requirement. Configure connections, Secrets, and each user's own connection at the installation destination. |
 | Writing a resource ID into a Page ensures it can be referenced | IDs differ at the installation destination. Use logical names and follow the design in [Design the Configuration of a Distributable Page](../development/design-distributable-page-config.md). |
 | Selecting Storage moves all files in the Project | Only explicitly specified initial files are handled. Business files and user files after installation are separate. |
+| Custom Object records can also be distributed as initial data | Only the schema and access settings are distributed. Only Storage files can be initial data. |
+| Automatic execution falls back to a shared connection if there is no personal connection | Connections declared as personal in an App do not fall back. Declare connectors used by automatic execution as shared. |
 
-## When you cannot confirm something
+## If the problem persists
 
-If you cannot load **"Resources to publish,"** a target disappears from the selection, a pre-publish check fails, or you cannot check connection or Secret status after installation, do not work around the issue by embedding IDs or credentials directly. Record the target organization, Project, and App; selected resources; dependent logical names; displayed messages; operation date and time; and settings already checked, then ask the responsible owner. Do not include Secret values, API keys, passwords, tokens, or cookies in inquiries.
+If you cannot load **"Resources to publish,"** a target disappears from the selection, a pre-publish check fails, or the connection or Secret status is unclear after installation, do not work around the issue by embedding IDs or credentials directly. Record the target organization, Project, and App; selected resources; dependent logical names; displayed messages; operation date and time; and settings already checked, then ask the responsible owner. Do not include Secret values, API keys, passwords, tokens, or cookies in inquiries.
 
 ## Next article
 

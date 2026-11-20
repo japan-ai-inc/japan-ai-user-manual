@@ -10,7 +10,7 @@ The Workflows API is a REST API for developers to retrieve and create Workflows 
 
 ## Before you begin
 
-The base URL is `https://api.japan-ai.co.jp`, and the common path is `/api/v1/workflows`. Pass the Project API key in the `x-api-key` header. Use a key for the target Project that has the scope required for each operation. Do not leave keys in browsers, source control, logs, or shared history.
+The base URL is `https://api.japan-ai.co.jp`, and the common path is `/api/v1/workflows`. Pass the Project API key in the `x-api-key` header. Use a key for the target Project that has the scope required for each operation. Do not leave keys in browsers, source control, logs, or shared history. The full list of public API endpoints and their request/response schemas is also available in the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)).
 
 ```bash
 export JAI_STUDIO_API_KEY='value retrieved from secure storage'
@@ -18,7 +18,7 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows?status=all' \
   -H "x-api-key: $JAI_STUDIO_API_KEY"
 ```
 
-Successful responses include `success` and `requestId`. A missing or invalid key returns 401, and insufficient scope or permissions returns 403. For 429 and wait information, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
+Successful responses include `success` and `requestId`, and error responses also include `requestId`. An invalid or expired key ("Invalid API key" / "API key has expired") returns **403**, as does insufficient scope or permissions. 401 is returned only on some routes, when no credentials are sent at all. For 429 and wait information, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
 
 > Writes and runs change state. Verify in a test Project, and on timeout, check `runId` or the current definition before retrying.
 
@@ -58,14 +58,14 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows?limit=50&status=all' \
 
 ## 2. Create and update metadata
 
-`POST /api/v1/workflows` creates an unpublished Workflow with an empty draft. `name` is required (1-255 characters), `description` is optional, and `enabled` defaults to `true`. On success, it returns `workflow` with 201.
+`POST /api/v1/workflows` creates an unpublished Workflow with an empty draft. `name` is required (1-255 characters), `description` is optional, and `enabled` defaults to `true`. On success, it returns `workflow` with 201. A Workflow created with `enabled: false` does not appear in the list, and running it returns 403, so normally do not specify `enabled`.
 
-`PATCH /{workflowId}` accepts one or more of `name`, `description`, and `enabled`. On success, it returns the updated `workflow` with 200. When `enabled: false`, email and Storage triggers are disabled.
+`PATCH /{workflowId}` accepts one or more of `name`, `description`, and `enabled`. On success, it returns the updated `workflow` with 200. When `enabled: false`, email and Storage triggers are treated as deleted, and the Workflow no longer appears in the list and cannot be run.
 
 ```bash
 curl -sS -X POST 'https://api.japan-ai.co.jp/api/v1/workflows' \
   -H "x-api-key: $JAI_STUDIO_API_KEY" -H 'content-type: application/json' \
-  --data '{"name":"Invoice intake","enabled":false}'
+  --data '{"name":"Invoice intake"}'
 ```
 
 ## 3. Save and publish a draft
@@ -104,7 +104,7 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows/runs/<runId>' \
 
 `GET /runs/{runId}` returns `runId`, `status`, and, as applicable, `outputs` and `error`. Statuses are `RUNNING`, `SUCCEEDED`, `FAILED`, `PARTIAL_SUCCEEDED`, and `STOPPED`. Query the same ID while it is `RUNNING`. An invalid ID returns 400, a missing run returns 404, and a query timeout returns 408.
 
-To wait for completion, use `POST /{workflowId}/run-and-wait`. `inputs` is optional. `timeout` is in milliseconds, defaults to 60,000, and is 1,000-300,000. This is the timeout including the request through the server-side query. The SDK and CLI cap it at 270 seconds to allow time for communication. The maximum when calling the REST API directly is 300 seconds. On 408, switch to querying the result if `runId` is available.
+To wait for completion, use `POST /{workflowId}/run-and-wait`. **A timeout does not stop the run.** Query the result with the `runId` included in the 408 response, and do not resend the same run. `inputs` is optional. `timeout` is in milliseconds, defaults to 60,000, and is 1,000-300,000. This is the timeout including the request through the server-side query. The SDK and CLI cap it at 270 seconds to allow time for communication. The maximum when calling the REST API directly is 300 seconds. On 408, switch to querying the result if `runId` is available.
 
 ## 6. When managing scheduled Tasks
 
@@ -117,7 +117,7 @@ Creating, publishing, and manually running Workflows are separate from managing 
 | Update | `PATCH /api/v1/scheduled-tasks/{taskId}` | `task:write`, `workflow:execute` |
 | Delete | `DELETE /api/v1/scheduled-tasks/{taskId}` | `task:delete` |
 
-Creation requires `name`, `workflowId`, and an ISO 8601 `triggerTime` with an offset. For repetition, specify `repeatPattern` or `cronSchedule`, and specify `scheduleTimezone` when necessary. Do not retry a create or update whose state is unknown; retrieve the list by name to confirm it. You cannot declare `task:*` scopes in an App release manifest. For detailed input formats, stopping, and handover, see [SDK Workflows](../development/sdk-workflows.md) and [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md).
+Creation requires `name`, `workflowId`, and an ISO 8601 `triggerTime` with an offset. The body is strictly validated. Put `repeatPattern` or `cronSchedule` for repetition, and `scheduleTimezone` when necessary, **inside the `schedule` object**. Placing them at the top level returns 400. Do not retry a create or update whose state is unknown; retrieve the list by name to confirm it. You cannot declare `task:*` scopes in an App release manifest. For detailed input formats, stopping, and handover, see [SDK Workflows](../development/sdk-workflows.md) and [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md).
 
 ## Common misconceptions
 
@@ -133,7 +133,7 @@ This is a concurrent-update check value. Do not parse, generate, or round it. Pa
 
 | Situation | What to check and do |
 |---|---|
-| 401 or 403 | Check the key, Project, scope, and the key creator's access. |
+| 401 or 403 | 401 means no credentials were sent (on some routes). Invalid or expired keys return 403. Check the key, Project, scope, and the key creator's access. |
 | Cannot save or publish with 409 | Retrieve the latest definition and `draftUpdatedAt` with `GET /{workflowId}`. |
 | Does not start after publishing | Check `unregisteredTriggers`, publication status, `enabled`, and connections. |
 | 408 or communication failure | Query `runId` and the run result first; do not retry before confirming. |

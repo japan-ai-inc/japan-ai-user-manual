@@ -14,23 +14,23 @@ For execution modes, see [Execution Modes, Authentication, and Supported Scope](
 ## Before you begin
 
 - Use Node.js 22 or later with the SDK.
-- In local environments and PRS servers, pass the API key only from the server side. In a PRS browser, use `createClient({ baseUrl: "" })`.
+- In local environments and Page runtime server processing, pass the API key only from the server side. In the browser of a Studio-hosted Page (the "Page browser"), use `createClient({ baseUrl: "" })`.
 - Obtain file IDs from a list or upload response.
 
 > Do not leave API keys or signed URLs in browsers, logs, source control, or inquiries.
 
 ## Supported scope by execution mode
 
-`downloadFolder()` cannot be used in a PRS browser.
+`downloadFolder()` cannot be used in the Page browser.
 
-| Operation | Local | PRS browser | PRS server | Notes |
+| Operation | Local | Page browser | Page runtime server | Notes |
 |---|---|---|---|---|
 | List and metadata | Available | Available | Available | Use `list()`, `listFolderContents()`, and `getMetadata()`. |
-| Upload files | Available | Available | Available | In a PRS browser, `upload()` internally switches to a flow that uses a signed URL. |
+| Upload files | Available | Available | Available | In the Page browser, `upload()` internally switches to a flow that uses a signed URL. |
 | Download files | Available | Available | Available | `download()` returns a `Response`. |
 | Signed download URL | Available | Available | Available | Use `getDownloadUrl()` to obtain the URL and expiration information. |
 | Delete files and folders | Available | Available | Available | `deleteFile()` and `deleteFolder()` are not substitutes for restoration. |
-| Download folder ZIP | Available | Not available | Available | In a PRS browser, `downloadFolder()` returns an error. |
+| Download folder ZIP | Available | Not available | Available | In the Page browser, `downloadFolder()` returns an error. |
 
 ## 1. Get a list
 
@@ -54,7 +54,7 @@ if (result.nextCursor) {
 }
 ```
 
-In a PRS browser, list page size is 1–100, with a default of 50. To inspect only within a folder, use `listFolderContents()`.
+In the Page browser, list page size is 1–100, with a default of 50. To inspect only within a folder, use `listFolderContents()`.
 
 ## 2. Upload files
 
@@ -105,7 +105,7 @@ const saved = await studio.storage.finalizeUpload({
 
 ## 3. Choose between downloads and signed URLs
 
-Use `download()` to process content, then obtain `blob()`, `text()`, and so on from the `Response`. For a temporary retrieval destination, use `getDownloadUrl()` to obtain a signed URL and `expiresAt`. If `expiresInMinutes` is omitted in a PRS browser, the default is 60 minutes.
+Use `download()` to process content, then obtain `blob()`, `text()`, and so on from the `Response`. For a temporary retrieval destination, use `getDownloadUrl()` to obtain a signed URL and `expiresAt`. If `expiresInMinutes` is omitted in the Page browser, the default is 60 minutes.
 
 ```ts
 const response = await studio.storage.download("file-id");
@@ -118,7 +118,7 @@ const { downloadUrl, expiresAt } = await studio.storage.getDownloadUrl(
 console.log(downloadUrl, expiresAt);
 ```
 
-`downloadFolder()` is available only locally and on a PRS server. Check [Storage Specifications and Limits](../build/storage-specs-and-limits.md) for folder ZIP constraints.
+`downloadFolder()` is available only locally and in Page runtime server processing. Check [Storage Specifications and Limits](../build/storage-specs-and-limits.md) for folder ZIP constraints.
 
 ## 4. Delete and operate folders
 
@@ -139,9 +139,9 @@ console.log(deleted.deletedCount);
 
 ## Common misconceptions
 
-### You can add an API key in a PRS browser to retrieve a folder ZIP
+### You can add an API key in the Page browser to retrieve a folder ZIP
 
-You cannot. `downloadFolder()` is unsupported in a PRS browser. Put the required processing on a PRS server or change it to operate on individual files.
+You cannot. `downloadFolder()` is unsupported in the Page browser. Put the required processing in Page runtime server processing or change it to operate on individual files.
 
 ### A signed URL is a permanent file URL
 
@@ -156,22 +156,22 @@ This is not correct. `upload()` supports up to 20 files, with a maximum of 2 GB 
 | Situation | Check and action |
 |---|---|
 | An authentication error occurs | Check the target Project, API key, and run location. |
-| A Storage operation in a PRS browser fails | Check that it runs in PRS and is initialized with `baseUrl: ""`. |
+| A Storage operation in the Page browser fails | Check that it runs in a Studio-hosted Page and is initialized with `baseUrl: ""`. |
 | Upload fails | Check the file count, size, storage capacity, permissions, `path`, and conflict setting. |
 | `finalizeUpload()` fails | Check `storageId`, file information, `replaceIntent`, and the PUT result. |
-| `downloadFolder()` fails in a PRS browser | It is unsupported. Change to individual downloads or PRS server processing. |
+| `downloadFolder()` fails in the Page browser | It is unsupported. Change to individual downloads or Page runtime server processing. |
 | You may have deleted the wrong target | Check the target path and execution record, then contact the administrator. |
 
 For an inquiry, record the execution mode, SDK version, target ID, operation date and time, error, and steps to reproduce. Do not attach API keys, cookies, signed URLs, or file contents.
 
 ## Checklist
 
-- [ ] I decided whether it runs locally, in a PRS browser, or on a PRS server.
-- [ ] I initialized the PRS browser with `createClient({ baseUrl: "" })` and did not include an API key.
+- [ ] I decided whether it runs locally, in the Page browser, or in Page runtime server processing.
+- [ ] I initialized the Page browser with `createClient({ baseUrl: "" })` and did not include an API key.
 - [ ] I checked the target `fileId` or `folderId` from a list response.
 - [ ] I keep uploads to 20 or fewer files and each file and total request size at 2 GB or less.
 - [ ] I checked signed URL expiration and completion of `finalizeUpload()`.
-- [ ] I do not use `downloadFolder()` in a PRS browser.
+- [ ] I do not use `downloadFolder()` in the Page browser.
 - [ ] Before deletion, I checked the target path, references, and impact scope.
 
 ## Next article

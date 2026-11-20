@@ -1,6 +1,15 @@
 # Complete the Initial Setup of an App
 After installing the app, prepare the necessary connections, secret information, and users, and check whether it can be used for business purposes. In this article, we will explain the order in which you should proceed with the initial setup and the things to check before deciding whether to start using it.
 **“Installed,” “configured,” and “ready for business use” are different states. ** Even after opening the app, settings required for some functions may remain. Additionally, just displaying completion on the settings screen does not mean that all users have been authenticated, access to external services, or business processing has been completed successfully.
+## Who configures what
+
+| Setting | Who can do it |
+|---|---|
+| App-wide connections (shared connections), Project Secrets, members | App administrators only (the installer automatically becomes an App administrator) |
+| "Publish to all organization members" (free Apps only) | App administrators |
+| Personal connections | Each user |
+| Uninstalling the App | Organization administrators (ADMIN), or users with the `jai.studioapp.install` permission |
+
 Detailed procedures for registering/changing connections, operating Secrets, and adding members are covered in each management article. Not all apps require the same settings. Follow the displayed requirements and app-specific instructions and proceed only with the necessary items.
 ## Before you start
 - Check the target organization/app and confirm that it has been installed.
@@ -22,23 +31,31 @@ If you see a "Complete Setup" entry on the Marketplace details screen, proceed f
 | Not set | Check required connections and secret assignments |
 | Confirming | Check whether the judgment is complete. Do not treat as set |
 | Disabled/Suspended | Check the explanation of the target item and request the person in charge to take action |
-| Set | A state in which the setting status of the item can be confirmed. Check the actual usage later |
-| Settings cannot be confirmed/loading fails | Do not judge that there are no requirements, redisplay or check with the person in charge |
-| You do not have the authority to change the settings | Request a person in charge who has operational authority |
+| Set | The item is configured. Check the actual usage later |
+| Settings status is not displayed/loading fails | Do not judge that there are no requirements, redisplay or check with the person in charge |
+| You do not have the authority to change the settings | Ask an App administrator |
 Even if you are prompted to configure settings, it does not mean that the entire app is unusable. Functions that depend on unconfigured items may not be available. However, please do not announce that you can use all the functions without checking that the functions necessary for your business work.
 ## 2. Separate required settings by type
 First, separate the common settings and the user's own settings.
 | Types of settings | Things to check | Main responders |
 |---|---|---|
-| Common connectors for apps | Does the external service used by the app match the shared connection you assign? | Who can manage shared connections |
+| Common connectors for apps | Does the external service used by the app match the shared connection you assign? | App administrator |
 | Personal connectors | Should each user authenticate with their own account | The user himself |
-| Project Secret | Is the secret information required by the app assigned to the specified item? | Person authorized to handle Secret |
-| Members and access rights | Who can open the app and what actions they can take | Who can manage members and permissions |
+| Project Secret | Is the secret information required by the app assigned to the specified item? | App administrator |
+| Members and access rights | Who can open the app and what actions they can take | App administrator |
 | App-specific preparations | Is it necessary to specify target data, storage location, business conditions, etc.? | Person in charge specified in app-specific instructions |
-Even if you use the same external service, personal and app common connections are not necessarily interchangeable. Don't assume that just because your connection is working, other users or apps have a common connection ready.
+Even if you use the same external service, personal and app common connections are not interchangeable. The connection used is determined by these rules:
+
+| How it runs | Connection used |
+|---|---|
+| Agent (run by a person) | The runner's personal connection → shared connection → organization-wide connection, in that order |
+| Workflow (including scheduled runs and triggers) | Shared connections only |
+| Connection declared as "personal" by the App | The runner's personal connection. Even when there is no person running it, it does not fall back to a shared connection |
+
+Apps that use automatic execution therefore require shared connections to be configured. Don't assume that just because your connection is working, other users or apps have a common connection ready.
 ## 3. Arrange App common connections and secrets
 ### Check App common connections
-Review the App Common Requirements under Connectors and have authorized personnel set up the required connections.
+Review the App Common Requirements under Connectors and have an App administrator set up the required connections.
 The points to check are:
 - Do the services required by the app match the connection service you select?
 - Is the connected account, organization, and business data the intended one?
@@ -47,7 +64,7 @@ The points to check are:
 **"Connector created" and "set to App" are different. ** If you see a failure to configure the app after creating it, check the created connections and current status, and follow the on-screen instructions to take action. Do not keep making the same connection without checking the cause.
 Specific setting operations are handled in [Set up a shared connection for Project/App](../operations/configure-shared-connections.md).
 ### Check Project Secret
-You may be required to set a Project Secret in order to reference API keys, tokens, etc. from your app. Under "Secret Management", please distinguish between "Project Secret" and "Web Login Secret".
+If the App references API keys, tokens, etc., an App administrator sets the Project Secret. Under "Secret Management", please distinguish between "Project Secret" and "Web Login Secret".
 - Check the Secret items and names required for the app.
 - Prepare the required values ​​in an approved manner.
 - On the specified settings screen, select an existing Project Secret and assign it to the required item, or create and assign a new Secret.
@@ -57,14 +74,15 @@ There's no need to paste sensitive information values ​​into chat text, inst
 Specific operations are handled in [Register/Update/Delete Project Secret](../operations/manage-project-secrets.md). This setting is different from the Secret for web login.
 ### Double check common settings
 After setting, reopen the app settings screen or details screen and check the status. Even if you can configure the connector, check if there are any other types of settings remaining, such as Secrets.
-For items whose settings cannot be changed, inform the person in charge of the item name and status. Please do not expand the scope of sharing or authority without permission because you are unable to respond.
+If you are not an App administrator, tell an App administrator the item name and status. Do not expand the scope of sharing or authority without permission.
 ## 4. Check user access and personal connections
 ### Allow users to open your app
 Check who will be using it for work, and arrange the necessary member settings and access rights.
-- Distinguish between belonging to an organization and being able to use a target app.
+- Distinguish between belonging to an organization and being able to use a target app. Regular members cannot join an App by themselves; an App administrator adds them as members.
+- For free Apps, if an App administrator enables "Publish to all organization members", organization members join as members the first time they open the App. This setting is not available for paid Apps.
 - Check whether not only the administrator can open it, but also the intended users.
 - Set the permissions necessary for use and avoid granting unnecessary management and editing permissions.
-- If you are asked to confirm the cost when adding members, please confirm the number of people, cost, and approval before proceeding.
+- The monthly fee for a paid App is "unit price × number of active members". Adding members increases the next renewal fee, so confirm the number of people, cost, and approval before proceeding.
 Member operations are handled in [Manage Project/App members](../operations/manage-project-and-app-members.md), and judgment on the number of users and fees is handled in [Check the number of users, fees, and contract limits for the App](../operations/check-app-seats-pricing-and-limits.md).
 ### Verify your personal connection yourself
 If your app requires a personal connector, each user performs the necessary authentication with their own account. Even if an administrator connects their account, it does not complete the authentication for all other users.
@@ -96,7 +114,7 @@ If you want to start using the service with some settings left, the functions th
 | I created a connector but it remains unconfigured | Setting results for required items of the app and information on setting failures |
 | I saved the Secret but it remains unset | Types of Project Secrets and linking them to required items of the app |
 | Can be used by the administrator, but not by others | Member access rights, personal connection, access scope for external services |
-| Unable to check the setting status | Information on loading errors and inability to check. Re-obtain the status, and if it is not resolved, check with the person in charge |
+| The setting status is not displayed | Loading errors or similar notices. Re-obtain the status, and if it is not resolved, check with the person in charge |
 | Business operations fail even though settings have been made | Account used, target data, App-specific preparations, errors during execution |
 | The connection becomes invalid or stopped. | Inform the connection administrator of the status and when it occurred. Do not repeat cancellation/re-creation |
 In your inquiry, please include the organization name, app name, setting item name, display status, operation date and time, and confirmed operation. Please do not send the secret value or authentication information itself.

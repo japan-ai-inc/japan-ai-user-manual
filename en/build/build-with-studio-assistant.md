@@ -7,12 +7,18 @@ Even if AI responds "Done," separately confirm that it can be used for business.
 ## Before you begin
 
 - Check the organization and Project where you will work. If creating a new one, first follow [Create a Project and Configure Basic Settings](create-project-and-basic-settings.md).
-- Check the permissions required to use Studio Assistant and create or change target resources. Being able to open a Project does not necessarily mean you can build in it.
+- To use Studio Assistant, **the Studio Assistant feature must be enabled for your organization** and **you must have the Editor role or higher in the Project**. Studio Assistant is not displayed to users with the Member role.
 - Narrow the business work you first want to accomplish to one and prepare test data that you are allowed to use.
 - When changing an existing Project, confirm with the responsible person which targets may be changed and which must not be touched.
 - If an external connection or Secret is required, decide who will configure it. Do not paste API keys or passwords into the chat body.
 
 > The displayed Agents, menus, and capabilities that can be built vary by organization and Project settings and permissions. The following distinguishes planning immediately after Project creation from normal conversations in an existing Project.
+
+| Condition | Studio Assistant |
+|---|---|
+| Feature enabled for the organization, and you are a Project Admin or Editor | Available |
+| Project Member | Not displayed. Another Agent is selected instead (without notice) |
+| Feature disabled for the organization | Not displayed |
 
 ## 1. Open a conversation to request building
 
@@ -20,16 +26,16 @@ Even if AI responds "Done," separately confirm that it can be used for business.
 
 When you choose **"Create with a plan"** in [Create a Project and Configure Basic Settings](create-project-and-basic-settings.md), you proceed to the **"Project Plan: <Project name>"** screen. An Agent for building support is selected here, and the description entered during creation is included as a draft in the input field.
 
-The description has not yet been sent at this point. Add the target work, input information, desired completion state, and work scope. If necessary, attach materials such as design documents or mockups, then send it. Unlike normal chat, this screen does not display controls for switching Agents, models, or tools.
+The description has not yet been sent at this point. Add the target work, input information, desired completion state, and work scope. If necessary, attach materials such as design documents or mockups, then send it. Files attached during planning are saved in the Project's hidden `.project/` folder. Unlike normal chat, this screen does not display controls for switching Agents, models, or tools.
 
 ### Starting in an existing Project
 
 1. From Studio Workspace, open the Project where you will work.
 2. Start a conversation from the Project chat input field or displayed **"New Task."**
 3. **Check the selected Agent.** If an Agent selection menu appears and Studio Assistant is among the available choices, select it. If there are many choices and a search field appears, search by name.
-4. If you cannot select an Agent for building support, check with the responsible administrator whether it is available in that Project.
+4. If Studio Assistant is not among the choices, check whether your role is Editor or higher and whether the feature is enabled for your organization.
 
-The initially selected Agent may be a different Agent depending on settings and usage permissions. **Not every conversation in a Project is a conversation with Studio Assistant.** Do not make requests to a normal business Agent on the assumption that it has building permissions.
+For users who cannot use Studio Assistant, another Agent is selected without notice. **Not every conversation in a Project is a conversation with Studio Assistant.** Do not make requests to a normal business Agent on the assumption that it has building permissions.
 
 If a business Page is displayed when you open a Project, proceed to the building screen through the available return path. If you cannot find the entry point, check with the responsible administrator.
 
@@ -95,11 +101,11 @@ If you change the plan, check the **last agreed content**. Being able to press a
 
 When you confirm, execution of the plan by the Agent begins. **Approval does not only save the plan.**
 
-Materials attached during planning are carried over so that they can also be referenced on the execution side when you approve and proceed to execution. However, do not assume attachment or carryover alone means that content has been read or reflected in settings; check usage status after execution.
+Materials attached during planning (saved in the Project's hidden `.project/` folder) are carried over so that they can also be referenced on the execution side when you approve and proceed to execution. However, do not assume attachment or carryover alone means that content has been read or reflected in settings; check usage status after execution.
 
 You may not be able to select approval while a response is in progress or while a plan is being saved or synchronized. Even if a response contains a plan, the save necessary for execution may not be complete. If it remains unavailable, check the conversation guidance and save status, and request that the plan be saved if needed.
 
-> **Distinguish "Skip" from stopping when you want to build later.** Skip proceeds to the Project without executing the plan. By contrast, the confirmation for stopping setup states that the Project and data will be deleted. Do not use stopping as a substitute for temporary saving when you want to retain the work location. See [Create a Project and Configure Basic Settings](create-project-and-basic-settings.md) for details.
+> **Distinguish "Skip" from stopping when you want to build later.** Skip proceeds to the Project without executing the plan. By contrast, the confirmation for stopping setup states that the Project and data will be deleted. Do not use stopping as a substitute for temporary saving when you want to retain the work location. Also, selecting "Cancel" or closing the creation dialog reopened with "Back" **deletes the newly created Project without confirmation**. After reviewing settings, close it with "Save & Continue." See [Create a Project and Configure Basic Settings](create-project-and-basic-settings.md) for details.
 
 ### Execute in a normal conversation in an existing Project
 
@@ -135,7 +141,7 @@ You do not have to build every target at once. Check only what you created this 
 
 Use fictitious data or authorized test data. In addition to normal inputs, check missing required information and unexpected inputs. Even when testing for test purposes, external services can send or update data, so check the targets and impact before executing.
 
-When asking AI to report test results, ask it to separate "tests performed," "tests not performed," and "items that could not be confirmed." Check actual screens, saved results, and outputs in addition to the report.
+When asking AI to report test results, ask it to separate "tests performed," "tests not performed," and "items whose results are unknown." Check actual screens, saved results, and outputs in addition to the report.
 
 ## 6. Request edits and hand over remaining work
 
@@ -160,8 +166,8 @@ Being able to build within a Project is separate from being ready for business u
 
 | Situation | What to check and do |
 |---|---|
-| You cannot select Studio Assistant | Check the Project and usage permissions. If another Agent is selected initially, ask the responsible administrator whether you can use an Agent for building support. |
-| Setup initialization fails | Check the displayed error and use "Retry" if it appears on the screen. Do not confuse it with deletion caused by stopping. The planning screen does not open for normal "Create." |
+| You cannot select Studio Assistant | Check that you have the Editor role or higher in the Project and that Studio Assistant is enabled for your organization. If not, another Agent is selected without notice. |
+| Setup initialization fails | Check the displayed error and use "Retry" if it appears on the screen. Do not confuse it with deletion caused by stopping or by canceling the dialog reopened with "Back." The planning screen does not open for normal "Create." |
 | You cannot select "Approve" | Check whether a response or save operation is in progress and whether the plan is saved. Do not try to proceed through repeated operations. |
 | You approved but do not proceed to the execution screen | Check whether a conversation for execution was created. Do not approve repeatedly while the result is unknown. If it cannot be resolved, contact support. |
 | You were told "Done" but cannot find the target | Check the target Project, resource name, whether saving or registration succeeded, and viewing permissions. Do not treat only a response or file generation as completed registration. |

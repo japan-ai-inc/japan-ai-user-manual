@@ -42,7 +42,9 @@ Studio provides entry points for building and using.
 - **Studio App**: An application installed and distributed for users. Open an installed App to use its prepared screens and processes.
 - **Marketplace**: An entry point for finding available Apps and reviewing their content and installation conditions.
 
-To create new features for your work, start with the building guides in Studio Workspace. If the App or Project you will use has already been decided, start with its usage guide.
+On screen, open "Workspace" (the Project list) and "Apps" (installed Apps and Marketplace) from "STUDIO" in the left navigation.
+
+To create new features for your work, start with the building guides in Studio Workspace. To build without writing code, you can tell **Studio Assistant** in a Project about your goals and conditions and ask it to build (this requires the feature to be enabled for your organization and Editor or higher permission in the Project). If the App or Project you will use has already been decided, start with its usage guide.
 
 ## Use Studio for your role
 
@@ -59,7 +61,7 @@ The "roles" here categorize how to read this manual. They do not represent produ
 
 ### Not every feature requires no code
 
-Some tasks can be completed through screen operations or conversations with AI. On the other hand, Page development, SDK and API use, and integration with external services may require technical knowledge.
+Some tasks can be completed through screen operations or conversations with Studio Assistant. On the other hand, Page development, SDK and API use, and integration with external services may require technical knowledge.
 
 ### The operations available vary by person and environment
 
@@ -79,3 +81,4 @@ Proceed to the following articles based on your goal.
 | Use an installed App | [Open an Installed App and Get Started](../use/open-installed-app.md) |
 | Use a shared Project | [Get Started in a Shared Project](../use/start-with-shared-project.md) |
 | Start building on your own | [Create a Project and Configure Basic Settings](../build/create-project-and-basic-settings.md) |
+| Ask AI to build | [Ask Studio Assistant to Build for You](../build/build-with-studio-assistant.md) |

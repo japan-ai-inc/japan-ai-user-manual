@@ -14,7 +14,8 @@ For the public API HTTP specification, see [Project Members API](../api/project-
 ## Before you begin
 
 - Use `@japan-ai-inc/studio-sdk` **0.11.0** and Node.js **22 or later**.
-- This feature is for local direct development or a PRS server runtime. Do not pass an API key to the browser.
+- This feature is for local direct development or Page runtime server processing. Do not pass an API key to the browser.
+- Calls from the browser of a Studio-hosted Page are technically possible because the Page runtime relays them, but they are currently outside the beta support scope (subject to change without notice).
 - Confirm the target organization, Project, and execution mode.
 - The Project API key requires the `member:read` scope for member reads.
 
@@ -105,8 +106,8 @@ jai-studio members list --cursor '<next-cursor>'
 |---|---|
 | A `403` indicates an insufficient scope | Confirm that the target Project key has `member:read`. |
 | A `403` indicates that it is unavailable or permissions are insufficient | Check organization availability, the target Project, and caller permissions. |
-| The API key is shown as invalid | Check whether the key was revoked or deleted and check the target Project. |
-| Retrieval fails with `400` | Check `limit`, the search term, and `cursor`. |
+| `403` with `Invalid API key` or `API key has expired` | Check whether the key was revoked, deleted, or expired, and check the target Project. |
+| Retrieval fails with `400` | Check `limit` and the search term. An invalid `cursor` does not return `400`, so pass only cursor values returned by the SDK. |
 | A timeout or communication error occurs | Record `statusCode`, `message`, and execution mode from `MembersApiError`. |
 
 The SDK returns non-success HTTP responses as `MembersApiError`. This type extends `SdkApiError` and has `statusCode` and `responseBody`. Do not output `responseBody` unprocessed. The default timeout is **30 seconds**, and you can specify `timeoutMs` and `AbortSignal`. For details, see [Common API/SDK Errors, Timeouts, and Limits](api-sdk-errors-timeouts-limits.md).

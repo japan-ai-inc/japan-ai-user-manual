@@ -104,10 +104,10 @@ Not necessarily. Check availability in the organization, the `member:read` scope
 | `403` indicates insufficient scope | Check that the key for the target Project has `member:read`. Do not broaden an existing key's permissions by guesswork; if necessary, issue and switch to a new key with the minimum scope. |
 | `403` indicates unavailable access or insufficient permissions | Check organizational availability, the target Project, caller permissions, and execution mode. It may not be available in the organization. |
 | Retrieval fails with `400` | Check that `--limit` is an integer from 1 to 100, the search term is not empty, and the cursor is from the preceding response. |
-| You get an authentication error | Check key revocation, deletion, expiration, target Project, endpoint, and that an actual value is configured. Do not use the masked display. |
+| You get an authentication error | An invalid or expired key returns `403` ("Invalid API key" / "API key has expired"). Check key revocation, deletion, expiration, whether the key creator is an active member of the target Project, the target Project, endpoint, and that an actual value is configured. Do not use the masked display. |
 | You cannot share the output | Since it contains personal information, share only the necessary count or redacted reproduction steps. Do not attach complete JSON, even in a safe test environment. |
 
-Successful results are output as JSON to standard output; errors are output as JSON to standard error. Because `--debug` displays detailed server error responses and may include sensitive information, do not use it in shared logs. For inquiries, record the target Project, CLI version, execution mode, operation time, redacted reproduction steps with the search conditions, and HTTP status; do not include API keys, authentication headers, email addresses, or complete output.
+Successful results are output as JSON to standard output; API errors are output as JSON to standard error (plain text for usage errors). Because `--debug` displays detailed server error responses and may include sensitive information, do not use it in shared logs. For inquiries, record the target Project, CLI version, execution mode, operation time, redacted reproduction steps with the search conditions, and HTTP status; do not include API keys, authentication headers, email addresses, or complete output.
 
 ## Checklist
 

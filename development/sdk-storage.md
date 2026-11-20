@@ -14,23 +14,23 @@ Studio SDKの`storage`は、ProjectのStorageでファイルとフォルダを�
 ## 始める前に
 
 - SDKはNode.js 22以降を使います。
-- ローカルとPRSサーバーではAPIキーをサーバー側だけから渡します。PRSブラウザでは`createClient({ baseUrl: "" })`を使います。
+- ローカルとPage実行環境のサーバー処理（以下「Pageのサーバー処理」）ではAPIキーをサーバー側だけから渡します。StudioでホストされたPageのブラウザ（以下「Pageのブラウザ」）では`createClient({ baseUrl: "" })`を使います。
 - ファイルIDは一覧またはアップロードの戻り値から受け取ります。
 
 > APIキー、署名付きURLをブラウザ、ログ、ソース管理、問い合わせへ残してはいけません。
 
 ## 実行モード別の対応範囲
 
-`downloadFolder()`はPRSブラウザでは使えません。
+`downloadFolder()`はPageのブラウザでは使えません。
 
-| 操作 | ローカル | PRSブラウザ | PRSサーバー | 補足 |
+| 操作 | ローカル | Pageのブラウザ | Pageのサーバー処理 | 補足 |
 |---|---|---|---|---|
 | 一覧・メタデータ | 可 | 可 | 可 | `list()`、`listFolderContents()`、`getMetadata()`を使います。 |
-| ファイルのアップロード | 可 | 可 | 可 | `upload()`はPRSブラウザでは署名付きURLを使う手順へSDK内部で切り替わります。 |
+| ファイルのアップロード | 可 | 可 | 可 | `upload()`はPageのブラウザでは署名付きURLを使う手順へSDK内部で切り替わります。 |
 | ファイルのダウンロード | 可 | 可 | 可 | `download()`は`Response`を返します。 |
 | 署名付きダウンロードURL | 可 | 可 | 可 | `getDownloadUrl()`でURLと有効期限情報を取得します。 |
 | ファイル・フォルダの削除 | 可 | 可 | 可 | `deleteFile()`、`deleteFolder()`は復元の代わりになりません。 |
-| フォルダZIPダウンロード | 可 | 不可 | 可 | PRSブラウザでは`downloadFolder()`がエラーになります。 |
+| フォルダZIPダウンロード | 可 | 不可 | 可 | Pageのブラウザでは`downloadFolder()`がエラーになります。 |
 
 ## 1. 一覧を取得する
 
@@ -54,7 +54,7 @@ if (result.nextCursor) {
 }
 ```
 
-PRSブラウザでは、一覧のページサイズは1〜100、未指定時は50です。フォルダ内だけを調べる場合は`listFolderContents()`を使います。
+Pageのブラウザでは、一覧のページサイズは1〜100、未指定時は50です。フォルダ内だけを調べる場合は`listFolderContents()`を使います。
 
 ## 2. ファイルをアップロードする
 
@@ -105,7 +105,7 @@ const saved = await studio.storage.finalizeUpload({
 
 ## 3. ダウンロードと署名付きURLを使い分ける
 
-内容を処理する場合は`download()`を使い、`Response`から`blob()`、`text()`などを取得します。一時的な取得先には`getDownloadUrl()`で署名付きURLと`expiresAt`を取得します。PRSブラウザで`expiresInMinutes`を省略した場合は60分です。
+内容を処理する場合は`download()`を使い、`Response`から`blob()`、`text()`などを取得します。一時的な取得先には`getDownloadUrl()`で署名付きURLと`expiresAt`を取得します。Pageのブラウザで`expiresInMinutes`を省略した場合は60分です。
 
 ```ts
 const response = await studio.storage.download("file-id");
@@ -118,7 +118,7 @@ const { downloadUrl, expiresAt } = await studio.storage.getDownloadUrl(
 console.log(downloadUrl, expiresAt);
 ```
 
-`downloadFolder()`はローカルとPRSサーバーだけで利用できます。フォルダZIPの制約は[Storageの仕様・制限](../build/storage-specs-and-limits.md)を確認してください。
+`downloadFolder()`はローカルとPageのサーバー処理だけで利用できます。フォルダZIPの制約は[Storageの仕様・制限](../build/storage-specs-and-limits.md)を確認してください。
 
 ## 4. 削除とフォルダ操作を行う
 
@@ -139,9 +139,9 @@ console.log(deleted.deletedCount);
 
 ## よくある誤解
 
-### PRSブラウザならAPIキーを追加してフォルダZIPを取得できる
+### PageのブラウザならAPIキーを追加してフォルダZIPを取得できる
 
-できません。PRSブラウザでは`downloadFolder()`は非対応です。必要な処理はPRSサーバーへ置くか、個別ファイルの操作へ変更します。
+できません。Pageのブラウザでは`downloadFolder()`は非対応です。必要な処理はPageのサーバー処理へ置くか、個別ファイルの操作へ変更します。
 
 ### 署名付きURLは恒久的なファイルURLである
 
@@ -156,22 +156,22 @@ console.log(deleted.deletedCount);
 | 状況 | 確認・対応 |
 |---|---|
 | 認証エラーになる | 対象Project、APIキー、実行場所を確認します。 |
-| PRSブラウザのStorage操作が失敗する | PRS内で実行し、`baseUrl: ""`で初期化しているか確認します。 |
+| PageのブラウザのStorage操作が失敗する | StudioでホストされたPage内で実行し、`baseUrl: ""`で初期化しているか確認します。 |
 | アップロードが失敗する | ファイル数、サイズ、保存容量、権限、`path`、競合指定を確認します。 |
 | `finalizeUpload()`が失敗する | `storageId`、ファイル情報、`replaceIntent`、PUTの結果を確認します。 |
-| PRSブラウザで`downloadFolder()`が失敗する | 非対応です。個別ダウンロードまたはPRSサーバー処理へ変更します。 |
+| Pageのブラウザで`downloadFolder()`が失敗する | 非対応です。個別ダウンロードまたはPageのサーバー処理処理へ変更します。 |
 | 削除対象を誤った可能性がある | 対象パスと実行記録を確認して管理担当者へ連絡します。 |
 
 問い合わせには、実行モード、SDKバージョン、対象ID、操作日時、エラー、再現手順を記録します。APIキー、Cookie、署名付きURL、ファイル内容は添付しません。
 
 ## チェックリスト
 
-- [ ] ローカル、PRSブラウザ、PRSサーバーのいずれで動かすかを決めた
-- [ ] PRSブラウザを`createClient({ baseUrl: "" })`で初期化し、APIキーを含めていない
+- [ ] ローカル、Pageのブラウザ、Pageのサーバー処理のいずれで動かすかを決めた
+- [ ] Pageのブラウザを`createClient({ baseUrl: "" })`で初期化し、APIキーを含めていない
 - [ ] 一覧の戻り値から対象の`fileId`または`folderId`を確認した
 - [ ] アップロードは20件以下、1ファイル・合計要求サイズを2GB以下として扱った
 - [ ] 署名付きURLの有効期限と、`finalizeUpload()`の完了を確認した
-- [ ] PRSブラウザでは`downloadFolder()`を使っていない
+- [ ] Pageのブラウザでは`downloadFolder()`を使っていない
 - [ ] 削除前に対象パス、参照元、影響範囲を確認した
 
 ## 次に読む記事

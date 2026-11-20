@@ -12,7 +12,7 @@ Datasets APIは、Datasetの一覧取得と、検索（該当する文書断片�
 
 ## この記事の範囲
 
-この記事は、読取り用の2経路だけを扱います。同じ`/api/v1/datasets`には、Datasetの作成・更新・削除やドキュメントの追加・削除の経路もありますが、これらを公開して利用してよいかは確認できていないため、ここでは案内しません。SDKの`datasets`モジュールも、読取り専用（`list()`と`search()`）です。
+この記事は、読取り用の2経路だけを扱います。同じ`/api/v1/datasets`には、Datasetの作成・更新・削除やドキュメントの追加・削除の経路も本番に存在しますが、現時点ではこのマニュアルのサポート対象外です（予告なく変更される可能性があります）。仕様は公開OpenAPI（[APIリファレンス](https://api.japan-ai.co.jp/reference)、[`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)）を参照してください。SDKの`datasets`モジュールは、読取り専用（`list()`と`search()`）です。
 
 ## 始める前に
 
@@ -67,7 +67,7 @@ curl -X POST \
 
 使えません。利用者のサインインセッションを前提とします。
 
-### すべての文書の漏れを確認できる
+### 検索だけで文書の漏れがないことを保証できる
 
 検索は近い断片を返す仕組みのため、契約書の論点を漏れなく挙げるような全文確認には向きません。
 
@@ -75,12 +75,12 @@ curl -X POST \
 
 | 状態 | 確認すること |
 |---|---|
-| 401 | キーの値と有効期限を確認します。 |
-| 403 | 対象Project、`dataset:read`、`scope=organization`を利用者セッションで呼んでいるかを確認します。 |
+| 401 | 認証情報がまったく送られていません。`x-api-key`または`Authorization`ヘッダーを確認します。 |
+| 403 | 無効・期限切れのキー（"Invalid API key"／"API key has expired"）は403です。キーの値と有効期限、対象Project、`dataset:read`、`scope=organization`を利用者セッションで呼んでいるかを確認します。 |
 | 404 | `datasetId`と対象Projectを確認します。別ProjectのIDを探索しません。 |
 | 429 | 応答の`Retry-After`と`retryAfterSeconds`に従い、連続再送を避けます。 |
 
-問い合わせには、対象Project、API経路、`requestId`、`datasetId`、実行時刻、HTTP状態を記録します。APIキーやAuthorizationヘッダーは記載しません。
+エラー応答にも`requestId`が含まれます。問い合わせには、対象Project、API経路、`requestId`、`datasetId`、実行時刻、HTTP状態を記録します。APIキーやAuthorizationヘッダーは記載しません。
 
 ## チェックリスト
 

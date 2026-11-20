@@ -2,7 +2,7 @@
 
 In this exercise, you will prepare a test Page that sends only one fictional daily-report summary to an external service approved for use by your organization. Check the connection, Secret, Page runtime environment, and send result separately. Do not use real customer names, revenue, personal information, credentials, or business destinations.
 
-Do not put Secret values in screens, source code, deliverables, public environment variables, or support inquiries. Conditions for server processing and Secret references available to a Page vary by environment, so you must check them before beginning this exercise.
+Do not put Secret values in screens, source code, deliverables, public environment variables, or support inquiries. A Page with server processing is uploaded as source with `package.json` and a lockfile at the root; Studio installs and builds it, then starts it as a Node/Bun server. Project Secrets are passed to server processing as environment variables only when written as `${secret:name}` in the root `.env` or `.env.production` of the source. Browser-side code and Agents cannot read them.
 
 ## Related articles
 
@@ -17,7 +17,7 @@ Do not put Secret values in screens, source code, deliverables, public environme
 
 - Choose a person who can edit the Project and manage connections and **"Project Secrets."** If permissions or the target service are not displayed, do not choose an alternative service on your own; check the [Index of limits and availability conditions](../operations/limits-and-availability-index.md).
 - Prepare a test destination and an account with minimum permissions on the external service. Also choose who will stop or revoke sending.
-- Confirm in [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md) that the target Page runtime environment can use server processing and Project Secret references. Being able to register a ZIP does not necessarily mean arbitrary server processing is available.
+- Review how server processing and Project Secret references work in [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md). A static Page with only `index.html` has no server processing.
 - Add only a test connection, test Secret, and test Page in this exercise. Do not add schedules, triggers, automatic retries, or public links.
 
 ## Sample used in this exercise
@@ -66,10 +66,12 @@ For details, see [Configure shared connections for Projects and Apps](../operati
 
 **Goal:** Manage the external-service secret value separately from the Page deliverable.
 
-1. Open **"Project Secrets"** in Project settings.
+1. Open the Project's **"Secret Management"** and select the **"Project Secrets"** tab.
 2. Select **"Create Secret,"** enter `lab005_service_token` as the name, and enter a test value obtained securely as the value.
 3. After creation, check the name and update state in the list. Do not copy, display, or share the value to check it.
 4. If an existing Secret has the same name, do not overwrite it; check the target and owner.
+
+A Secret value can be saved with up to 8,192 characters, but a value passed to a Page as an environment variable is limited to 4,096 bytes. Longer values can be saved but cause the Page to fail at startup.
 
 For Secret operations, see [Create, update, and delete Project Secrets](../operations/manage-project-secrets.md). **Checkpoint:** A Secret is not a replacement for a connection. Check the connection, Secret, and Page-side reference separately.
 
@@ -78,12 +80,12 @@ For Secret operations, see [Create, update, and delete Project Secrets](../opera
 **Goal:** Create a process that passes only input values to the test destination.
 
 1. Create a screen in `Daily report sending (test)` that accepts the sample four fields and starts a test post.
-2. Use server processing and Secret references only by the method for the applicable environment in [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md).
+2. In the root `.env` (or `.env.production`) of the source, write something like `LAB_SERVICE_TOKEN=${secret:lab005_service_token}`, and read it in server processing with `process.env.LAB_SERVICE_TOKEN`. Other `.env.*` files are not read. Reserved keys such as `PORT`, `NODE_ENV`, and names starting with `PRS_` cannot be used. The server listens on `process.env.PORT`. For details, see [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md).
 3. Do not return Secret values or authorization headers to the browser, and do not output them in screens, errors, or logs. Do not create responses or screen displays that contain values.
 4. On the server side, check required input fields and the destination, and limit the process to sending one summary by the approved method.
 5. Before registering the Page, confirm that the deliverable, configuration files, source maps, and screen display contain no actual Secret value.
 
-For Page registration and access settings, see [Register and publish Pages from the screen](../build/register-and-publish-pages.md). **Checkpoint:** Do not use a configuration that sends directly from the browser to an external API, contains an actual Secret value, or automates retries. Because conditions for implementations that do not expose Secrets depend on the environment, this exercise alone does not guarantee anything outside the scope of [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md).
+For Page registration and access settings, see [Register and publish Pages from the screen](../build/register-and-publish-pages.md). **Checkpoint:** Do not use a configuration that sends directly from the browser to an external API, contains an actual Secret value, or automates retries. Check in the code of your server processing that Secret values are never returned to the browser.
 
 ## Step 5. Send one item and compare the result
 
@@ -101,7 +103,7 @@ For precautions when using a Page, see [Work with Pages](../use/work-with-pages.
 | Misunderstanding | What to check |
 |---|---|
 | Creating a connection makes a Secret unnecessary | Whether a connection and Secret are needed varies by service and implementation. |
-| Saving a Secret makes it automatically available from a Page | Check the Page-side reference setting and runtime environment. |
+| Saving a Secret makes it automatically available from a Page | Only values referenced as `${secret:name}` in `.env` are passed to server processing as environment variables. Browser-side code and Agents cannot read them. |
 | A success display means it reached the correct destination | Check the destination, content, and count in the external service. |
 | It is safe as long as the Secret is not displayed on screen | Do not put it in source, deliverables, public settings, logs, or responses either. |
 
@@ -110,7 +112,7 @@ For precautions when using a Page, see [Work with Pages](../use/work-with-pages.
 | Situation | First thing to check |
 |---|---|
 | Connector Settings or the target service is not displayed | Check the Project, permissions, organization availability conditions, and approval status. See [Configure shared connections for Projects and Apps](../operations/configure-shared-connections.md). |
-| You cannot create or reference a Secret | Check the correct Project, name, permissions, and Page runtime-environment support. See [Create, update, and delete Project Secrets](../operations/manage-project-secrets.md) and [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md). |
+| You cannot create or reference a Secret | Check the correct Project, name, permissions, the `${secret:name}` syntax in `.env`, and the value length (up to 4,096 bytes as an environment variable). See [Create, update, and delete Project Secrets](../operations/manage-project-secrets.md) and [Page server processing, environment variables, and Secret references](../development/page-server-env-and-secrets.md). |
 | Sending fails | Check the connection authentication state, external permissions, destination, input, and Page processing. Do not attach values to an error report. |
 | A value appears in a screen, deliverable, or log | Stop sending, do not share the URL, and revoke and reissue the value on the external-service side. Notify the responsible person of the impact scope and do not resume until you confirm a safe state. |
 

@@ -4,6 +4,8 @@ When updating a Page, distinguish between the content provided to users and the 
 
 Version operations do more than change the reference to the version displayed. Uploading a new version or restoring a past version applies the selected version's files as the current Page content. Treat this as a change that affects users: check beforehand and verify operation after applying it.
 
+> When you ask AI to edit an existing Page, AI also writes a new version and immediately switches it to "Applied." There is no draft stage. If unintended content is published, return to an earlier version by following "3. Restore and apply a past version."
+
 ## Related articles
 
 - [Register and Publish a Page from the Screen](register-and-publish-pages.md)
@@ -18,7 +20,7 @@ A Page can retain multiple versions, one of which is treated as "Applied." The P
 |---|---|---|
 | Applied version | The version used as the current Page content | Cannot be selected for "Restore and apply" |
 | Version History | Version name, creation date and time, description, and uploader | You can select a past version and apply it |
-| New version | A version created from a new ZIP package | Replaces the current Page content after upload |
+| New version | A version created from a new ZIP package or from an AI edit | Becomes "Applied" immediately after creation and replaces the current Page content |
 | Version information | The version-specific "Name" and "Description" | You can update it. Changing only the name or description does not switch the applied version |
 
 > **The version with the larger number and the "Applied" version are not necessarily the same.** After you restore and apply a past version, versions with larger numbers may remain in the history. Do not judge the content to provide to users by the number alone; check the "Applied" label and the actual Page.
@@ -57,7 +59,7 @@ Use this procedure to create a version from a new ZIP and apply its content to t
 
 While uploading, do not close the dialog or repeat the same update; wait for completion or an error message. Files other than ZIP files, simultaneous selection of multiple files, and files exceeding the limit shown on the screen are not accepted.
 
-> **Do not omit business-use verification just because an upload-complete message appears.** Applying a new version starts a Page rebuild, so check not only that the screen opens, but also representative operations and results before notifying users. [Page Build, Start, and Update](../development/page-build-start-update.md) covers build and start details.
+> **Do not omit business-use verification just because an upload-complete message appears.** When a new version is applied, Studio installs dependencies, runs the build, and restarts the Page. Until the build finishes, a build-in-progress screen appears, and display can take several minutes (up to about 15 minutes). If the build fails, a build-failure screen appears. Check not only that the screen opens, but also representative operations and results before notifying users. [Page Build, Start, and Update](../development/page-build-start-update.md) covers build and start details.
 
 ## 3. Restore and apply a past version
 
@@ -72,7 +74,7 @@ If you want to undo the immediately preceding change or return to a known state,
 
 "Restore and apply" applies a past version's files as the current Page content and switches the applied version. **It does not create a new version number for restoration.** Applying a past version also does not automatically delete versions uploaded later from the history.
 
-> If an error appears while switching or you cannot confirm the completion message, do not immediately repeat the same operation. Check the "Applied" label in the history and the actual Page. If processing may still be in progress, wait and check again.
+> If an error appears while switching or no completion message appears, do not immediately repeat the same operation. Check the "Applied" label in the history and the actual Page. If processing may still be in progress, wait and check again.
 
 ## 4. Update names and descriptions, and delete versions
 
@@ -94,7 +96,7 @@ You can delete an unnecessary version with "Delete." However, once deleted, that
 4. If the Page sends to external services or creates, updates, or deletes data, check the results with test data or an approved method.
 5. Share the switched version, date and time, reason for the change, verification results, and unverified items with relevant parties.
 
-> If the Page screen does not display, unexpected content appears, or you cannot confirm business-operation results, do not perform additional updates or restorations until the cause is known. Record the currently "Applied" version, the immediately preceding operation, displayed messages, and reproduction steps, and contact the administrator.
+> If the Page screen does not display, unexpected content appears, or business-operation results differ from expectations, do not perform additional updates or restorations until the cause is known. Record the currently "Applied" version, the immediately preceding operation, displayed messages, and reproduction steps, and contact the administrator.
 
 ## Checklist
 

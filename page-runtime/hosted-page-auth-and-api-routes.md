@@ -35,7 +35,9 @@ const files = await studio.storage.list({ path: "/" });
 
 SDK 0.11.0のブラウザ対応範囲は`agents`、`datasets`、`objects`、`storage`、`platform`です。`agents.invoke()`はPage実行環境を検出すると`POST /api/agent-chat`を使います。Objects、Storage、Dataset読取りは、例えば`/api/v1/objects/...`、`/api/v1/storage/...`、`/api/v1/datasets...`を使います。
 
-`/api/v1/*`は任意の公開APIを中継する汎用入口ではありません。Objects、Storage、Dataset読取りはブラウザ向けSDKの対象です。`workflows`と`scheduledTasks`は対象外です。Projectメンバーの取得は、Page実行環境での許可と読取り権限がそろう場合だけ検討し、[Project Members API](../api/project-members-api.md)を確認します。ほかの機能はサーバー処理へ分離します。
+`/api/v1/*`は任意の公開APIを中継する汎用入口ではありません。Objects、Storage、Dataset読取りはブラウザ向けSDKの対象です。`scheduledTasks`は対象外です。`members`（`/api/v1/project-members`）と`workflows`（`/api/v1/workflows`）は、Page実行環境が中継するため技術的には呼び出せますが、現時点ではベータのサポート範囲外です（予告なく変更される可能性があります）。ほかの機能はサーバー処理へ分離します。
+
+Pageセッション経由の呼び出しでは、Project APIキーのスコープは確認されません。`/api/v1/*`の上限は固定値で、リクエスト本文は32MiBまで、レートは毎秒25件・バースト200です。詳しくは[Page補助APIの対応範囲](page-auxiliary-api-scope.md)を参照してください。
 
 | 用途 | Pageブラウザでの経路 | 使い分け |
 |---|---|---|
@@ -43,7 +45,8 @@ SDK 0.11.0のブラウザ対応範囲は`agents`、`datasets`、`objects`、`sto
 | Objects | `/api/v1/objects/...` | `objects`のSDK/API仕様に従います。詳細は[Objects API](../api/objects-api.md)と[Hosted PageのObjects API](hosted-page-objects-api.md)を参照します。 |
 | Storage | `/api/v1/storage/...` | `storage`を使います。ブラウザでは`downloadFolder()`を利用できません。詳細は[SDK Storage](../development/sdk-storage.md)を参照します。 |
 | Dataset読取り | `/api/v1/datasets...` | `datasets.list()`と`datasets.search()`だけを使います。対応するPage実行環境がなければ404です。組織Datasetは、署名済み利用者のセッションでだけ扱えます。 |
-| Tool Proxy | `/api/tools/...` | Page実行環境専用です。[Tool Proxy API](../api/tool-proxy-api.md)の経路だけを使います。 |
+| Tool Proxy | `/api/tools/...` | Page実行環境専用です。[Tool Proxy API](../api/tool-proxy-api.md)の経路だけを使います。匿名のPageセッションでは401になります。エラーはプレーンテキストで返ることがあり、レート制限はPage実行環境全体で共有されます。 |
+| Projectメンバー・Workflow | `/api/v1/project-members`、`/api/v1/workflows` | 技術的には呼び出せますが、現時点ではベータのサポート範囲外です（予告なく変更される可能性があります）。 |
 
 > `x-api-key`、`Authorization: Bearer`、`pak_...`形式のProject APIキーを、Pageブラウザのリクエストへ追加してはいけません。コードを難読化しても、ブラウザへ配布した値は利用者から取得できます。
 
@@ -52,8 +55,8 @@ SDK 0.11.0のブラウザ対応範囲は`agents`、`datasets`、`objects`、`sto
 | 「アクセス設定」のモード | Pageを開くときの認証コンテキスト | 実装・試験の要点 |
 |---|---|---|
 | 「サインイン必須」 | サインイン済みでPageへのアクセス権を持つ利用者のPageセッションです。 | 未サインインなら認証後に元のPage URLへ戻ることを確認します。 |
-| 「サインイン任意」 | サインイン済みなら利用者のセッション、未サインインなら匿名のPageセッションです。 | 同じ画面・APIで、サインイン状態と未サインイン状態を個別に試験します。 |
-| 「匿名アクセス」 | サインイン済みかどうかにかかわらず、匿名のPageセッションです。 | 利用者固有の情報や権限を前提にせず、匿名訪問者として読取り・書込みの可否を確認します。 |
+| 「サインイン任意」 | サインイン済みなら利用者のセッション、未サインインなら匿名のPageセッションです。 | 公開URL（`/p/{token}`）から開き、同じ画面・APIで、サインイン状態と未サインイン状態を個別に試験します。 |
+| 「匿名アクセス」 | サインイン済みかどうかにかかわらず、匿名のPageセッションです。 | 公開URL（`/p/{token}`）から開きます。利用者固有の情報や権限を前提にせず、匿名訪問者として読取り・書込みの可否を確認します。Tool Proxyは401になります。 |
 | 「外部顧客認証」 | 設定済みの顧客IDプロバイダーで認証された訪問者のPageセッションです。 | 外部認証が有効でセッションがない場合は401となり、現在のPage文書を再読み込みして認証をやり直します。 |
 
 「サインイン任意」と「匿名アクセス」はどちらも未サインインで開けますが、前者は既存の利用者セッションを使え、後者は常に匿名コンテキストになります。「外部顧客認証」は設定済みの接続を前提に確認してください。画面への到達とAPI操作の両方で、組織・Project・Pageがセッションと一致することが検証されます。
@@ -78,7 +81,7 @@ SDK 0.11.0のブラウザ対応範囲は`agents`、`datasets`、`objects`、`sto
 | URL | Pageと同じオリジンの`/api/...` | `https://api.japan-ai.co.jp`のAPI経路 |
 | 認証情報 | Pageを開いた結果のセッション | Project APIキーを`x-api-key`またはBearerで渡します |
 | ブラウザへのキー | 不要、かつ禁止 | 使用しません。キーはサーバー側だけに保管します |
-| 利用範囲 | Page実行環境が提供する経路とブラウザ対応SDKに限定 | キーのスコープと各Public API仕様に従います |
+| 利用範囲 | Page実行環境が提供する経路とブラウザ対応SDKに限定。キーのスコープは確認されず、Pageセッション・設定・利用者の権限で判定 | キーのスコープと各Public API仕様に従います |
 | 運用 | セッション切れ時はPageの再認証経路を使います | 発行・最小スコープ・期限・ローテーション・失効を管理します |
 
 Public APIの詳細は[Agents・会話・成果物API](../api/agents-conversations-artifacts-api.md)から[Project Members API](../api/project-members-api.md)まで、キーの管理は[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照してください。
@@ -96,7 +99,7 @@ Public APIの詳細は[Agents・会話・成果物API](../api/agents-conversatio
 | 状況 | 確認・対応 |
 |---|---|
 | `/api/v1/...`が404になる | 先頭パスがPage実行環境で提供されるものか、ブラウザ対応のSDKモジュールかを確認します。Public API用の任意の経路を中継するものではありません。 |
-| 401になる | Pageを開き直し、アクセスモード、対象Pageへの到達、認証更新が行われる表示経路を確認します。401をキー追加で回避しません。 |
+| 401になる | Pageを開き直し、アクセスモード、対象Pageへの到達、認証更新が行われる表示経路を確認します。匿名のPageセッションからTool Proxyを呼んでいないかも確認します。401をキー追加で回避しません。 |
 | 403になる | Origin/Refererを偽装・固定していないか、同一オリジンのPage操作か、Page・Projectの組合せが正しいかを確認します。 |
 | StorageやObjectsの操作が期待と違う | SDKのブラウザ対応範囲と、各APIのPublic API仕様を分けて確認します。ブラウザで非対応の操作はサーバー処理へ分離します。 |
 

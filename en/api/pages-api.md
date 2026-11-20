@@ -1,6 +1,6 @@
 # Pages API
 
-The Pages API is a REST API for developers that temporarily uploads a completed ZIP for a Page and registers it as a new Page or a new version of an existing Page.
+The Pages API is a REST API for developers that temporarily uploads a ZIP containing the source of a Page project and registers it as a new Page or a new version of an existing Page. After upload, Studio selects Bun, Node, or static based on the lock file, installs dependencies, and runs `build`. The ZIP root must contain `package.json` and a lock file (or `index.html` for a static Page). A ZIP with neither, or one containing Next.js build output, is rejected.
 
 This API provides only ZIP upload preparation and deployment. **There are no endpoints to retrieve or change access settings** such as the Page list, access mode, public URL, or external customer authentication. To change the sharing scope, open "Access settings" for the target Page in Studio. For when to use the SDK or CLI, see [SDK Pages and Platform](../development/sdk-pages-and-platform.md).
 
@@ -15,14 +15,14 @@ This API provides only ZIP upload preparation and deployment. **There are no end
 
 ## Before you begin
 
-The production base URL is `https://api.japan-ai.co.jp`, and the common path is `/api/v1/pages`. Every endpoint requires the Project API key for the target Project and the `page:write` scope. You can pass the key in the `x-api-key` header or `Authorization: Bearer <key>`. The following examples use `x-api-key`.
+The production base URL is `https://api.japan-ai.co.jp`, and the common path is `/api/v1/pages`. Every endpoint requires the Project API key for the target Project and the `page:write` scope. You can pass the key in the `x-api-key` header or `Authorization: Bearer <key>`. The following examples use `x-api-key`. All public API endpoints and request/response schemas are also published in the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)).
 
 ```bash
 export JAI_STUDIO_API_KEY='value retrieved from secure storage'
 export PAGE_ZIP='./page-release.zip'
 ```
 
-> Do not include API keys in browser JavaScript, public environment variables, source control, logs, or support inquiries. For issuance, minimum scopes, and revocation, follow [Manage Project API Keys](../operations/manage-project-api-keys.md). Complete the ZIP before sending it.
+> Do not include API keys in browser JavaScript, public environment variables, source control, logs, or support inquiries. For issuance, minimum scopes, and revocation, follow [Manage Project API Keys](../operations/manage-project-api-keys.md).
 
 ## Endpoint list
 
@@ -54,9 +54,11 @@ curl -sS -X POST 'https://api.japan-ai.co.jp/api/v1/pages/upload-url' \
 
 On success, the response is 200 and returns `uploadUrl`, `uploadPath`, `expiresAt`, and `requiredHeaders`. `uploadPath` is an opaque value to pass unchanged to the deployment body, and `requiredHeaders` are headers to use when sending the ZIP.
 
-Send the ZIP body to `uploadUrl` with `PUT`. Preserve the contents of `requiredHeaders` when sending it.
+Send the ZIP body to `uploadUrl` with `PUT`. Preserve the contents of `requiredHeaders` when sending it. The following example sets the preparation response `uploadUrl` and, for updates, the target Page ID as environment variables before sending.
 
 ```bash
+export UPLOAD_URL='<uploadUrl from the preparation response>'
+export PAGE_ID='<Page ID to update>'   # only when updating an existing Page
 curl -sS -X PUT "$UPLOAD_URL" \
   -H 'Content-Type: application/zip' \
   --upload-file "$PAGE_ZIP"
@@ -99,7 +101,7 @@ On successful creation or update deployment, the response is 200 and has the sam
 |---|---|
 | `pageId` | Created or updated Page ID. |
 | `studioUrl` | URL to check the target Page in Studio. |
-| `runtimeUrl` | Runtime URL. `null` if it does not exist. |
+| `runtimeUrl` | Runtime URL. `null` if it does not exist. Always `null` for a Page whose access setting is the default "sign-in required". |
 | `version` | Deployed version. |
 | `fileCount` | Number of registered files. |
 | `createdAt` | String representing when the deployment result was created. |
@@ -109,13 +111,13 @@ Do not infer availability even if `runtimeUrl` is `null` or `rebuildTriggered` i
 
 ## Errors and usage controls
 
-Invalid input; invalid, expired, or consumed `uploadPath`; and ZIP format, size, or structure problems return 400. A failure to meet the key, `page:write`, Project operation permission, Page availability conditions, or Page count limit returns 403; a missing update target returns 404. The API applies usage controls to upload preparation and deployment and also controls concurrent deployment. Reaching a limit returns 429.
+Invalid input; invalid, expired, or consumed `uploadPath`; and ZIP format, size, or structure problems return 400. An invalid or expired key, or a failure to meet `page:write`, Project operation permission, Page availability conditions, or Page count limit returns 403; a missing update target returns 404. The API applies usage controls to upload preparation and deployment and also controls concurrent deployment. Reaching a limit returns 429.
 
 On 429, do not repeatedly retry; reduce the number of concurrent deployments and request frequency. There are two types of 429. Common API usage controls return the `Retry-After` header and body `retryAfterSeconds`, so follow them. Page-specific controls (preparation and deployment frequency, number of concurrent deployments, unused upload capacity, and update conflicts for the same Page) do not return wait seconds and are distinguished by the body `code`. An update conflict also returns 429 rather than 409. In either case, do not repeatedly retry; space out attempts. For general handling, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
 
 | Situation | What to check and do |
 |---|---|
-| 400 | Check `fileName`, `contentType`, `uploadPath`, ZIP name, and ZIP size and structure. Check whether you need to prepare the upload again. |
+| 400 | Check `fileName`, `contentType`, `uploadPath`, ZIP name, and ZIP size and structure (`package.json` and a lock file, or `index.html`, at the root). Check whether you need to prepare the upload again. |
 | 403 | Check the API key, `page:write`, target Project, Page availability conditions, and operation permission. Do not add scopes based on guesswork. |
 | 404 | Check `pageId` and the target Project. Do not use an ID from another Project. |
 | 429 | Do not repeatedly send the same ZIP or deployment. Reduce concurrency and frequency before retrying. If `Retry-After` exists, follow its seconds. |
@@ -124,7 +126,7 @@ On 429, do not repeatedly retry; reduce the number of concurrent deployments and
 ## Checklist
 
 - [ ] Prepared a secure Project API key and `page:write` for the target Project
-- [ ] Confirmed that the completed ZIP meets the size, structure, and secret-information conditions in [Page Specifications and Limits](../build/page-specs-and-limits.md)
+- [ ] Confirmed that the ZIP containing the project source meets the size, structure, and secret-information conditions in [Page Specifications and Limits](../build/page-specs-and-limits.md)
 - [ ] Performed preparation, ZIP `PUT`, and deployment in order, without modifying or reusing `uploadPath`
 - [ ] Used the correct paths and `pageId` for new creation and existing Page updates
 - [ ] Checked `studioUrl`, `runtimeUrl`, version, and rebuild result

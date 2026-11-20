@@ -9,9 +9,9 @@
 
 ## 始める前に
 
-対象パッケージは `@japan-ai-inc/studio-sdk` です。SDKとCLIを含みます。確認対象は **0.11.0** です。
+対象パッケージは `@japan-ai-inc/studio-sdk` です。SDKとCLIを含みます。このマニュアルは **0.11.0** を基準にしています。
 
-Node SDKとCLIには、**Node.js 22以上**が必要です。Node.js 20以前や、ブラウザへ直接APIキーを渡す構成は対象外です。ブラウザでのSDK利用は、PRS（Pages Rendering Service）内で動くPage向けに限定されています。ローカル開発と明示的に管理した開発自動化では、Node.js側でProject APIキーを扱います。
+Node SDKとCLIには、**Node.js 22以上**が必要です。Node.js 20以前や、ブラウザへ直接APIキーを渡す構成は対象外です。ブラウザでのSDK利用は、StudioでホストされたPage（Page実行環境で動くPage）向けに限定されています。ローカル開発と明示的に管理した開発自動化では、Node.js側でProject APIキーを扱います。
 
 > Project APIキーは秘密情報です。ブラウザ用JavaScript、ブラウザに公開される環境変数、ログ、ソース管理へ入れてはいけません。キーの発行・保管・失効は[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照してください。
 
@@ -28,7 +28,7 @@ npm --version
 
 ### バージョンをそろえる
 
-SDK 0.11.0は、パッケージ定義と`SDK_VERSION`で確認できます。依存関係、ロックファイル、CIを同じ版にそろえます。
+導入したSDKの版は、パッケージ定義と`SDK_VERSION`で確認します。依存関係、ロックファイル、CIを同じ版にそろえます。
 
 | 確認項目 | 確認する内容 |
 |---|---|
@@ -57,7 +57,7 @@ const studio = createClient({
 });
 ```
 
-この例はNode.js側の設定例です。値を画面へ返しません。ブラウザで動くPRS Pageの認証・初期化は[実行モード・認証・対応範囲](execution-modes-and-auth.md)を確認します。
+この例はNode.js側の設定例です。値を画面へ返しません。ブラウザで動くStudioでホストされたPageの認証・初期化は[実行モード・認証・対応範囲](execution-modes-and-auth.md)を確認します。
 
 ## 1. SDKを導入する
 
@@ -94,7 +94,7 @@ command -v jai-studio
 jai-studio --version
 ```
 
-Windows環境では、シェルに対応するコマンドで実行パスを確認してください。未確認の別版CLIでPageの操作や自動化を実行しないでください。
+Windows環境では、シェルに対応するコマンドで実行パスを確認してください。版を確認していないCLIでPageの操作や自動化を実行しないでください。
 
 CLIには、同梱skillをローカルへ配置する `skill install` もあります。
 
@@ -111,8 +111,8 @@ SDKの利用可否はnpmでの導入だけでは決まりません。実行モ�
 | 利用場所 | 必要な前提 |
 |---|---|
 | ローカルNode.js | Node.js 22以上と開発者管理のProject APIキー。任意の外部本番ホスティングをサポートするものではありません。 |
-| PRSブラウザ | PRSセッション。Project APIキーを設定・参照しません。 |
-| PRSサーバー | Node.js 22以上とPRS管理のサーバー側設定。キーをブラウザへ返しません。 |
+| Page実行環境（ブラウザ） | Page実行環境のセッション。Project APIキーを設定・参照しません。 |
+| Page実行環境（サーバー） | Node.js 22以上と、開発者がルートの`.env`で定義する環境変数（Project APIキーは自動では注入されません）。キーをブラウザへ返しません。 |
 
 > SDKを更新しても接続先の機能は自動的にそろいません。CHANGELOGで前提を確認し、代表操作を検証してください。
 
@@ -130,7 +130,7 @@ SDKの利用可否はnpmでの導入だけでは決まりません。実行モ�
 
 ## CHANGELOGを使った更新判断
 
-npmで公開されているSDKの版と、お使いの環境（公開API、PRS）で提供されている機能は、同じ時点とは限りません。新しい版のメソッドが、環境側でまだ提供されていない場合があります。更新前に、使う機能の提供状況を確認してください。
+npmで公開されているSDKの版と、お使いの環境（公開API、Page実行環境）で提供されている機能は、同じ時点とは限りません。新しい版のメソッドが、環境側でまだ提供されていない場合があります。更新前に、使う機能の提供状況を確認してください。
 
 更新前には、パッケージに含まれる `CHANGELOG.md` を確認します。CHANGELOGは変更内容と互換性上の注意を確認する一次情報です。特に次を確認します。
 
@@ -138,7 +138,7 @@ npmで公開されているSDKの版と、お使いの環境（公開API、PRS�
 2. `Changed`、`Fixed`と、追加機能の実行環境・接続先の前提を確認します。
 3. SDK・CLI・ロックファイルを更新候補にそろえ、代表操作と失敗時の処理を検証します。
 
-0.6.0から0.11.0では、Canvas公開の`publishCanvasArtifact()`に公開範囲の第3引数が必要になりました。0.11.0のクレジット確認と`platform.openAppSettings()`は、対応するPRS実行環境で利用します。移行の詳細は[SDK／APIのバージョン移行](sdk-api-version-migration.md)で扱います。
+0.7.0で、Canvas公開の`publishCanvasArtifact()`に公開範囲の第3引数が必要になり（破壊的変更）、クレジット確認のAPIが追加されました。同じく0.7.0で追加された`platform.openAppSettings()`は、Page実行環境のブラウザで利用します。`agents.create()`などのAgent定義の操作と`scheduledTasks`は0.8.0で追加されました。移行の詳細は[SDK／APIのバージョン移行](sdk-api-version-migration.md)で扱います。
 
 ## よくある誤解
 
@@ -152,7 +152,7 @@ CLIは同じパッケージから提供されます。SDKを0.11.0に固定す�
 
 ### CommonJS設定なら、どのブラウザでもSDKを直接使える
 
-CommonJSかESMかは、主にNode.js側のモジュール読込方式の問題です。ブラウザでのSDK利用の対応範囲は別であり、PRS内のPageかどうか、認証方式、利用するモジュールを確認する必要があります。
+CommonJSかESMかは、主にNode.js側のモジュール読込方式の問題です。ブラウザでのSDK利用の対応範囲は別であり、StudioでホストされたPageかどうか、認証方式、利用するモジュールを確認する必要があります。
 
 ### 0.x系のminor更新は常に安全である
 
@@ -165,7 +165,7 @@ CommonJSかESMかは、主にNode.js側のモジュール読込方式の問題�
 | `node --version` が22未満 | Node.js 22以上を使う環境へ切り替えます。SDKだけを旧Node.jsへ合わせて下げる判断は、対応範囲とCHANGELOGを確認してから行います。 |
 | `jai-studio` が見つからない、または期待と違う版を表示する | `command -v jai-studio` と `jai-studio --version` を確認し、PATH上の実体とグローバル導入版を見直します。 |
 | `npm ls` と `SDK_VERSION` が一致しない | 実行ディレクトリ、ロックファイル、ワークスペースの依存関係を確認します。複数版を解決している場合は、使用される版を一つに固定します。 |
-| ブラウザで認証・APIキー関連の問題が起きる | APIキーをブラウザへ追加せず、実行場所がPRS内か、Node.js側かを確認します。[実行モード・認証・対応範囲](execution-modes-and-auth.md)と[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照します。 |
+| ブラウザで認証・APIキー関連の問題が起きる | APIキーをブラウザへ追加せず、実行場所がStudioでホストされたPage内か、Node.js側かを確認します。[実行モード・認証・対応範囲](execution-modes-and-auth.md)と[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照します。 |
 | SDK更新後に一部の呼び出しが失敗する | CHANGELOGで更新先までの変更と追加前提を確認し、SDK／CLI／Node.js／接続先の組合せを記録して切り分けます。必要に応じて[SDK／APIのバージョン移行](sdk-api-version-migration.md)の移行手順を参照します。 |
 
 ## チェックリスト

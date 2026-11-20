@@ -13,7 +13,7 @@
 
 Install Node.js 22 or later and `@japan-ai-inc/studio-sdk` 0.11.0, then prepare a CLI profile or API key for connection. For profiles, endpoints, and the priority order of keys, see [CLI Configuration and Profiles](cli-config-and-profiles.md).
 
-On success, JSON is output to standard output. Add `--pretty` to format it. On failure, JSON containing `error`, `statusCode`, and `details` is output to standard error, and the command exits with code 1. Use `--debug` only in a safe investigation environment.
+On success, JSON is output to standard output. Add `--pretty` to format it. On API failure, JSON containing `error`, `statusCode`, and `details` is output to standard error, and the command exits with code 1. Usage errors write plain text to standard error. Normal error output strips `requestId`. Use `--debug` only in a safe investigation environment.
 
 > Prompts to an Agent, conversation history, and Canvas content may include confidential information. Review output before sharing it. Avoid writing an API key directly in `--key`.
 

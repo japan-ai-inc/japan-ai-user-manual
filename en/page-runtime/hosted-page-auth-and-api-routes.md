@@ -35,7 +35,9 @@ const files = await studio.storage.list({ path: "/" });
 
 The browser-supported SDK scope in 0.11.0 is `agents`, `datasets`, `objects`, `storage`, and `platform`. When it detects the Page runtime, `agents.invoke()` uses `POST /api/agent-chat`. Objects, Storage, and Dataset reads use, for example, `/api/v1/objects/...`, `/api/v1/storage/...`, and `/api/v1/datasets...`.
 
-`/api/v1/*` is not a generic entry point that proxies arbitrary public APIs. Objects, Storage, and Dataset reads are covered by the browser SDK. `workflows` and `scheduledTasks` are outside its scope. Consider retrieving Project members only when permission and read access are both available in the Page runtime, and see [Project Members API](../api/project-members-api.md). Separate other features into server processing.
+`/api/v1/*` is not a generic entry point that proxies arbitrary public APIs. Objects, Storage, and Dataset reads are covered by the browser SDK. `scheduledTasks` is outside its scope. `members` (`/api/v1/project-members`) and `workflows` (`/api/v1/workflows`) can technically be called because the Page runtime proxies them, but they are currently outside the beta support scope (subject to change without notice). Separate other features into server processing.
+
+Calls through the Page session do not check Project API key scopes. Limits for `/api/v1/*` are fixed: request bodies up to 32 MiB and a rate of 25 requests per second with a burst of 200. For details, see [Supported Scope of the Page Auxiliary APIs](page-auxiliary-api-scope.md).
 
 | Purpose | Route in a Page browser | How to use it |
 |---|---|---|
@@ -43,7 +45,8 @@ The browser-supported SDK scope in 0.11.0 is `agents`, `datasets`, `objects`, `s
 | Objects | `/api/v1/objects/...` | Follow the SDK/API specification for `objects`. See [Objects API](../api/objects-api.md) and [Hosted Page Objects API](hosted-page-objects-api.md). |
 | Storage | `/api/v1/storage/...` | Use `storage`. `downloadFolder()` is unavailable in the browser. See [SDK Storage](../development/sdk-storage.md) for details. |
 | Dataset reads | `/api/v1/datasets...` | Use only `datasets.list()` and `datasets.search()`. It returns 404 without a supporting Page runtime. Organization Datasets are handled only in a signed-in user session. |
-| Tool Proxy | `/api/tools/...` | It is for the Page runtime only. Use only routes in [Tool Proxy API](../api/tool-proxy-api.md). |
+| Tool Proxy | `/api/tools/...` | It is for the Page runtime only. Use only routes in [Tool Proxy API](../api/tool-proxy-api.md). Anonymous Page sessions receive 401. Errors may be returned as plain text, and the rate limit is shared across the whole Page runtime. |
+| Project members and Workflows | `/api/v1/project-members`, `/api/v1/workflows` | Can technically be called, but currently outside the beta support scope (subject to change without notice). |
 
 > Do not add `x-api-key`, `Authorization: Bearer`, or a Project API key in `pak_...` format to a Page browser request. Obfuscating code does not prevent users from obtaining values distributed to their browser.
 
@@ -52,8 +55,8 @@ The browser-supported SDK scope in 0.11.0 is `agents`, `datasets`, `objects`, `s
 | Mode in "Access settings" | Authentication context when opening the Page | Implementation and test points |
 |---|---|---|
 | "Sign-in required" | A Page session for a signed-in user with Page access. | Confirm that a user who is not signed in returns to the original Page URL after authentication. |
-| "Sign-in optional" | A user session when signed in; an anonymous Page session when not signed in. | Test the same screen and API separately when signed in and when not signed in. |
-| "Anonymous only" | An anonymous Page session regardless of whether the visitor is signed in. | Do not assume user-specific information or permissions; check permitted reads and writes as an anonymous visitor. |
+| "Sign-in optional" | A user session when signed in; an anonymous Page session when not signed in. | Open it from the Public URL (`/p/{token}`) and test the same screen and API separately when signed in and when not signed in. |
+| "Anonymous only" | An anonymous Page session regardless of whether the visitor is signed in. | Open it from the Public URL (`/p/{token}`). Do not assume user-specific information or permissions; check permitted reads and writes as an anonymous visitor. Tool Proxy returns 401. |
 | "External customer auth" | A Page session for a visitor authenticated through the configured customer identity provider. | If external authentication is enabled and there is no session, it returns 401; reload the current Page document and authenticate again. |
 
 Both "Sign-in optional" and "Anonymous only" can be opened while signed out, but the former can use an existing user session while the latter always uses an anonymous context. Check "External customer auth" on the assumption that a configured connection exists. Both screen access and API operations verify that the organization, Project, and Page match the session.
@@ -78,7 +81,7 @@ On the other hand, a 401 returned by the application itself or a destination is 
 | URL | `/api/...` on the same origin as the Page | API routes at `https://api.japan-ai.co.jp` |
 | Authentication information | Session resulting from opening the Page | Pass a Project API key in `x-api-key` or Bearer |
 | Key in the browser | Not required and prohibited | Do not use it. Store keys on the server side only. |
-| Scope of use | Limited to routes provided by the Page runtime and browser-supported SDK | Follows key scopes and individual Public API specifications |
+| Scope of use | Limited to routes provided by the Page runtime and browser-supported SDK. Key scopes are not checked; determined by the Page session, settings, and user permissions | Follows key scopes and individual Public API specifications |
 | Operations | Use the Page reauthentication route when the session expires | Manage issuance, minimum scope, expiration, rotation, and revocation |
 
 For Public API details, see [Agents, Conversations, and Artifacts API](../api/agents-conversations-artifacts-api.md) through [Project Members API](../api/project-members-api.md); for key management, see [Manage Project API Keys](../operations/manage-project-api-keys.md).
@@ -96,7 +99,7 @@ For Public API details, see [Agents, Conversations, and Artifacts API](../api/ag
 | Situation | What to check and do |
 |---|---|
 | `/api/v1/...` returns 404 | Check whether the leading path is provided by the Page runtime and whether the SDK module supports browsers. It does not proxy arbitrary routes for Public APIs. |
-| Returns 401 | Reopen the Page, and check the access mode, reaching the target Page, and the display route that performs authentication refresh. Do not work around it by adding a key. |
+| Returns 401 | Reopen the Page, and check the access mode, reaching the target Page, and the display route that performs authentication refresh. Also check whether Tool Proxy is called from an anonymous Page session. Do not work around it by adding a key. |
 | Returns 403 | Check that Origin/Referer is not spoofed or fixed, that it is a same-origin Page action, and that the Page and Project combination is correct. |
 | Storage or Objects operations behave unexpectedly | Separately check browser SDK support scope and the Public API specifications for each API. Separate browser-unsupported operations into server processing. |
 

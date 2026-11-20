@@ -78,7 +78,14 @@ Some screens allow you to drop files, but you must still check the destination f
 
 When sending multiple files, check that only some have not failed. Even when uploading a failed file again, first check the destination so that you do not register a file that has already been saved twice.
 
-Follow screen guidance for supported formats, file size, and available capacity. **Preview limits and upload limits are not necessarily the same.** Do not change only the file extension to avoid an error; ask the person in charge how to proceed if needed.
+Follow screen guidance for supported formats, file size, and available capacity. The main rules are as follows.
+
+- Storage capacity is evaluated per Project (10,240 MB per Project by default).
+- Folders can be nested up to 10 levels, and paths can be up to 1,000 characters.
+- Blocked extensions are checked for each dot-separated part of the file name. Therefore, a name such as `app.config.json` that contains a blocked part in the middle is also rejected.
+- Windows reserved names cannot be used as file names.
+
+ **Preview limits and upload limits are not necessarily the same.** Do not change only the file extension to avoid an error; ask the person in charge how to proceed if needed.
 
 ## 4. Decide what to do when a file with the same name exists
 

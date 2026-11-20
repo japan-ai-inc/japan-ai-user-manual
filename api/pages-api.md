@@ -1,6 +1,6 @@
 # Pages API
 
-Pages APIは、完成済みのPage用ZIPを一時アップロードし、新しいPageまたは既存Pageの新しいバージョンとして登録する開発者向けREST APIです。
+Pages APIは、Pageのプロジェクトのソースを含むZIPを一時アップロードし、新しいPageまたは既存Pageの新しいバージョンとして登録する開発者向けREST APIです。アップロード後、Studioがロックファイルに応じてBun／Node／静的を選び、依存関係のインストールと`build`を実行します。ZIPのルートには`package.json`とロックファイル（静的なPageでは`index.html`）が必要です。どちらもない場合や、Next.jsのビルド成果物をアップロードした場合は拒否されます。
 
 このAPIはZIPのアップロード準備とデプロイだけを提供します。Page一覧、アクセスモード、公開URL、外部顧客認証などの**アクセス設定を取得・変更するエンドポイントはありません**。公開範囲はStudioの対象Pageで「アクセス設定」を開いて変更します。SDK・CLIの使い分けは[SDK Pages・Platform](../development/sdk-pages-and-platform.md)を参照してください。
 
@@ -15,14 +15,14 @@ Pages APIは、完成済みのPage用ZIPを一時アップロードし、新し�
 
 ## 始める前に
 
-本番ベースURLは`https://api.japan-ai.co.jp`、共通パスは`/api/v1/pages`です。各エンドポイントには、対象ProjectのProject APIキーと`page:write`スコープが必要です。キーは`x-api-key`ヘッダー、または`Authorization: Bearer <キー>`で渡せます。以下では`x-api-key`を使います。
+本番ベースURLは`https://api.japan-ai.co.jp`、共通パスは`/api/v1/pages`です。各エンドポイントには、対象ProjectのProject APIキーと`page:write`スコープが必要です。キーは`x-api-key`ヘッダー、または`Authorization: Bearer <キー>`で渡せます。以下では`x-api-key`を使います。公開APIの全エンドポイントとリクエスト・レスポンスのスキーマは、公開OpenAPI（[APIリファレンス](https://api.japan-ai.co.jp/reference)、[`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)）にも掲載されています。
 
 ```bash
 export JAI_STUDIO_API_KEY='安全な保管場所から取得した値'
 export PAGE_ZIP='./page-release.zip'
 ```
 
-> APIキーをブラウザ用JavaScript、公開環境変数、ソース管理、ログ、問い合わせへ含めてはいけません。発行、最小スコープ、失効は[Project APIキーを管理する](../operations/manage-project-api-keys.md)に従ってください。送信するZIPは事前に完成させます。
+> APIキーをブラウザ用JavaScript、公開環境変数、ソース管理、ログ、問い合わせへ含めてはいけません。発行、最小スコープ、失効は[Project APIキーを管理する](../operations/manage-project-api-keys.md)に従ってください。
 
 ## エンドポイント一覧
 
@@ -54,9 +54,11 @@ curl -sS -X POST 'https://api.japan-ai.co.jp/api/v1/pages/upload-url' \
 
 成功時は200で`uploadUrl`、`uploadPath`、`expiresAt`、`requiredHeaders`を返します。`uploadPath`はデプロイ本文へそのまま渡す不透明な値、`requiredHeaders`はZIP送信時に使うヘッダーです。
 
-`uploadUrl`へ`PUT`でZIP本体を送ります。`requiredHeaders`の内容を保持して送信します。
+`uploadUrl`へ`PUT`でZIP本体を送ります。`requiredHeaders`の内容を保持して送信します。次の例では、準備応答の`uploadUrl`と、更新時の対象Page IDを環境変数に設定してから送信します。
 
 ```bash
+export UPLOAD_URL='<準備応答のuploadUrl>'
+export PAGE_ID='<更新対象のPage ID>'   # 既存Pageの更新時のみ
 curl -sS -X PUT "$UPLOAD_URL" \
   -H 'Content-Type: application/zip' \
   --upload-file "$PAGE_ZIP"
@@ -99,7 +101,7 @@ ZIPの適用はアクセス設定を変更しません。公開範囲、公開UR
 |---|---|
 | `pageId` | 作成または更新したPage IDです。 |
 | `studioUrl` | Studioで対象Pageを確認するURLです。 |
-| `runtimeUrl` | 実行用URLです。存在しない場合は`null`です。 |
+| `runtimeUrl` | 実行用URLです。存在しない場合は`null`です。アクセス設定が既定の「サインイン必須」のPageでは常に`null`です。 |
 | `version` | デプロイされたバージョンです。 |
 | `fileCount` | 登録されたファイル数です。 |
 | `createdAt` | デプロイ結果の作成日時を表す文字列です。 |
@@ -109,13 +111,13 @@ ZIPの適用はアクセス設定を変更しません。公開範囲、公開UR
 
 ## エラーと利用制御
 
-入力検証、無効・期限切れ・消費済みの`uploadPath`、ZIPの形式・容量・構造の問題は400です。キー、`page:write`、Project上の操作許可、Page機能の提供条件、Page数上限などを満たさない場合は403、更新対象がない場合は404です。APIは、アップロード準備とデプロイに利用制御を適用し、デプロイの同時実行も制御します。制限に達すると429になります。
+入力検証、無効・期限切れ・消費済みの`uploadPath`、ZIPの形式・容量・構造の問題は400です。無効・期限切れのキー、`page:write`、Project上の操作許可、Page機能の提供条件、Page数上限などを満たさない場合は403、更新対象がない場合は404です。APIは、アップロード準備とデプロイに利用制御を適用し、デプロイの同時実行も制御します。制限に達すると429になります。
 
 429時は連続再送せず、並列デプロイ数と要求頻度を下げます。429は2種類あります。API共通の利用制御では`Retry-After`ヘッダーと本文の`retryAfterSeconds`が返るため、それに従います。Page固有の制御（準備・デプロイの頻度、同時デプロイ数、未使用アップロードの容量、同一Pageの更新競合）では待機秒数は返らず、本文の`code`で区別します。更新競合も409ではなく429で返ります。いずれも連続再送せず、間隔を空けます。一般的な扱いは[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
 
 | 状況 | 確認・対応 |
 |---|---|
-| 400 | `fileName`、`contentType`、`uploadPath`、ZIP名、ZIPの容量・構造を確認します。アップロード準備からやり直す必要があるかを確認します。 |
+| 400 | `fileName`、`contentType`、`uploadPath`、ZIP名、ZIPの容量・構造（ルートの`package.json`とロックファイル、または`index.html`）を確認します。アップロード準備からやり直す必要があるかを確認します。 |
 | 403 | APIキー、`page:write`、対象Project、Page機能の提供条件、操作許可を確認します。スコープを推測で追加しません。 |
 | 404 | `pageId`と対象Projectを確認します。別ProjectのIDを使いません。 |
 | 429 | 同じZIPやデプロイを連続送信せず、並列数と頻度を下げてから再試行します。`Retry-After`がある場合は、その秒数に従います。 |
@@ -124,7 +126,7 @@ ZIPの適用はアクセス設定を変更しません。公開範囲、公開UR
 ## チェックリスト
 
 - [ ] 対象Projectに対する安全なProject APIキーと`page:write`を用意した
-- [ ] 完成済みのZIPが[Pageの仕様・制限](../build/page-specs-and-limits.md)の容量・構造・秘密情報の条件を満たすことを確認した
+- [ ] プロジェクトのソースを含むZIPが[Pageの仕様・制限](../build/page-specs-and-limits.md)の容量・構造・秘密情報の条件を満たすことを確認した
 - [ ] 準備、ZIPの`PUT`、デプロイを順に実行し、`uploadPath`を改変・再利用していない
 - [ ] 新規作成と既存Page更新で、正しいパスと`pageId`を使い分けた
 - [ ] `studioUrl`、`runtimeUrl`、バージョン、再ビルド結果を確認した

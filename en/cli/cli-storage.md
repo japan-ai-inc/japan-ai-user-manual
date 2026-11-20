@@ -19,19 +19,19 @@ For Storage SDK operations and execution modes, see [SDK Storage](../development
 
 > `jai-studio storage` does not have `upload` or `download` subcommands. Do not guess and run CLI syntax to transfer file content. For methods using SDK `upload()` and `download()`, see [SDK Storage](../development/sdk-storage.md).
 
-Successful standard output is JSON. Add `--pretty` to format it. On failure, JSON is output to standard error and the exit code is 1. Because `--debug` may display server-response details, do not share output that contains confidential information.
+Successful standard output is JSON. Add `--pretty` to format it. On API failure, JSON is output to standard error and the exit code is 1. Usage errors write plain text to standard error. Because `--debug` may display server-response details, do not share output that contains confidential information.
 
 ## Command list
 
-| Command | Purpose | Destructive operation |
-|---|---|---|
-| `storage list` | Lists files and folders | No |
-| `storage metadata` | Retrieves file metadata | No |
-| `storage download-url` | Retrieves a time-limited download URL | No |
-| `storage delete` | Deletes a file | Yes |
-| `storage folders list` | Lists the contents of a specified folder | No |
-| `storage folders create` | Creates a folder | No |
-| `storage folders delete` | Deletes a folder and its contents | Yes |
+| Command | Purpose | Required scope | Destructive operation |
+|---|---|---|---|
+| `storage list` | Lists files and folders | `storage:read` | No |
+| `storage metadata` | Retrieves file metadata | `storage:read` | No |
+| `storage download-url` | Retrieves a time-limited download URL | `storage:read` | No |
+| `storage delete` | Deletes a file | `storage:delete` | Yes |
+| `storage folders list` | Lists the contents of a specified folder | `storage:read` | No |
+| `storage folders create` | Creates a folder | `storage:write` | No |
+| `storage folders delete` | Deletes a folder and its contents | `storage:delete` | Yes |
 
 ## 1. List files and folders
 
@@ -43,12 +43,14 @@ Notation containing `<...>` below is **syntax that requires substitution**. Do n
 
 | Flag | Required | Default | Meaning |
 |---|---:|---|---|
-| `--path <path>` | No | Not specified | Filters by the target path. |
-| `--recursive` | No | Not specified | Requests a recursive list. |
+| `--path <path>` | No | `/` | Filters by the target path. |
+| `--recursive` | No | Not recursive | Requests a recursive list. |
 | `--cursor <cursor>` | No | Not specified | Cursor for retrieving the next page. |
-| `--limit <n>` | No | Not specified | Maximum items per page. Specify an integer. |
-| `--order-by <field>` | No | Not specified | Specify `name`, `size`, `createdAt`, or `updatedAt` as the sort field. |
-| `--order-direction <dir>` | No | Not specified | Specify `asc` or `desc`. |
+| `--limit <n>` | No | 50 | Maximum items per page. Specify an integer from 1 to 100. |
+| `--order-by <field>` | No | `updatedAt` | Specify `name`, `size`, `createdAt`, or `updatedAt` as the sort field. |
+| `--order-direction <dir>` | No | `desc` | Specify `asc` or `desc`. |
+
+The defaults are the values the server applies when a flag is omitted.
 
 ```bash
 jai-studio storage list --path /reports --recursive --limit 50 --order-by updatedAt --order-direction desc --pretty
@@ -83,13 +85,13 @@ jai-studio storage download-url <fileId> [--expires-in-minutes <n>]
 | Positional argument or flag | Required | Default | Meaning |
 |---|---:|---|---|
 | `<fileId>` | Yes | — | ID of the target file. |
-| `--expires-in-minutes <n>` | No | Not specified | Requests URL validity in an integer number of minutes. |
+| `--expires-in-minutes <n>` | No | 60 | URL validity in a positive integer number of minutes. The maximum is 1,440 minutes; larger values are rounded down to 1,440. |
 
 ```bash
 jai-studio storage download-url file-id --expires-in-minutes 30
 ```
 
-The returned `downloadUrl` is not permanent. Check `expiresAt` and `expiresInMinutes`, and retrieve it when needed. Because the CLI does not validate the minimum or maximum allowed duration, do not assume unverified values.
+The returned `downloadUrl` is not permanent. Check `expiresAt` and `expiresInMinutes`, and retrieve it when needed. The default validity (60 minutes) and maximum (1,440 minutes) are applied by the server.
 
 > Handle signed URLs like credentials. Do not paste them into tickets, public documents, or source code, and do not reuse expired URLs.
 
@@ -102,9 +104,9 @@ jai-studio storage folders list <folderId> [--recursive] [--cursor <cursor>] [--
 | Positional argument or flag | Required | Default | Meaning |
 |---|---:|---|---|
 | `<folderId>` | Yes | — | ID of the target folder. |
-| `--recursive` | No | Not specified | Requests a recursive list. |
+| `--recursive` | No | Not recursive | Requests a recursive list. |
 | `--cursor <cursor>` | No | Not specified | Cursor for pagination. |
-| `--limit <n>` | No | Not specified | Maximum items per page. Specify an integer. |
+| `--limit <n>` | No | 50 | Maximum items per page. Specify an integer from 1 to 100. |
 
 ```bash
 jai-studio storage folders list folder-id --recursive --limit 100
@@ -117,7 +119,7 @@ jai-studio storage folders create --name <name> [--path <path>]
 | Flag | Required | Default | Meaning |
 |---|---:|---|---|
 | `--name <name>` | Yes | — | Name of the folder to create. |
-| `--path <path>` | No | Not specified | Parent path. |
+| `--path <path>` | No | `/` | Parent path. |
 
 ```bash
 jai-studio storage folders create --name archive --path /reports
@@ -161,7 +163,7 @@ No. This command only returns a time-limited URL in JSON. `storage download` for
 
 ### You can specify any string or decimal in `--limit`
 
-You cannot. `--limit` and `--expires-in-minutes` are parsed as safe integers. However, the CLI does not independently limit page size or URL validity time. Follow server-side conditions, and check the value and target when an error occurs.
+You cannot. `--limit` and `--expires-in-minutes` are parsed as safe integers. Ranges are checked by the server, not the CLI (`--limit` is 1 to 100; `--expires-in-minutes` is at most 1,440 minutes).
 
 ## Troubleshooting
 

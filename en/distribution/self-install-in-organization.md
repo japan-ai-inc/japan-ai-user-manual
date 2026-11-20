@@ -19,7 +19,7 @@ Check the following before you begin:
 
 - You have opened the correct organization and the source Project that provides the distribution.
 - You have decided the resources, initial data, and home screen to include in the App. Review resource dependencies, fixed IDs, provider-specific URLs, external connections, and Secrets in [Constraints on Distribution Scope, Dependencies, and Authentication Settings](distribution-scope-dependencies-auth.md) and [Design the Configuration of a Distributable Page](../development/design-distributable-page-config.md) in advance.
-- The person performing the operation can edit the target Project and perform an in-organization installation. Being able to view the screen does not necessarily mean they can prepare or install it.
+- The person performing the operation is an Editor or higher in the source Project.
 - You have decided who configures connections and Secrets after installation and who adds users.
 - You have selected users, separate from the source, to check the installation result. Use approved test data rather than production data or credentials.
 
@@ -51,18 +51,17 @@ After preparation, check at least the following on the confirmation screen:
 
 | Check item | What to check |
 |---|---|
-| Version to install | It is the version prepared from this source Project |
-| Number of included components | It does not differ substantially from the expected number of resources |
-| Resource changes | There are no unnecessary items among additions, deletions, and changes |
+| "Current → New" | The new version is the one prepared from this source Project |
+| "Included resources" | They match the expected resources, with no unnecessary items among additions, deletions, and changes |
+| "Connectors used" | Which are configured as shared and which per user, added, changed, and deleted connectors, and the post-installation owner |
 | Access settings | You understand whether roles, access policies, or record access have changed and their impact |
-| Credentials and connectors | You checked which are configured as shared and which per user, added, changed, and deleted connectors, and the post-installation owner |
 
-The confirmation screen may separately display resource additions, updates, and deletions; connector changes; effects on credentials; and access settings. Do not decide based only on counts; expand them and check target names. When credential requirements are displayed, do not display or enter the values themselves on the confirmation screen. Configure required connectors and Secrets after installation. If any content is unclear, return with "Cancel" and review resource selection and distribution design.
+Do not decide based only on counts; expand them and check target names. If the check flags issues, fix the cause and select **"Recheck."** If a value that looks like a fixed ID is flagged but can be used as-is at the installation destination, you can pass it with **"Recheck as reviewed."** When credential requirements are displayed, do not display or enter the values themselves on the confirmation screen. Configure required connectors and Secrets after installation. If any content is unclear, return with "Cancel" and review resource selection and distribution design.
 
 ## 4. Install in the organization
 
 1. On the confirmation screen, check the App name, version, changes, access settings, and credential requirements once more.
-2. If there are no issues, confirm "Install in this organization."
+2. If there are no issues, select **"Install"** on the confirmation screen.
 3. While "Installation or update is in progress. This page will refresh its status." is displayed, do not repeat the same operation.
 4. Check that "Installed version" and "Open installed app" are displayed.
 5. Select "Open installed app" and check that you can open the installation destination Project separate from the source.
@@ -80,6 +79,10 @@ After opening the installation destination Project, separately proceed with inst
 5. Share the checked version, configured items, features that may be used, outstanding tasks, and inquiry contact with users and operations owners.
 
 Belonging to the organization and being able to use the installation destination Project are different. Also, do not treat the setup-complete display alone as success for each user's personal connection or business operations.
+
+## Remove a self-install
+
+To remove a self-install you no longer need, select **"Uninstall app"** for the installed App. The source Project is not deleted. For details, see [Uninstall an App](../use/uninstall-app.md).
 
 ## Completion checklist
 

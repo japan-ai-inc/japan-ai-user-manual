@@ -15,11 +15,11 @@ Use [Object Specifications and Limits](../build/object-specs-and-limits.md) as t
 ## Before you begin
 
 - SDK/CLI use with Node.js requires version 22 or later.
-- Pass API keys from secure environment variables; do not place them in browsers, public environment variables, or logs. In a PRS browser, do not configure an API key and initialize with `baseUrl: ""`.
+- Pass API keys from secure environment variables; do not place them in browsers, public environment variables, or logs. In the browser of a Studio-hosted Page, do not configure an API key and initialize with `baseUrl: ""`.
 - Check the Object ID, field names, and types, and check affected records and integration destinations before structural changes. Follow [Object Specifications and Limits](../build/object-specs-and-limits.md) for constraints.
 
 ```bash
-npm install @japan-ai-inc/studio-sdk
+npm install @japan-ai-inc/studio-sdk@0.11.0
 ```
 
 ```ts
@@ -36,12 +36,13 @@ const studio = createClient({ baseUrl: "https://api.japan-ai.co.jp", apiKey });
 
 For listing, retrieving, creating, updating, and deleting Object definitions, use `list()`, `get()`, `create()`, `update()`, and `delete()` respectively.
 
-For record operations, create `studio.objects.define<T>(objectId)`. `T` applies to `data` in `RecordItem<T>` and the data portion of `create()` and `update()`. `recordId` and `revision` are outside `data`.
+For record operations, create `studio.objects.define<T>(objectId)`. For `objectId`, specify the **Object's UUID**, not the Object name. Passing a name (for example, `"contacts"`) returns 400. Check the ID in the result of `studio.objects.list()`. `T` applies to `data` in `RecordItem<T>` and the data portion of `create()` and `update()`. `recordId` and `revision` are outside `data`.
 
 ```ts
 type Contact = { name: string; email: string; company?: string };
 
-const definition = await studio.objects.get("contacts");
+// Replace "<Object UUID>" with the Object ID found with studio.objects.list().
+const definition = await studio.objects.get("<Object UUID>");
 const contacts = studio.objects.define<Contact>(definition.objectId);
 
 const added = await studio.objects.create({
@@ -81,9 +82,9 @@ await contacts.bulkCreate([
 
 ### Delete multiple records
 
-`bulkDelete(recordIds)` (SDK 0.10.0 or later) deletes up to 1,000 records in one request on a connection that has the corresponding public API. The key requires the `object:delete` scope. If even one record cannot be deleted, it fails without deleting any records. IDs that no longer exist are skipped; check `skippedIds` and `skippedCount` in the result.
+`bulkDelete(recordIds)` (SDK 0.10.0 or later) deletes up to 1,000 records in one request. The key requires the `object:delete` scope. The result is either all succeed or all fail: if even one record cannot be deleted, no records are deleted. IDs that no longer exist are skipped; check `skippedIds` and `skippedCount` in the result.
 
-SDK 0.11.0 sends `DELETE /api/v1/objects/:objectId/records/bulk` with a body in the form `[{ "recordId": "..." }]`. The SDK does not send an empty array and returns a zero-item result. As of 2026-11-11, the production public REST API is confirmed to provide bulk **creation** (`POST`) at the same path, but this bulk deletion has not been confirmed as provided. It is implemented in a development version, so the timing of availability differs by connection. Before use, confirm that the connection provides this deletion route.
+SDK 0.11.0 sends the public API `DELETE /api/v1/objects/:objectId/records/bulk` with a body in the form `[{ "recordId": "..." }]`. The SDK does not send an empty array and returns a zero-item result.
 
 ```ts
 const result = await contacts.bulkDelete(["record-id-1", "record-id-2"]);
@@ -91,7 +92,7 @@ console.log(result.deletedIds, result.deletedCount);
 console.log(result.skippedIds, result.skippedCount);
 ```
 
-If communication fails and the result is unknown, do not immediately send the same deletion again; reconfirm the target records.
+If communication fails and the result is unknown, do not immediately send the same deletion again; first check the current state of the target records.
 
 ### Detect concurrent updates
 
@@ -142,17 +143,17 @@ You can specify `asc`, `desc`, `ascending`, or `descending` for `sort.direction`
 `objects.recordRules.list|create|delete` handles the same record access rules as "Access rules" in Studio. The key requires `object:policy`, and the key creator must have permission to read and configure policies for the target Object. Creation and deletion also require Object write permission. Check rule priority and the impact of deletion, including existing screen rules.
 
 ```ts
-const { roles, items } = await studio.objects.recordRules.list("contacts");
+const { roles, items } = await studio.objects.recordRules.list("<Object UUID>");
 const staff = roles.find(role => role.name === "Staff");
 if (!staff) throw new Error("The target role does not exist");
 
-const created = await studio.objects.recordRules.create("contacts", {
+const created = await studio.objects.recordRules.create("<Object UUID>", {
   name: "Records created by the user",
   status: "edit",
   conditions: [{ field: "created_by", operator: "eq", value: "$principal.id", valueType: "variable" }],
   principals: [{ principalType: "role", principalId: staff.id }],
 });
-await studio.objects.recordRules.delete("contacts", created.ruleGroupId);
+await studio.objects.recordRules.delete("<Object UUID>", created.ruleGroupId);
 ```
 
 Rules are evaluated in priority order. For partial write or deletion errors, record `code` and `params`; do not rerun based on assumptions, and check current rules with `list()`.
@@ -188,7 +189,7 @@ Changes to types or constraints affect existing records. Check permitted values,
 
 | Situation | Check and response |
 |---|---|
-| Cannot retrieve an Object or record | Check the Object ID, target Project, execution mode, authentication, and read permission. |
+| Cannot retrieve an Object or record (including 400) | Check that you pass the Object UUID rather than the Object name (find it with `objects.list()`), the target Project, execution mode, authentication, and read permission. |
 | An error occurs during creation or update | Check field names, types, requirements, uniqueness, relations, and consistency with existing data. |
 | A value disappears after update | Check whether the `data` passed to `update()` is complete. |
 | A Revision conflict occurs | Retrieve the latest record and check the conflicting changes before operating. |

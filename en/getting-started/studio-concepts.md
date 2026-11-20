@@ -66,7 +66,7 @@ This flow is an overview for installing from Marketplace. Apps may also be provi
 
 Also, **installation does not necessarily mean that every required setting is complete.** Apps that require a connection to an external service or user authentication may have some unavailable features until that setup is complete.
 
-In the Apps list, distinguish between views for using installed Apps and views for finding Apps in Marketplace. Depending on administrative permissions, an option to manage Apps in the organization may also appear. Displayed items and available operations vary by organization settings, availability conditions, and permissions.
+The Apps list ("STUDIO" > "Apps" in the left navigation) has the "My Apps" tab (use installed Apps) and the "Marketplace" tab (find Apps). The "Organization Apps" tab is shown only to organization administrators and others with permission to install Apps.
 
 ## Choose an entry point for your goal
 

@@ -25,7 +25,7 @@ Installing a Skill is independent of Project operations that require an API key,
 
 ## What the Skill includes
 
-The installed Skill is named `studio_sdk`. The package includes a snapshot containing `SKILL.md`, which is required for coding agents to reference published SDK/CLI usage, along with reference Markdown and helper scripts. Its scope covers authentication boundaries for the Studio SDK/CLI; Agents, Members, Objects, Storage, Workflows, and Page packaging and deployment; and use of the public SDK within PRS.
+The installed Skill is named `studio_sdk`. The package includes a snapshot containing `SKILL.md`, which is required for coding agents to reference published SDK/CLI usage, along with reference Markdown and helper scripts. Its scope covers authentication boundaries for the Studio SDK/CLI; Agents, Members, Objects, Storage, Workflows, and Page packaging and deployment; and use of the public SDK within Pages hosted on Studio.
 
 Installation copies the bundled Skill in the published package; it does not retrieve the provider again.
 
@@ -124,7 +124,7 @@ This CLI has no `skill uninstall` subcommand. When it is no longer needed, delet
 | The agent does not use the Skill after installation | Check the installation result's `path` and `SKILL.md`, then start a new session of the target agent. Do not guess and copy it to a location for an unsupported agent. |
 | The CLI itself cannot be found or has the wrong version | Check the executable and version with `command -v jai-studio` and `jai-studio --version`, then reinstall according to [Development Environment, Versions, and Compatibility](../development/dev-environment-and-versions.md). |
 
-When the CLI fails, it outputs a JSON-formatted error to standard error and exits with code 1. `--debug` is for displaying server response details and is normally unnecessary for isolating this local Skill installation. For an inquiry, record the CLI version, command without keys, `--agent`, `--scope`, installation destination, and error details. Do not attach API keys, tokens, or unnecessary details of personal home directories.
+When the CLI fails, it outputs an error to standard error (plain text for usage errors, JSON otherwise) and exits with code 1. `--debug` is for displaying server response details and is normally unnecessary for isolating this local Skill installation. For an inquiry, record the CLI version, command without keys, `--agent`, `--scope`, installation destination, and error details. Do not attach API keys, tokens, or unnecessary details of personal home directories.
 
 ## Checklist
 

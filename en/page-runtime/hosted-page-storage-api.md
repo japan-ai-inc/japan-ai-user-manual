@@ -89,7 +89,7 @@ Folder ZIP retrieval through `downloadFolder()` is unsupported in browsers. Do n
 
 ## Check each access mode
 
-Storage routes accept only requests with a Page session. "Sign-in required," "Sign-in optional," "Anonymous only," and "External customer auth" have different authentication and session routes. Because the route itself does not branch by access-mode name, you cannot conclude that every Storage operation always succeeds in a particular mode.
+Storage routes accept only requests with a Page session. "Sign-in required," "Sign-in optional," "Anonymous only," and "External customer auth" have different authentication and session routes. The route itself does not branch by access-mode name. Success depends on the Page session and the permissions of the user or visitor, so verify the required operations on actual devices for each mode.
 
 | "Access settings" | Page-relative Storage request | Implementation check |
 |---|---|---|

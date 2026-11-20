@@ -46,6 +46,8 @@ If you received a Page link from the person in charge, open that link. If you ar
 
 Even if a link is shared, you do not necessarily have permission to view or operate data. Authentication methods and publication scope also vary by Page. If you cannot open it, ask the person in charge about the target and access conditions.
 
+Do not build links yourself; use the shared URL as is. The URL of a Page published without sign-in uses a dedicated format starting with `/p/`, and a link made by rewriting the Page's usual address does not open.
+
 ## 2. Check the screen and target of your action
 
 Before entering or running anything, check the following.
@@ -101,11 +103,11 @@ Even actions from a Page may affect data shared with other people or external se
 
 | Action performed | Examples of results to check |
 |---|---|
-| Search for or view information | Whether targets matching the conditions were displayed and you could check required details |
+| Search for or view information | Whether targets matching the conditions were displayed and the required details were displayed |
 | Register or update data | Completion guidance and registered or updated values. If displayed, a record number or similar identifier |
 | Make an AI request | Contents of the response or deliverable. If you also requested an external action, its result |
 | Output a file | Completed download, file name, content, and save location |
-| Send to or update an external service | Status at the destination, or any available run result or history |
+| Send to or update an external service | Status at the destination, or the run result or history displayed on screen |
 
 The above are examples of what to check; not every Page has a history or results list. If you cannot determine whether it completed, ask the person in charge how to check.
 
@@ -130,6 +132,7 @@ Before switching screens or closing a tab, check saved and run results. Browser 
 | "Authentication failed" is displayed | Check that you are using the account you were given. If the screen has "Retry," try it after checking unsaved input and run status. If it repeats, contact the person in charge. |
 | "Failed to load page" is displayed | If the screen has "Retry," try to restore display. If processing was in progress, first check the result and do not run the same business process repeatedly. |
 | "Failed to load Page navigation" is displayed | Check the problem with the Page-switching list separately from the result of business processing on the screen. Retry according to the screen guidance. |
+| A build-in-progress screen is displayed | Right after a Page is updated, the first display can take several minutes (up to 15 minutes). Wait and open it again. If a build-failure screen is displayed, tell an administrator. |
 | A configuration error, blank screen, or loading never completes | Record the Page name, date and time, and display content, then tell an administrator. Users should not try to fix it by changing source code or publication settings. |
 | The screen opens but retrieving data or running processing fails | Check the displayed message, permissions, and external connection status. Ask the person in charge whether a personal connection or shared setting is required. |
 

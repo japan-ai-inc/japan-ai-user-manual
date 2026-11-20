@@ -6,6 +6,16 @@ This article explains how to enter the information required for a Workflow prepa
 
 This article covers actions users perform from the screen. It does not cover creating, editing, or publishing Workflows, or configuring triggers or scheduled runs.
 
+### Who runs it and which connections are used
+
+| Run method | Runs as | Connections used |
+|---|---|---|
+| Manual run from the screen | The person who ran it | Only the Project's shared connections (the runner's personal connections are not used) |
+| Trigger | The person who first published that start node (republishing by someone else does not change this) | Same as above |
+| Task Scheduler task | The task creator (editing the task does not change this) | Same as above |
+
+Because Workflows use only shared connections, a Workflow that uses external services requires shared connections to be configured. When the owner of a trigger or task leaves the organization, that automatic run is disabled automatically.
+
 ## Before you begin
 
 - Check the App or Project you will use and the Workflow's name and purpose.
@@ -30,7 +40,7 @@ If you have not opened where you will use it yet, begin with one of these articl
 3. Check that the name and description match the process you need.
 4. Open the input and run screen from the relevant card or "Run."
 
-In addition to Workflows, "Automations" in an App may list run tasks. Do not select a different run target just because its name is similar.
+In addition to Workflows, "Automations" in an App may list Task Scheduler tasks. Do not select a different run target just because its name is similar.
 
 For an App that opens a home Page for business use, follow the entry point on the Page or the person in charge's guidance. Not every App displays the same list.
 
@@ -90,7 +100,7 @@ These are examples of input fields; not every Workflow has the same fields. Even
 
 Supported formats, maximum size and number of files, and whether you can use local files or URLs vary by the input-field configuration. Do not conclude that every part of a file can be read correctly merely because you were able to attach it.
 
-Do not paste passwords, API keys, or similar information into an unrestricted input field that has no explanation of its purpose. If missing connection or Secret settings are displayed, check with the App or Project administrator.
+Do not paste passwords, API keys, or similar information into an unrestricted input field that has no explanation of its purpose. If missing connection or Secret settings are displayed, check with the App or Project administrator. Because Workflows use only shared connections, connecting your own external account does not resolve this.
 
 ### Input example
 
@@ -158,7 +168,7 @@ Retrieved data may contain input information or business information. Follow org
 3. If filtering by date, status, or similar criteria is available, adjust the conditions.
 4. Check the contents of that run from an option such as "Open result."
 
-The same Workflow may list runs by other people or with different input. **Do not assume the first item in the list is your run; also compare the start time and user who ran it.**
+The same Workflow may list runs by other people or with different input. For runs by triggers or scheduled runs, the owner's name is shown as the user who ran it. "Automatic run" is shown only for runs by a service account. **Do not assume the first item in the list is your run; also compare the start time and user who ran it.**
 
 The scope of history and detail viewing varies by permissions and other factors. If you cannot find the result, check the target App, Project, Workflow, filter conditions, and viewing permissions. Sharing a result link alone does not give the recipient permission to view it.
 
@@ -183,7 +193,7 @@ Running again is different from refreshing the previous display. A new run may d
 | You cannot find the Workflow | The App, Project, Workflow name, and entry point you were given |
 | It is displayed as disabled or you lack permission | Do not change settings yourself. Ask the person in charge to check the active status and your run permission. |
 | There is an input error | Required fields and formats such as numbers, URLs, JSON, and attachment conditions |
-| It says a connection or setting is required | Ask an administrator to check connections, Secrets, and similar settings. |
+| It says a connection or setting is required | Ask an administrator to configure shared connections, Secrets, and similar settings. Personal connections do not resolve this. |
 | You cannot retrieve the status or steps | Retry the displayed status retrieval. Do not conclude that the process itself failed or stopped. |
 | It fails or partially succeeds | Check errors and completed processing, then consider running it again after checking for duplication impact. |
 | It succeeds but the result is not what you expected | Compare the input, output, and update destination, and consult the creator about the processing. |

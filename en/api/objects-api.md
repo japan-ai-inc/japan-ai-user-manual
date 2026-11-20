@@ -11,7 +11,9 @@ The Objects API is a public REST API for operating Object definitions, fields, a
 
 ## Before you begin
 
-The base URL is `https://api.japan-ai.co.jp`, and the common path is `/api/v1/objects`. Grant `object:read`, `object:write`, or `object:delete` according to the operation.
+The base URL is `https://api.japan-ai.co.jp`, and the common path is `/api/v1/objects`. Grant `object:read`, `object:write`, or `object:delete` according to the operation. The full list of public API endpoints and their request/response schemas is also available in the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)).
+
+For `{objectId}` in paths, specify the **Object ID (UUID)**. Passing an Object name such as `contacts` returns 400. Get the ID from `objectId` in the `GET /api/v1/objects` response.
 
 For authentication, enter the actual value in the `x-api-key` header. `Authorization: Bearer <key>` is also accepted. Do not include keys in browsers, code, logs, or support inquiries.
 
@@ -26,13 +28,13 @@ curl -sS "https://api.japan-ai.co.jp/api/v1/objects" \
 
 ## Scope of this article
 
-This article covers definitions, fields, records, search, and bulk creation called with a Project API key. CSV, SQL, permission settings, and structural design are out of scope. Structural changes to Objects provided by an App may return 403.
+This article covers definitions, fields, records, search, and bulk creation and deletion called with a Project API key. CSV, SQL, permission settings, and structural design are out of scope. Structural changes to Objects provided by an App may return 403.
 
 ## Common responses and pagination
 
 The main list and search response fields are `data`, `total`, `limit`, `cursor`, `hasNextPage`, and `queryTimestamp`. For the next page, pass `cursor` using the same conditions and sort order. `limit` and `offset` are numeric strings; `include_deleted` is `true` or `false`.
 
-On success, `GET`, `PATCH`, and search return 200; `POST` returns 201; and deletion returns 204. Invalid input returns 400, insufficient authentication, scope, or permission returns 403, a missing target returns 404, and an `expectedRevision` mismatch returns 409. If a read returns 429, follow `retryAfterSeconds` and `Retry-After`. For retries and errors, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
+On success, `GET`, `PATCH`, and search return 200; `POST` returns 201; and deletion returns 204. Invalid input (including a non-UUID `objectId`) returns 400; an invalid or expired key, or insufficient scope or permission, returns 403; a missing target returns 404, and an `expectedRevision` mismatch returns 409. If a read returns 429, follow `retryAfterSeconds` and `Retry-After`. Error responses include `requestId`, so record it for support inquiries. For retries and errors, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
 
 ## 1. Manage Object definitions
 
@@ -55,7 +57,7 @@ The response includes `objectId`, `objectName`, `displayName`, `description`, `c
 | Update | `PATCH /api/v1/objects/{objectId}/fields/{fieldId}` | `object:write` | body: fields to change, including display name, flags, reference target, default value, range, and validation rules. |
 | Delete | `DELETE /api/v1/objects/{objectId}/fields/{fieldId}` | `object:delete` | Returns 204 with no body on success. |
 
-`dataType` values are `text`, `string`, `number`, `boolean`, `datetime`, `date`, `json`, `array`, `relationship`, `file`, `select`, `multiselect`, `url`, `email`, `phone`, and `auto_increment`. `maxLength` is an integer from 1 to 65,535. The response includes `fieldId`, `fieldName`, `displayName`, `dataType`, `fieldNum`, each `is...` flag, `refObjectId`, `refFieldId`, `defaultValue`, and `validationRules`.
+`dataType` values are `text`, `string`, `number`, `boolean`, `datetime`, `date`, `json`, `array`, `relationship`, `file`, `select`, `multiselect`, `url`, `email`, `phone`, and `auto_increment`. `email` is an alias for `text`. `maxLength` is an integer from 1 to 65,535. The response includes `fieldId`, `fieldName`, `displayName`, `dataType`, `fieldNum`, each `is...` flag, `refObjectId`, `refFieldId`, `defaultValue`, and `validationRules`.
 
 `validationRules` is completely replaced as an array, cleared with an empty array, and retained if omitted.
 
@@ -73,8 +75,6 @@ A record body is `{"data": {"field name": value}}`. Keys in `data` are not conve
 
 The `data` in `PATCH` is not a partial update; it is a **complete replacement**. Include the fields to retain. `expectedRevision` is an integer from 1 to 2,147,483,647. Pass the retrieved `revision` in the update body or delete query; a mismatch returns 409. When omitted, updates are last-write-wins and deletion is unconditional. On conflict, retrieve the latest record.
 
-> SDK 0.11.0 has `objects.define(objectId).bulkDelete(recordIds)`, but as of 2026-11-11, availability of the corresponding bulk delete route (`DELETE /api/v1/objects/{objectId}/records/bulk`) in the production public REST API could not be confirmed. It is implemented in a development version; after it is available in production, `object:delete` can delete 1-1,000 items, and failure to delete even one causes all items to fail. In the public REST API, use `DELETE /api/v1/objects/{objectId}/records/{recordId}` for each target. Distinguish it from Objects routes in PRS.
-
 ```bash
 curl -sS -X PATCH \
   "https://api.japan-ai.co.jp/api/v1/objects/$JAI_OBJECT_ID/records/RECORD_ID" \
@@ -88,6 +88,9 @@ curl -sS -X PATCH \
 |---|---|---|---|
 | Search | `POST /api/v1/objects/{objectId}/records/search` | `object:read` | `filters`, `sort`, `limit`, `offset`, `cursor`, and `includeDeleted` are optional. `limit` defaults to 50 (1-1,000), `offset` defaults to 0, and `includeDeleted` defaults to `false`. Paginated response. |
 | Bulk create | `POST /api/v1/objects/{objectId}/records/bulk` | `object:write` | body: `[{"data": {...}}, ...]`. At least 1 and **at most 1,000** items. Returns an array of created records or its `data` array. |
+| Bulk delete | `DELETE /api/v1/objects/{objectId}/records/bulk` | `object:delete` | Specify at least 1 and **at most 1,000** record IDs to delete. **Either all succeed or all fail**: if even one cannot be deleted, none are deleted. |
+
+For the request body field names and response format of bulk delete, see the public OpenAPI. In SDK 0.11.0, `objects.define(objectId).bulkDelete(recordIds)` performs the same operation. If bulk delete fails, check that the target IDs exist, `object:delete`, the key creator's permissions, and whether the records are referenced by other records before retrying.
 
 A filter has `field`, `operator`, and optional `value`. `operator` values are `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `contains`, `startswith`, `endswith`, `in`, `notin`, `isnull`, `isnotnull`, `exists`, `regex`, `between`, and `jsoncontains`. `sort` has `field` and optional `direction`, which defaults to `asc`. `cursor` takes precedence over `offset`.
 
@@ -107,8 +110,8 @@ The key creator must also have permission to read and configure policies for the
 
 | Situation | What to check and do |
 |---|---|
-| 400 | Check JSON, required fields, names, `fieldNum`, search conditions, and bulk creation of 1,000 items or fewer. |
-| 403 | Check key format and validity, target Project, required `object:*` scopes, and permissions. |
+| 400 | Check JSON, required fields, names, `fieldNum`, search conditions, and bulk creation or deletion of 1,000 items or fewer. Also check that you did not pass an Object name as `{objectId}` (a UUID is required). |
+| 403 | Invalid or expired keys ("Invalid API key" / "API key has expired") also return 403. Check key format and validity, target Project, required `object:*` scopes, and permissions. |
 | 404 or 409 | Check the ID or `expectedRevision` and the latest record before operating. |
 | 422 | A list or search result may be too large. Reduce `limit` or narrow the conditions. If only one item is too large, ask a Project administrator to review its content. |
 | Record deletion or access-rule change fails | Check the target ID, `object:delete` or `object:policy`, the key creator's Object permissions, and the impact of existing rules, relationships, and the target. Do not retry a write with unknown state as-is. |
@@ -122,7 +125,8 @@ The key creator must also have permission to read and configure policies for the
 - [ ] Checked Object name, field name, type, and relationship conditions in [Object Specifications and Limits](../build/object-specs-and-limits.md)
 - [ ] Passed `data` including all fields to retain when updating a record
 - [ ] Handled `revision` and `expectedRevision` in processes with concurrent updates
-- [ ] Split bulk creation into batches of 1,000 items or fewer. When deleting records through the public REST API, used the delete route for each target
+- [ ] Split bulk creation and bulk deletion into batches of 1,000 items or fewer
+- [ ] Specified a UUID, not an Object name, as `{objectId}`
 - [ ] Checked existing rules, priorities, and the impact on users when changing record access rules
 - [ ] Carried forward the cursor with the same conditions and sort order in a search
 

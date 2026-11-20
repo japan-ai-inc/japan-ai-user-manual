@@ -13,11 +13,11 @@ For publishing from the screen, see [Publish a Workflow](../build/publish-workfl
 
 ## Before you begin
 
-- Use `@japan-ai-inc/studio-sdk` **0.11.0** and Node.js **22 or later**. Workflows are intended for local direct development or the PRS server runtime.
+- Use `@japan-ai-inc/studio-sdk` **0.11.0** and Node.js **22 or later**. Workflows are intended for local direct development or Page runtime server processing.
 - Check the target Project and Workflow ID, and start with test inputs.
 - Keep API keys only in secure server-side settings. Do not include them in browsers or logs.
 
-> `workflows` is not a module for PRS browsers. Do not pass API keys to the browser.
+> Calling `workflows` from the browser of a Studio-hosted Page is technically possible because the Page runtime relays it, but it is currently outside the beta support scope (subject to change without notice). Do not pass API keys to the browser.
 
 ## 1. Get the list and current definition
 
@@ -46,7 +46,7 @@ jai-studio workflows get '<workflow-id>' | jq .definition > ./definition.json
 
 ## 2. Save a draft
 
-Save a definition with `saveDraft()`; this alone does not publish it. `create()` creates an unpublished Workflow, and `update()` changes the name, description, and `enabled`. `enabled: false` or the CLI's `--disable` disables triggers.
+Save a definition with `saveDraft()`; this alone does not publish it. `create()` creates an unpublished Workflow, and `update()` changes the name, description, and `enabled`. `enabled: false` or the CLI's `--disable` disables the Workflow. A disabled Workflow does not appear in `list()`, and running it returns 403.
 
 ```ts
 const workflowId = "Workflow ID to update";
@@ -119,7 +119,9 @@ if (result.status === "SUCCEEDED" || result.status === "PARTIAL_SUCCEEDED") {
 
 `run()` is not always a send-only call that returns immediately. On timeout, continue with `getRunResult()` using the `runId` in `responseBody`; do not immediately resend it.
 
-If you only need to wait for completion, use `runAndWait()` or the CLI's `run-and-wait`. The SDK's `timeoutMs` defaults to **60,000ms**, with a range of **1,000–270,000ms**. The CLI's `--timeout` is in seconds, with a range of **1–270**. This is shorter than the limit for direct REST API calls (300 seconds) to allow time for communication.
+If you only need to wait for completion, use `runAndWait()` or the CLI's `run-and-wait`. In the SDK, specify `timeoutMs` in the **second argument** of `runAndWait()`; it defaults to **60,000ms**, with a range of **1,000–270,000ms**. The client-wide `timeoutMs` passed to `createClient()` does not apply to `runAndWait()`. The CLI's `--timeout` is in seconds, with a range of **1–270**. This is shorter than the limit for direct REST API calls (300 seconds) to allow time for communication.
+
+> Even if waiting times out, the Workflow run does not stop. The server returns 408 with a `runId`. Treating it as a failure and running again causes a duplicate run, so check the status with the `runId`. The CLI removes `runId` from its default output; add `--debug` when you need it.
 
 ```bash
 jai-studio workflows run '<workflow-id>' --input '{"documentUrl":"https://example.invalid/input.pdf"}'
@@ -129,7 +131,7 @@ jai-studio workflows run-and-wait '<workflow-id>' --input '{"query":"Check"}' --
 
 ## 5. Schedule a Project Workflow
 
-In SDK 0.11.0, you can use `scheduledTasks` to schedule Workflows created by the Project. Each Task runs as the creator of the Project API key, and Workflows linked from the organization cannot be scheduled. `list` requires `task:read`; creation and updates require `task:write` and `workflow:execute`; deletion requires `task:delete`. `scheduledTasks` is a module for direct development and cannot be used in the PRS browser or PRS server SDK. Declaring scopes in an App release manifest does not change this execution mode restriction.
+In SDK 0.8.0 or later, you can use `scheduledTasks` to schedule Workflows created by the Project. Each Task runs as the creator of the Project API key, and Workflows linked from the organization cannot be scheduled. `list` requires `task:read`; creation and updates require `task:write` and `workflow:execute`; deletion requires `task:delete`. A Project API key is valid only while its creator is an active member of the Project; removing the creator from the Project makes the key return 403. `scheduledTasks` is a module for direct development and cannot be used in the SDK in the Page runtime browser or server processing. Declaring scopes in an App release manifest does not change this execution mode restriction.
 
 ```ts
 const createdTask = await studio.scheduledTasks.create({
@@ -144,7 +146,7 @@ const tasks = await studio.scheduledTasks.list({ search: "Weekly", limit: 20 });
 await studio.scheduledTasks.update(createdTask.taskId, { disabled: true });
 ```
 
-Specify either `repeatPattern` or `cronSchedule` in `schedule`; if omitted, the Task runs once. Updates change only the specified fields, and `inputs` are merged by key. Creation is not idempotent, so use `list()` by name to check for an existing Task before creation and before resending after a 5xx error. Continue pagination until `nextCursor` is `null`, even for short pages.
+Specify either `repeatPattern` or `cronSchedule` in `schedule`; if omitted, the Task runs once. When calling the REST API directly, also put `repeatPattern`, `cronSchedule`, and `scheduleTimezone` inside the `schedule` object. Placing them at the top level returns 400. Updates change only the specified fields, and `inputs` are merged by key. Creation is not idempotent, so use `list()` by name to check for an existing Task before creation and before resending after a 5xx error. Continue pagination until `nextCursor` is `null`, even for short pages.
 
 ## Common misconceptions
 
@@ -160,10 +162,11 @@ It does not. Saving a draft and publishing are separate. For the published versi
 
 | Situation | Check and action |
 |---|---|
-| The expected Workflow is not in the list | Check `status`, the Project, and `nextCursor`. |
+| The expected Workflow is not in the list | Check `status`, the Project, `nextCursor`, and whether the Workflow is disabled (`enabled: false`). |
 | You get `409` when saving or publishing | Retrieve the definition again and use the latest `draftUpdatedAt`. |
 | A trigger does not run after publishing | Check `unregisteredTriggers`, publishing status, and connections. |
-| A run times out | Record `runId` and check with `getRunResult()`. Do not run it again immediately. |
+| A run times out | The run continues. Record `runId` and check with `getRunResult()`. Do not run it again immediately. |
+| A run returns 403 | Check the key's scopes and whether the Workflow is disabled. |
 | A CLI update or publish fails | Check the `definition` in `--file` and the latest token. |
 
 For an inquiry, record the Workflow ID, run ID, SDK or CLI version, execution mode, date and time, status, and error. Do not attach API keys, Secrets, authentication headers, or business data.

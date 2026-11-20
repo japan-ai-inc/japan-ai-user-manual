@@ -14,14 +14,15 @@ It is important to check included resources, dependencies, and credentials first
 
 This article is for the **submission requester**. The person who can open "App publishing" in the target Studio Project and select **"Marketplace"** as the publishing destination performs this operation. Submission requires the following conditions:
 
-- App publishing and Marketplace publishing are available in the target organization.
-- You can view and update the target Project and have permission to perform App publishing.
+- JAPAN AI has enabled Marketplace publishing for the target organization.
+- You are an organization administrator or have the "Studio App: Publish" permission.
+- You are an Editor or higher in the target Project.
 - You can prepare the App name, listing information, resources to publish, home page, version, and release notes.
 - You can complete the pre-publish check.
 
-Even if you can open the screen, "Marketplace" may not be displayed or "Submit for review" may not be available. Do not change permissions or organization availability settings yourself; check with the organization administrator.
+The first condition is enabled per organization by JAPAN AI and cannot be met by changing permissions within your organization. If "Marketplace" is not displayed, contact JAPAN AI. If the second or third condition is missing, ask your organization administrator.
 
-> The submission requester uses Studio's "App publishing." JAI Admin is the screen where distribution owners handle review, approval, and listing. Submission requesters do not submit by using "Approve" or "Apply listing changes" in JAI Admin.
+> The submission requester uses only Studio's "App publishing." JAPAN AI performs review, approval, and listing.
 
 ## Prepare the information before submission
 
@@ -39,7 +40,7 @@ In "Marketplace listing information," save listing content as a draft. The App n
 
 Descriptions are displayed as literal text. Do not assume that HTML or Markdown will change appearance; use line breaks and normal text for readability. Do not include customer information, personal information, passwords, API keys, tokens, or validation-environment URLs in images or videos.
 
-> On Studio's submission screen, no field could be confirmed for a submission requester to enter or request Marketplace pricing, seat pricing, or a pricing structure. When determining pricing or assessing user counts and contract limits for an App with displayed pricing, do not supplement it through this submission; follow [Check App Seats, Pricing, and Contract Limits](../operations/check-app-seats-pricing-and-limits.md).
+> Studio's submission screen has no field for entering Marketplace pricing, seat pricing, or a pricing structure. When determining pricing or assessing user counts and contract limits for an App with displayed pricing, do not supplement it through this submission; follow [Check App Seats, Pricing, and Contract Limits](../operations/check-app-seats-pricing-and-limits.md).
 
 ## 1. Save App information and listing information
 
@@ -53,10 +54,10 @@ You cannot submit while listing information is unsaved or exceeds limits. Saving
 
 ## 2. Check release content and run the pre-publish check
 
-1. Under **"Resources to publish"** and "Initial storage data," check what to include in the App. Individual selections are limited to 1,000 items per type. Include every required resource, without including unnecessary data.
+1. Under **"Resources to publish"** and "Initial storage data," check what to include in the App. Include every required resource, without including unnecessary data. At least one Agent, Workflow, or Page is required. Custom Objects include only the schema and access settings, and only Storage files can be initial data. For the limits (1,000 individual selections per type; Storage initial data up to 1,000 files and 100 MB; up to 50 Objects and 500 fields) and configurations that cannot be published, see [Constraints on Distribution Scope, Dependencies, and Authentication Settings](distribution-scope-dependencies-auth.md).
 2. Under **"Home page,"** select the first screen users see when opening the App.
-3. Under **"Version and release notes,"** enter an unused version in `x.y.z` format and the changes in this version.
-4. In **"Pre-publish check,"** select **"Run check."** If there are errors or warnings, correct the target Project and resources, then select **"Run again."**
+3. Under **"Version and release notes,"** enter an unused version in `x.y.z` format and the changes in this version. If you have withdrawn a submission, the new version must be greater than every withdrawn version.
+4. In **"Pre-publish check,"** select **"Run check."** If there are errors or warnings, correct the target Project and resources, then select **"Recheck."** If a value that looks like a fixed ID is flagged but can be used as-is at the installation destination, you can pass it with **"Recheck as reviewed."**
 5. Check that "The pre-publish check is complete. You can submit this release for review." appears.
 
 The pre-publish check does not approve listing text; it checks whether selected resources can be safely published. Do not conclude that warnings about Pages, external connections, Secrets, or values that may be fixed IDs are harmless merely because they are displayed. Recheck distribution assumptions in [Constraints on Distribution Scope, Dependencies, and Authentication Settings](distribution-scope-dependencies-auth.md).
@@ -73,7 +74,7 @@ After submission, you cannot change that release content or listing information.
 
 ## During review and after rejection
 
-During review, you cannot submit a new release from the same App. In "Review status," check the submission date and time, target version, and currently published version, and wait for JAPAN AI's review. If you need to stop the application, you can select **"Cancel submission"** during review. The release and cancellation history remain.
+During review, you cannot submit a new release from the same App. In "Review status," check the submission date and time, target version, and currently published version, and wait for JAPAN AI's review. If you need to stop the application, you can select **"Cancel submission"** during review. The release and cancellation history remain. A version resubmitted after a withdrawal must be greater than every withdrawn version.
 
 If rejected, check the displayed **"Rejection reason"** and separate whether the release contents or listing information needs action. The reason is displayed on the listing-information screen, and you can recreate the draft from **"Resume editing."** Proceed in the following order:
 
@@ -82,11 +83,15 @@ If rejected, check the displayed **"Rejection reason"** and separate whether the
 3. Create a new version and release notes, then save the listing information.
 4. Run the pre-publish check again, and resubmit only after resolving issues.
 
+## Updates after approval
+
+When an approved version becomes generally available, customer organizations that installed the App are updated automatically. Customers cannot choose a version, and there is no rollback to a previous version. Fix problems by submitting a corrected new version.
+
 ## If something does not work
 
 | Situation | Check and action |
 |---|---|
-| "Marketplace" or "Submit for review" is not displayed | Check the organization's availability state, target Project, and submission permission, then ask the administrator. |
+| "Marketplace" or "Submit for review" is not displayed | Check the three conditions in "Before you begin." If Marketplace publishing is not enabled for the organization, contact JAPAN AI; if permissions are missing, ask your organization administrator. |
 | You cannot save listing information | Check required fields, character counts, tag count and duplicates, supported media formats, counts, capacity, and network status. Input may be retained, so check it without deleting it. |
 | The pre-publish check stops | Correct the displayed target resource, then check again after saving. For dependencies and authentication conditions, see [Constraints on Distribution Scope, Dependencies, and Authentication Settings](distribution-scope-dependencies-auth.md). |
 | You cannot submit a new version because review is in progress | Check whether the same App has a review in progress. Cancel submission if necessary or wait for review completion. |

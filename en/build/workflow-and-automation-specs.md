@@ -16,13 +16,26 @@ This article describes start conditions, the version run, treatment of the runne
 
 Displayed items and availability vary by organization, Project, permissions, and feature settings.
 
+## Key points: who a run executes as and which credentials it uses
+
+| Start method | Run-as user | External-service authentication | When the run-as user leaves the organization | How to change the owner |
+|---|---|---|---|---|
+| Manual run | The user who performed the operation | Only the Project's shared connections | — | — |
+| Workflow trigger | **The person who first published that Start node.** Not transferred even if someone else republishes | Only the Project's shared connections | Automatically disabled | Delete the trigger node, add it again, and publish (the Webhook URL and Email by JAI address change) |
+| Task Scheduler | **The task's creator.** Does not change when edited | Only the Project's shared connections (for Workflows) | Automatically disabled | Recreate the task |
+
+- **Workflows do not use the runner's personal connections.** For automatic execution, the required shared connections for external services must be set up in the Project.
+- In the runner column of the run history, trigger and Task Scheduler runs show the owner's name. Only runs by a service account are displayed as "Automated run."
+- **There is no pause feature.** To stop urgently, turn off the Workflow's "Enable" setting. When you do, Email by JAI and Storage triggers are treated as deleted. The Webhook URL changes if the trigger is recreated.
+- Tasks cannot be created on the free plan. There is a per-organization limit on the number of tasks.
+
 ## Specifications by execution method
 
 | Start method | Start condition | Version run | Runner and usage limit treatment | Retry |
 |---|---|---|---|---|
-| Manual run | Started by a user | A test in the editing screen can target saved editing content. When running a published Workflow from a list or similar location, the published version is used. | Context of the user who performed the operation | Check the input and run it again from the normal execution screen |
-| Workflow trigger | An event such as a Webhook, email receipt, data change, or transcription completion | **Published version** | Depends on permissions and connection settings at the time the Workflow was published or configured, rather than the event sender. Billing and deduction details vary by configuration. | Available when "Retry" is displayed for a failed event-triggered run |
-| Task Scheduler | Specified date and time or repeat time | **Published version** | Whether it can run is determined by Task Scheduler in Project Settings and connection settings. | Automatic rerunning of the same processing could not be confirmed. Checking run history is a separate operation. |
+| Manual run | Started by a user | A test in the editing screen can target saved editing content. When running a published Workflow from a list or similar location, the published version is used. | The user who performed the operation | Check the input and run it again from the normal execution screen |
+| Workflow trigger | An event such as a Webhook, email receipt, data change, or transcription completion | **Published version** | Runs as the person who first published the Start node, not the event sender. External services use the Project's shared connections. Billing and deduction details vary by configuration. | Use "Retry" displayed on the failed run |
+| Task Scheduler | Specified date and time or repeat time | **Published version** | Runs as the task's creator. External services use the Project's shared connections. | Use "Retry" displayed on the failed run (displayed for every failed run linked to a task) |
 
 > **Saving a draft alone does not change automatic execution content.** Workflow triggers and Task Scheduler use the published version. After making changes, proceed in the order of testing, checking, and publishing.
 
@@ -44,22 +57,30 @@ For a Webhook trigger, you can define the following values.
 
 A Webhook URL is generated after publishing. Configure "Signature Verification," "Signature Header," and "Webhook Secret" as needed to prevent URL exposure and unintended starts.
 
+{% hint style="warning" %}
+**A Webhook trigger and a Webhook task in the Task Scheduler are different mechanisms.** A Webhook trigger supports signature verification, but a Webhook task has no authentication, and anyone who knows the URL can start it.
+{% endhint %}
+
+Each time a trigger runs, a notification is sent to the notification center of every active member of the Project. This notification cannot be turned off.
+
 ### Task Scheduler
 
 In Task Scheduler in Project Settings, configure a schedule to run a published Workflow at a specified date and time or repeat time. Missing required connections, a disabled Workflow, and the availability status of models in the Workflow also affect whether it can run.
 
-In the Project Task Scheduler, configure the run date and time, repetition, and end date. Times are set in Japan Standard Time (JST); there is no time-zone selector. Repeat options include "No Repeat," "Hourly," "Daily," "Weekdays," "Weekly," "Monthly," and "Custom." In "Custom," choose intervals of 10, 15, 20, or 30 minutes, or 1, 2, 3, 4, 6, 8, 12, or 24 hours. For operation steps, see [Configure Task Scheduler](configure-task-scheduler.md).
+In the Project Task Scheduler, configure the run date and time, repetition, and end date. Times are set in Japan Standard Time (JST); there is no time-zone selector. Repeat options include "No Repeat," "Every hour," "Every day," "Weekdays," "Every week," "Every month," and "Custom." In "Custom," choose intervals of 10, 15, 20, or 30 minutes, or 1, 2, 3, 4, 6, 8, 12, or 24 hours. For operation steps, see [Configure Task Scheduler](configure-task-scheduler.md).
 
 Event triggers configured in a Workflow start node are different from schedules configured in Task Scheduler. Change event triggers, including transcription completion, on the Workflow side. Configure schedules in Task Scheduler in Project Settings, and check results in the execution history in the Project's Workflows screen.
 
 ## Limits and limit values
 
-The following lists only values that could be numerically verified in the code under review. It does not include counts, unit prices, or concurrent runs by plan.
+The main limits and configurable ranges are as follows. They do not include counts, unit prices, or concurrent runs by plan.
 
 | Target | Maximum or configurable range | Notes |
 |---|---:|---|
-| Number of Workflow nodes | Up to 500 nodes when saving through the Workflow management tool. Up to 1,000 nodes in Studio pre-publish validation and the publishing API. | Limits vary by entry point. Values exceeding the limit cause an error, so check what is displayed for the entry point you use. |
-| Number of Workflow connections | Up to 2,000 connections when saving through the Workflow management tool. Up to 3,000 connections in Studio pre-publish validation and the publishing API. | Validated separately from the node count. |
+| Number of Workflow nodes | Up to 1,000 nodes in Studio pre-publish validation and the publishing API. Up to 500 nodes on some save paths. | Limits vary by entry point. Values exceeding the limit cause an error. |
+| Number of Workflow connections | Up to 3,000 connections in Studio pre-publish validation and the publishing API. Up to 2,000 connections on some save paths. | Validated separately from the node count. |
+| Agent node "Timeout" | 60–1,200 seconds | — |
+| Request received by a Webhook trigger | Up to 1 MB | — |
 | Sub-Workflow "Timeout (seconds)" | 60–1,800 seconds | The default is 300 seconds. |
 | Sub-Workflow "Max Nesting Depth" | 1–10 | The default is 5. |
 | Maximum count for node "Retry on failure" | 1–10 times | The default when enabled is 3 times. |
@@ -94,15 +115,15 @@ They are different. Task Scheduler starts on a schedule in Project Settings, whi
 
 ### A failure is always automatically retried
 
-Not necessarily. Configure node-level "Retry on failure" explicitly. Automatic retrying of a failed Task Scheduler run with the same processing is not included in the scope confirmed here.
+Not necessarily. Configure node-level "Retry on failure" explicitly. To redo an entire failed Workflow, use "Retry" in the run log.
 
 ### "Retry" safely processes it only once
 
 This is not guaranteed. It reruns the entire Workflow with saved input, so external sends or writes may be duplicated if they have already completed. Design duplicate-prevention keys or processed flags in the external system.
 
-## If you cannot confirm it
+## Items not covered on this page
 
-The following cannot be uniformly determined from the screen or code under review alone.
+The following vary by contract, plan, organization settings, and external services, so this page does not cover them.
 
 - Run counts, credit unit prices, concurrent runs, and retention periods by contract or plan
 - Final billing amount for each execution method

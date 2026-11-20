@@ -1,6 +1,6 @@
 # SDK／CLIでPageを開発する
 
-この実習では、架空のお知らせを保存したObjectを、Pageで一覧表示します。ブラウザ側のSDKはPageと同じオリジンの経路を使い、Project APIキーをJavaScriptへ入れません。成果物をCLIで新規Pageとして登録し、アクセス設定、表示、整理まで確認します。
+この実習では、架空のお知らせを保存したObjectを、Pageで一覧表示します。ブラウザ側のSDKはPageと同じオリジンの経路を使い、Project APIキーをJavaScriptへ入れません。ローカルでビルドした静的な成果物をCLIで新規Pageとして登録し、アクセス設定、表示、更新、整理まで確認します。
 
 ## 関連記事
 
@@ -14,9 +14,9 @@
 
 ## 始める前に
 
-- PageとObjectを作成・閲覧できる検証用Projectを用意します。CLI用には、そのProjectで必要最小限の権限を持つProject APIキーを安全に管理します。発行・失効は[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照してください。
-- Node.js 22以上と、公開済みのSDK／CLI **0.11.0**を使います。0.11.0でもこの実習で使う`createClient({ baseUrl: "" })`、`objects.define()`、`list()`の使い方は同じです。導入・版固定は[開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)を確認してください。
-- 空の作業ディレクトリを使います。既存Pageの成果物ディレクトリを流用しないでください。特に`.jai-studio/page.json`があると、CLIは既存Pageの更新先として扱う場合があります。
+- PageとObjectを作成・閲覧できる検証用Projectを用意します。CLI用には、そのProjectで必要最小限の権限を持つProject APIキーを安全に管理します。Pageのデプロイには`page:write`スコープが必要です。発行・失効は[Project APIキーを管理する](../operations/manage-project-api-keys.md)を参照してください。
+- Node.js 22以上と、公開済みのSDK／CLI **0.11.0**を使います。この実習では`createClient({ baseUrl: "" })`、`objects.define()`、`list()`を使います。導入・版固定は[開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)を確認してください。
+- 空の作業ディレクトリを使います。既存Pageの成果物ディレクトリを流用しないでください。CLIはデプロイしたフォルダー内の`.jai-studio/page.json`にPage IDなどを保存し、`--page-id`を指定しない次回のデプロイではそのPageを更新します。
 - キーをHTML、JavaScript、公開用環境変数、ログ、リポジトリへ入れません。ブラウザ側のPageはCLIプロファイルを読みません。
 
 ## この実習で使うサンプル
@@ -57,13 +57,13 @@ Objectの作成は[Objectの構造を設計する](../build/design-object-struct
 
 **目標：** Project APIキーを使わず、Pageの相対経路でObjectを読みます。
 
-1. 使用中のビルド手順で、一覧を表示するHTMLとブラウザ用エントリーファイルを用意し、実習用ObjectのIDを設定します。
+1. 使用中のビルド手順で、一覧を表示するHTMLとブラウザ用エントリーファイルを用意し、実習用ObjectのID（UUID）を設定します。Object名を渡すとエラー（400）になります。IDはObjectの画面、またはSDKの`studio.objects.list()`で取得します。
 2. ブラウザ側では、次の形でSDKを初期化し、一覧を表示します。
 
    ```js
    import { createClient } from "@japan-ai-inc/studio-sdk";
    const studio = createClient({ baseUrl: "" });
-   const notices = studio.objects.define("実習用ObjectのID");
+   const notices = studio.objects.define("<Object UUID>");
 
    async function load() {
      const result = await notices.list({ limit: 20 });
@@ -73,16 +73,18 @@ Objectの作成は[Objectの構造を設計する](../build/design-object-struct
 
 3. 取得失敗時は、Object ID、Objectの閲覧権限、Pageのアクセス設定を確認する案内だけを表示します。APIキー、Secret、認証ヘッダーを追加しません。
 
-SDKのObject操作は[SDK Objects](../development/sdk-objects.md)、PRSブラウザでの初期化と権限は[Hosted PageのObjects API](../page-runtime/hosted-page-objects-api.md)を参照してください。**確認ポイント：** `baseUrl`は空文字で、ブラウザコードにAPIキーがありません。
+SDKのObject操作は[SDK Objects](../development/sdk-objects.md)、StudioでホストされたPageのブラウザ側での初期化と権限は[Hosted PageのObjects API](../page-runtime/hosted-page-objects-api.md)を参照してください。**確認ポイント：** `baseUrl`は空文字で、ブラウザコードにAPIキーがありません。
 
 ## Step 3. 成果物を作り、ローカルで構造を確認する
 
 **目標：** 配布するHTML、JavaScript、必要な静的ファイルだけを`dist`に出力します。
 
+Studioは、アップロードされた内容のルートを見て処理を決めます。ルートに`package.json`とロックファイルがあれば、Studio側で依存関係のインストールと`build`を実行してから起動します。`package.json`がなく`index.html`がある場合は、静的Pageとして配信します。どちらもない場合と、Next.jsのビルド成果物をアップロードした場合は拒否されます。この実習では、ローカルでビルドした`dist`（ルートに`index.html`がある静的な成果物）をアップロードします。ソースフォルダーをアップロードしてStudioにビルドさせる方法は[Pageのビルド・起動・更新](../development/page-build-start-update.md)を参照してください。
+
 1. 使用中のビルド設定で、HTMLとバンドル済みJavaScriptを`dist`へ出力します。
 2. ローカルWebサーバーで、見出し、静的ファイル、相対パスを確認します。
 3. `dist`に`node_modules`、`.env`、キー、Secret、ソースマップに含めるべきでない値がないことを確認します。
-4. ローカルの画面はPRSセッションを持たないため、Object取得の成否をここだけで判定しません。
+4. ローカルの画面はPage実行環境のセッションを持たないため、Object取得の成否をここだけで判定しません。
 
 ローカル確認と成果物の構成は[Pageをローカル確認してデプロイする](../development/local-preview-and-deploy-page.md)、配布時の扱いは[Pageの仕様・制限](../build/page-specs-and-limits.md)を参照してください。**確認ポイント：** `dist`には配布する成果物だけがあり、秘密値は含まれません。
 
@@ -98,8 +100,12 @@ SDKのObject操作は[SDK Objects](../development/sdk-objects.md)、PRSブラウ
      --name "お知らせ一覧（SDK実習用）" --json
    ```
 
-3. 成功結果の`pageId`、`studioUrl`、`runtimeUrl`、`version`を、必要な担当者だけが見られる記録先に保存します。
-4. `runtimeUrl`がない場合は、`studioUrl`から対象Pageを確認します。同じ`dist`を次回使う前に、メタデータが更新先を示すことを理解します。
+3. 成功結果の`pageId`、`studioUrl`、`runtimeUrl`、`version`を、必要な担当者だけが見られる記録先に保存します。`pageId`は次回以降の更新で必ず使います。
+4. 既定のアクセスモード「サインイン必須」では、`runtimeUrl`は常に`null`です。`studioUrl`から対象Pageを開きます。
+
+{% hint style="warning" %}
+`.jai-studio/page.json`は`./dist`の中に書かれます。一般的なバンドラーは再ビルド時に`dist`を空にするため、このファイルも消えます。その状態で`--page-id`なしでデプロイすると、既存Pageは更新されず、**新しいPageが黙って作成されます**（Page IDもURLも変わります）。更新では常に`--page-id`を指定してください。
+{% endhint %}
 
 デプロイ引数、初回登録と更新の判定、結果の読み方は[CLI Pages](../cli/cli-pages.md)を参照してください。**確認ポイント：** CLIの成功だけでObjectを読めたとは判断せず、新規Pageの対象と結果のURLを確認します。
 
@@ -107,16 +113,22 @@ SDKのObject操作は[SDK Objects](../development/sdk-objects.md)、PRSブラウ
 
 **目標：** PageへのアクセスとObjectの読取りを、サインイン済みの利用者として確認します。
 
-1. Pageカードから**「アクセス設定」**を開き、**「アクセスモード」**を**「サインイン必須」**にして保存します。
+1. Pageカードから**「アクセス設定」**を開き、**「アクセスモード」**が既定の**「サインイン必須」**であることを確認します。
 2. 想定する利用者の入口でPageを開き、2件のレコードと表示件数を確認します。
 3. 表示されない場合は、Object ID、Objectの閲覧権限、Pageのアクセス設定、利用者を順に確認します。キーをブラウザへ追加して回避しません。
-4. 見出しを変更して再度成果物を作る場合は、更新先を確認してからCLIでデプロイし、表示とバージョンを照合します。
+4. 見出しを変更して再ビルドした場合は、Step 4で記録した`pageId`を指定してデプロイし、表示とバージョンを照合します。
+
+   ```bash
+   jai-studio --profile lab-page pages deploy ./dist \
+     --page-id "<Step 4で記録したpageId>" --json
+   ```
 
 アクセス設定は[画面からPageを登録・公開する](../build/register-and-publish-pages.md)、更新確認は[Pageのビルド・起動・更新](../development/page-build-start-update.md)を参照してください。**確認ポイント：** Pageを開けることと、Objectを読めることは別です。PageとObjectの双方で必要な条件を確認します。
 
 ## よくある誤解
 
-- CLIプロファイルはCLI用です。PRSブラウザのSDKは`baseUrl: ""`を使い、APIキーを設定しません。
+- CLIプロファイルはCLI用です。StudioでホストされたPageのブラウザ側のSDKは`baseUrl: ""`を使い、APIキーを設定しません。
+- `dist`の中の`.jai-studio/page.json`は再ビルドで消えます。更新時は常に`--page-id`を指定します。
 - CLIの成功とObject表示の成功は別です。Pageのアクセス条件とObjectの閲覧権限を確認します。
 - 0.11.0へ上げても、この実習の初期化・Object定義・一覧取得は同じ形です。SDKとCLIの版は固定します。0.11.0ではAgent定義、Objectアクセスルール、予定実行タスクのCLIコマンドもありますが、このPage実習では実行しません。
 
@@ -127,8 +139,10 @@ SDKのObject操作は[SDK Objects](../development/sdk-objects.md)、PRSブラウ
 | `jai-studio`が見つからない・版が違う | Node.js、PATH、SDK／CLIの版を[開発環境・バージョン・互換性](../development/dev-environment-and-versions.md)で確認します。 |
 | CLIの認証で失敗する | プロファイル、接続先、キーの期限・権限を[CLIの設定・プロファイル](../cli/cli-config-and-profiles.md)と[Project APIキーを管理する](../operations/manage-project-api-keys.md)で確認します。 |
 | 初回のつもりで既存Pageを更新しそう | `--page-id`と`dist/.jai-studio/page.json`を確認し、推測でデプロイしません。[CLI Pages](../cli/cli-pages.md)を参照します。 |
+| 更新したつもりが新しいPageが作られた | 再ビルドで`dist/.jai-studio/page.json`が消えています。記録した`pageId`を`--page-id`に指定してデプロイし直し、誤って作られたPageを整理します。 |
+| CLIのデプロイが権限エラーになる | Project APIキーに`page:write`スコープがあるか確認します。 |
 | Pageでレコードを読めない | Object ID、Objectの閲覧権限、Pageのアクセス設定を[Hosted PageのObjects API](../page-runtime/hosted-page-objects-api.md)で確認します。 |
-| Pageが表示できない | 成果物のHTML・JavaScript・相対パスを確認し、[Pageのビルド・起動・表示に失敗する](../troubleshooting/page-build-start-display-failures.md)を参照します。 |
+| Pageが表示できない・アップロードが拒否される | ルートに`index.html`（または`package.json`とロックファイル）があるか、成果物のHTML・JavaScript・相対パスを確認し、[Pageのビルド・起動・表示に失敗する](../troubleshooting/page-build-start-display-failures.md)を参照します。 |
 
 ## 後片付け
 

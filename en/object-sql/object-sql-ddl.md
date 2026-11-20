@@ -15,11 +15,11 @@ Object SQL is SQL that treats Objects as tables, fields as columns, and records 
 
 - Check the target organization and Project, and the Object, fields, and existing records to be changed.
 - Creating, deleting, or changing an Object or field requires the corresponding permission for each target. View permission alone does not let you execute DDL.
-- In the "Custom Object SQL" Workflow node, specify only one statement in "SQL." "Generate SQL with Agent" assists with creating SQL; review the generated content before execution. You can also execute DDL with an Agent's Object SQL tool.
+- In the "Custom Object SQL" Workflow node, specify only one statement in "SQL." "Generate SQL with Agent" assists with creating SQL; review the generated content before execution. Every Agent in a Studio Project is automatically given the Object SQL tool, so Agents can also execute DDL. To prevent an Agent from making structural changes, control it with the Object's role permissions.
 
-> DDL accepts only one SQL statement per execution. Multiple statements such as `CREATE TABLE ...; CREATE INDEX ...` are rejected as `Only a single SQL statement is allowed`. Review changes statement by statement and execute them separately if necessary.
+> DDL accepts only one SQL statement per execution. Multiple statements such as `CREATE TABLE ...; CREATE INDEX ...` are rejected as `Only a single SQL statement is allowed`. If a code example in this article contains multiple statements, pasting them together also fails. Execute them one statement at a time.
 
-Within the scope checked, there is no Object SQL execution API or command in the public REST API, Studio SDK, or Studio CLI. Use Object definitions with the SDK and CLI, and the Objects API with the HTTP API. This article does not describe direct use outside a Workflow or Agent.
+There is no Object SQL execution API or command in the public REST API, Studio SDK, or Studio CLI. Use Object definitions with the SDK and CLI, and the Objects API with the HTTP API. This article does not describe direct use outside a Workflow or Agent.
 
 ## 1. Create Objects and fields with `CREATE TABLE`
 
@@ -46,15 +46,16 @@ The `COMMENT` clause sets the Object **description**. It does not change the dis
 | `DATE`, `TIMESTAMP`, `DATETIME` | Date and time | Only this type can use `CURRENT_TIMESTAMP` / `NOW()` as the default value. |
 | `JSON`, `JSONB` | JSON |  |
 | Array types such as `TEXT[]` | Array |  |
-| `SERIAL`, `BIGSERIAL`, `AUTO_INCREMENT` | Auto-incrementing number | They are handled as auto-incrementing values. |
+| `SERIAL`, `BIGSERIAL` | Auto-incrementing number | They are handled as auto-incrementing values. `AUTO_INCREMENT` is a column option, not a type (see below). |
 
 ### Constraints available for columns
 
 | Syntax | Behavior and conditions |
 |---|---|
 | `NOT NULL` / `NULL` | Sets whether the field is required or optional. |
+| `AUTO_INCREMENT` | A column option that specifies auto-numbering. It is not a type. |
 | `UNIQUE` | Sets a unique constraint and index. It cannot be specified for `JSON` or arrays. |
-| `DEFAULT <literal>` | A number, string, Boolean, or `NULL` can be the default value. Expressions cannot be specified. |
+| `DEFAULT <literal>` | A number, string, Boolean, or `NULL` can be the default value. Expressions cannot be specified. `DEFAULT -1` cannot be used. |
 | `DEFAULT CURRENT_TIMESTAMP` | Can be specified only when creating a date/time field or adding a column. |
 | `CHECK (column_name IN (...))` | Becomes an allowed list of literal values for the same column. `NOT IN`, an empty list, a list containing `NULL`, or conditions using another column or an expression are rejected. Up to 100 values are allowed. |
 | `REFERENCES object_name(field_name)` | Sets a relationship. The referenced Object and field must exist, the referenced field must be unique, and both field types must match. |
@@ -69,7 +70,7 @@ CREATE TABLE orders (
 );
 ```
 
-`ON UPDATE` and `REFERENCES` across multiple columns are not supported. The statement is rejected if the reference target does not exist, is not unique, or has a different type. A relationship does not grant permissions to its reference target.
+`ON UPDATE` and `REFERENCES` across multiple columns are not supported. `ON DELETE` does not cause an error; it is **silently ignored**. The statement is rejected if the reference target does not exist, is not unique, or has a different type. A relationship does not grant permissions to its reference target.
 
 ## 2. Change only one item with `ALTER TABLE`
 
@@ -104,7 +105,7 @@ DROP TABLE IF EXISTS obsolete_tasks CASCADE;
 
 `DROP INDEX` requires `ON object(field)` and cannot use `CASCADE`. An index created by a unique constraint cannot be deleted.
 
-`DROP TABLE` targets only one Object and includes `CASCADE`. With `IF EXISTS`, a nonexistent Object is unchanged and a warning is issued. After deletion, SQL that references the Object fails. Because no SQL restore syntax could be confirmed, refer to [Object Specifications and Limits](../build/object-specs-and-limits.md) for deletion and restoration operations and effects.
+`DROP TABLE` targets only one Object and includes `CASCADE`. With `IF EXISTS`, a nonexistent Object is unchanged and a warning is issued. After deletion, SQL that references the Object fails. Refer to [Object Specifications and Limits](../build/object-specs-and-limits.md) for deletion and restoration operations and effects.
 
 `COMMENT ON TABLE tasks IS 'Description';` sets or updates the Object description. `COMMENT` for anything other than a table, such as `COMMENT ON COLUMN`, is rejected.
 
@@ -127,7 +128,7 @@ Only simple index creation for one column is supported. You cannot create partia
 | `REFERENCES` fails | Check that the referenced Object and field exist, the reference target's unique constraint, both field types, and existing record values. |
 | DDL fails in a Workflow | Check "SQL" in the "Custom Object SQL" node, the target Project, the permissions required by the Workflow execution principal, and the error in run history. DDL is rejected in execution contexts that do not allow structural changes. |
 
-Before and after changes, check the field structure, existing records, relationships, and representative Page, Agent, and Workflow operations. Within the scope checked, an entry point for users that only validates DDL could not be confirmed.
+Before and after changes, check the field structure, existing records, relationships, and representative Page, Agent, and Workflow operations. Object SQL has a `dry_run` mode that validates DDL without applying it.
 
 ## Next articles to read
 

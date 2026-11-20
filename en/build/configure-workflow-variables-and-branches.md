@@ -102,6 +102,10 @@ Distinguish a state where the variable name is written as ordinary text from a s
 
 Reference options are generated according to connection relationships and receiving-side settings. Outputs from every node cannot necessarily be selected from everywhere. Rather than guessing and manually entering a reference name in old documentation, use the current options.
 
+### Use variables in the Custom Object SQL node
+
+In the SQL of a Custom Object SQL node, write Workflow variables as `{{#node.variable#}}`. They are automatically converted to parameters (`$1`, `$2`, ...) at run time, so **writing `$1` or similar directly in the SQL fails.**
+
 ## 4. Specify values to return in the End node
 
 1. Connect the processing node to **"End."**
@@ -121,7 +125,7 @@ To split routes based on fixed values or conditions, use **"If / Else."** Here, 
 
 ### Example: Split based on whether request details contain "urgent"
 
-1. Add and connect "If / Else" after the Start node.
+1. Add and connect "If / Else" after the Start node. **If / Else, Question Classifier, and End cannot be added from "+" on a connection line.** Add it from another entry point, such as "Add next block" on the Start node.
 2. Open the If / Else settings and select **"Add condition."**
 3. Select `request_text` from the Start node.
 4. Set the comparison operator to **"Contains."**

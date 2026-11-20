@@ -126,7 +126,7 @@ When you delete the active profile, the first of the remaining names becomes the
 
 ## 4. Check the runtime priority order for endpoint and key
 
-For CLI commands that require authentication, the endpoint URL and API key are resolved **separately**. Both use the following priority order: command flag, environment variable, then profile.
+For CLI commands that require authentication, the endpoint URL and API key are resolved **separately**. Both use a fixed priority order: command flag > environment variable > profile.
 
 | Setting | 1. Highest priority | 2. Next | 3. Last | Notes |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ Successful CLI results are output as JSON to standard output and can be formatte
 
 ## Handling error output
 
-In SDK 0.11.0, the CLI outputs JSON containing `error`, `statusCode`, and `details` to standard error on failure. When the API returns a `message`-format error body, deliberately returned `code` and object-format `params` are retained in `details`, so they can help isolate issues such as an incomplete rule ID. Other raw response bodies are normally hidden. Because `--debug` outputs details, use it only in an isolated investigation environment where Secrets, credentials, and personal information cannot be output.
+In SDK 0.11.0, when an API call fails, the CLI outputs JSON containing `error`, `statusCode`, and `details` to standard error. For usage errors (wrong arguments or flags, etc.), it writes plain text, not JSON, to standard error. When the API returns a `message`-format error body, deliberately returned `code` and object-format `params` are retained in `details`, so they can help isolate issues such as an incomplete rule ID. Other raw response bodies are normally hidden. For this reason, although every Studio API error response includes `requestId`, normal CLI error output strips `requestId`, `runId`, `errors[]`, and `retryAfterSeconds` (for example, the `runId` returned when `workflows run-and-wait` times out is shown only with `--debug`; see [CLI Workflows](cli-workflows.md)). Because `--debug` outputs details, use it only in an isolated investigation environment where Secrets, credentials, and personal information cannot be output.
 
 ## Troubleshooting
 
@@ -167,9 +167,9 @@ In SDK 0.11.0, the CLI outputs JSON containing `error`, `statusCode`, and `detai
 | You get a key-not-configured or authentication error | Do not work around it by adding `--key`; check `JAI_STUDIO_API_KEY` or the actual value in the target profile, the target Project, expiration date, and scopes. Do not use the masked display. |
 | A profile cannot be found | Check its name with `jai-studio config list`, and create it with `config set` if necessary. |
 | CI waits for interactive input | Use `--key-stdin` or `JAI_STUDIO_API_KEY`. Configure it so the actual value is not output to standard output or logs. |
-| You need error details | Normal errors are displayed as JSON on standard error. Because `--debug` outputs response details, use it only in a safe temporary environment and do not share its results. |
+| You need error details | API errors are displayed as JSON on standard error. The `requestId` needed for support inquiries is stripped from normal output, so check it with `--debug`. Because `--debug` outputs response details, use it only in a safe temporary environment and do not share its results. |
 
-The exit code is 1 for errors or cancelled interactive input. Normal error output is JSON containing `error`, `statusCode`, and `details`; response details are output only with `--debug`. In automation, separate standard output from standard error, and do not treat a nonzero exit code as success.
+The exit code is 1 for errors or cancelled interactive input. API error output is JSON containing `error`, `statusCode`, and `details` (plain text for usage errors); response details are output only with `--debug`. In automation, separate standard output from standard error, and do not treat a nonzero exit code as success.
 
 ## Checklist
 

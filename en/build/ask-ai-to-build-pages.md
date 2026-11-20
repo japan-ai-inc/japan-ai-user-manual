@@ -1,6 +1,10 @@
 # Ask AI to Create and Edit a Page
 
-Tell AI the purpose and conditions of a business screen, and ask it to create a Page or edit an existing Page. A Page is a web screen for checking information, entering information, and performing business operations. This article explains the flow: **organize requirements → ask AI → check in preview → request edits → check registration and publication status**.
+Tell AI the purpose and conditions of a business screen, and ask it to create a Page or edit an existing Page. A Page is a web screen for checking information, entering information, and performing business operations. This article explains the flow: **organize requirements → ask AI → check in preview → request edits → check the applied version and access settings**.
+
+{% hint style="warning" %}
+**When AI edits an existing Page, the change is published to users immediately.** AI's Page publishing writes a new version to the existing Page and immediately switches that version to "Applied." There is no draft stage, and the change is reflected right away in the Page users open. When editing a Page that is in business use, try the change on a test Page first. To revert, follow [Manage Page Versions](manage-page-versions.md) and use "Restore and apply" on an earlier version in "Version History."
+{% endhint %}
 
 Even if AI responds "Done," the Page is not necessarily ready for business use. Check not only how the screen looks, but also input, displayed data, performed operations, and the users who can access it. For detailed procedures for registering and publishing Pages, see [Register and Publish a Page from the Screen](register-and-publish-pages.md).
 
@@ -16,10 +20,11 @@ Even if AI responds "Done," the Page is not necessarily ready for business use. 
 - Check the target organization and Project, and the Page to create or edit.
 - Confirm that you can start a conversation with AI and have permission to create or update Pages in the target Project. Available capabilities and permissions vary by organization and Project settings.
 - For a new Page, narrow the business service you will first provide to one. For an existing Page, decide the target Page name, the screen to fix, and capabilities that must not change.
+- When editing a Page in use, prepare a test Page with the same content and try the change there, or note the currently "Applied" version in "Version History" before editing.
 - Prepare fictitious data or test data that you are authorized to use. Do not enter personal information, customer information, passwords, API keys, or similar data into the conversation.
 - For screens that actually send externally or create, update, or delete data, decide the scope of impact during testing and the person responsible for confirmation.
 
-> Asking AI to create or edit a Page and registering or publishing it for users are separate tasks. Plan approval for new creation or an instruction in a conversation that it may execute does not automatically replace confirmation before publishing to users.
+> When you approve a plan for new creation or tell AI in a conversation that it may execute, AI carries out the Page creation or edit. For an existing Page, that edit is published to users as is. Changing access settings and notifying users are done separately.
 
 ## 1. Organize the business screen you want to create
 
@@ -74,7 +79,8 @@ When AI returns a plan or items to confirm, check the following before asking it
 - Whether the operations the screen will provide and the targets created, updated, or sent by those operations are clear.
 - Whether existing Pages, existing data, access settings, and external integrations that must not be touched are excluded.
 - Whether the data used for confirmation and the method to confirm normal and information-insufficient cases are decided.
-- Whether registration, publication, access settings, and version switching will be done this time or separated into follow-up work.
+- For an existing Page, whether the plan assumes the edit is reflected to users immediately, and whether it targets a test Page rather than a Page in use.
+- Whether access-setting changes will be done this time or separated into follow-up work.
 
 If the plan includes unnecessary operations, ask it to narrow and rewrite the scope. If you approve a plan in a newly created Project, proceed only after understanding that "Approve" starts execution. In normal conversations, the same approval screen is not necessarily displayed, so state in writing which targets may be executed.
 
@@ -108,29 +114,30 @@ If any part differs from expectations, state the differences specifically before
 
 > Edit the "Meeting Preparation" Page. Currently, the deal list displays only company names. Display meeting date and representative name to the right of the company name. If the meeting date is not entered, display "Not set" instead of leaving it blank. Do not change search, access settings, or creation and update processing. After the change, check a deal with a meeting date and a deal without one.
 
-After editing, check the updated Page in preview display again rather than relying on the previous result. If you updated an existing Page, record the currently applied content and the purpose of the change in case you need to return to the previous state. The Page may display "Version History" and "Restore and apply," but check the impact on users before switching. [Manage Page Versions](manage-page-versions.md) explains version handling.
+After editing, check the updated Page in preview display again rather than relying on the previous result. Each AI edit is applied immediately as a new version, so record the purpose of the change and the version to return to. If an unexpected version was applied, select an earlier version in "Version History" from the Page menu and revert with "Restore and apply." [Manage Page Versions](manage-page-versions.md) explains version handling.
 
-## 6. Check registration, publication, and access settings
+## 6. Check the applied version and access settings
 
-After confirming creation or edits, check who will use the Page and through which entry point. Being visible in the Page list, being able to open a Page, and being able to provide it to external users are not the same state.
+After confirming creation or edits, check who will use the Page and through which entry point. Edits to an existing Page are already reflected for users, but being visible in the Page list, being able to open a Page, and being able to provide it to external users are not the same state.
 
 - Confirm that the Page is registered in the target Project and that you can open the required Page.
-- If "Upload New Version" or an update was performed, confirm that the intended content is currently applied.
-- If "Access Settings" is displayed, check whether sign-in is required and the scope of users. Configurable choices may vary by organization feature settings.
-- Before informing external users, confirm the conditions for registration, publication, and URL sharing with the responsible administrator.
+- In "Version History," confirm that the intended version is "Applied."
+- In "Access Settings," check whether sign-in is required and the scope of users. "External customer auth" appears depending on organization settings and Page status.
+- Before informing external users, confirm the conditions for sharing the public URL with the responsible administrator.
 
-Do not treat registration, publication, and access settings as complete based only on a report that screen creation is complete. Provide the Page only after checking business operations through the entry point and permissions actual users will have.
+Do not treat access settings as complete based only on a report that screen creation is complete. Provide the Page only after checking business operations through the entry point and permissions actual users will have.
 
 ## Checklist
 
 - [ ] Organized the purpose, users, data, screen, operations, and permissions
 - [ ] Communicated whether this is new creation or an edit to an existing Page, along with the target and scope that must not change
 - [ ] Decided the test data and business operations to check
-- [ ] Confirmed that the AI plan does not include unnecessary creation, updates, sending, or publication
+- [ ] Understood that edits to an existing Page are published immediately, and tried them on a test Page or noted the version to return to
+- [ ] Confirmed that the AI plan does not include unnecessary creation, updates, or sending
 - [ ] Checked the screen display in preview
 - [ ] Checked requested operations and their results with test data
 - [ ] Requested focused edits and rechecked the updated Page
-- [ ] Checked registration, publication, access settings, and the actual user entry point
+- [ ] Checked the "Applied" version, access settings, and the actual user entry point
 
 ## Next articles
 

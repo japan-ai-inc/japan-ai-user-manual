@@ -35,12 +35,12 @@ SDKのObjects APIは、Pageから`/api/v1/objects`を基点とする相対パス
 |---|---|---|
 |Object定義|`list()`、`get()`、`create()`、`update()`、`delete()`|`GET`・`POST /api/v1/objects`、`GET`・`PATCH`・`DELETE /api/v1/objects/{objectId}`|
 |レコード|`define<T>()`、`list()`、`get()`、`create()`、`update()`、`delete()`、`bulkCreate()`、`bulkDelete()`|`GET`・`POST /api/v1/objects/{objectId}/records`、`GET`・`PATCH`・`DELETE /api/v1/objects/{objectId}/records/{recordId}`、`POST`・`DELETE /records/bulk`|
-|検索|`search()`|SDKのPRSブラウザでは`GET /api/v1/objects/{objectId}/records`へ検索条件をクエリ文字列として送ります。|
+|検索|`search()`|SDKはPage実行環境のブラウザでは`GET /api/v1/objects/{objectId}/records`へ検索条件をクエリ文字列として送ります。|
 |フィールド|`listFields()`、`createField()`、`updateField()`、`deleteField()`|`GET`・`POST /api/v1/objects/{objectId}/fields`、`PATCH`・`DELETE /api/v1/objects/{objectId}/fields/{fieldId}`|
 
 `/api/records`はObjects APIとして登録されていません。Page自身が提供する別のAPIと競合・混同しないでください。`/api/custom-objects/...`は別の互換経路で、組織・Projectを含む形式を検証する処理がありますが、SDKの`objects`が使う経路ではありません。新しいPageのブラウザ実装でObjectを扱う場合は、`/api/v1/objects...`または上記SDKを使います。
 
-> 直接`fetch()`でSDKと同じ経路を呼ぶ場合も、APIキーや主体を示すヘッダーを付けず、相対パスだけを使います。ただし、SDKはPRS検索の変換、応答キーの正規化、エラー型を扱うため、通常はSDKを優先してください。
+> 直接`fetch()`でSDKと同じ経路を呼ぶ場合も、APIキーや主体を示すヘッダーを付けず、相対パスだけを使います。ただし、SDKはPage実行環境での検索の変換、応答キーの正規化、エラー型を扱うため、通常はSDKを優先してください。
 
 ## 1. レコードを読む・書く
 
@@ -82,7 +82,7 @@ const next = page.hasNextPage && page.cursor
   : undefined;
 ```
 
-PRSブラウザの検索では、SDKが作るクエリ文字列は**8,000文字以下**でなければなりません。超えると要求を送る前に`ObjectsApiError`（ステータス400）になります。これは検索結果件数やObjectの文字数上限ではありません。フィルター・並び順を減らす、検索を段階に分けるなどして短くしてください。
+Page実行環境のブラウザでの検索では、SDKが作るクエリ文字列は**8,000文字以下**でなければなりません。超えると要求を送る前に`ObjectsApiError`（ステータス400）になります。これは検索結果件数やObjectの文字数上限ではありません。フィルター・並び順を減らす、検索を段階に分けるなどして短くしてください。
 
 ## アクセスモードと権限
 
@@ -105,7 +105,7 @@ Objects APIには有効なPageセッションが必要です。Pageを開ける�
 |403|Page・組織・Projectの対応、Objectまたはレコードの権限、アクセスモード、書込み時のOrigin/Refererを確認します。Pageを公開しただけで権限は増えません。|
 |404|`/api/v1/objects...`、Object ID、レコードID、フィールドIDを確認します。`/api/records`や`/api/custom-objects`へ置き換えません。|
 |409|`expectedRevision`と最新のレコードを確認します。同じ値で再送せず、最新値と業務上正しい変更内容を確認します。|
-|400|Object・フィールドの入力条件、検索条件、またはPRS検索の8,000文字制限を確認します。|
+|400|Object・フィールドの入力条件、検索条件、またはPage実行環境での検索の8,000文字制限を確認します。|
 |429・5xx・通信失敗|短時間の連続呼出を抑え、読み取り後に必要最小限で再試行します。書込み失敗時は無条件に再送せず、現在の状態を取得して重複・競合を確認します。|
 
 SDKのHTTP失敗、通信失敗、JSON解析失敗は`ObjectsApiError`として扱えます。`statusCode`と`responseBody`を使って画面用メッセージを分けられますが、応答本文に個人情報、Cookie、認証情報が含まれ得る前提で、そのまま表示・記録しないでください。
