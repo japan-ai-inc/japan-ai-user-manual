@@ -17,7 +17,7 @@ Confirm the following information with the administrator or person who guided yo
 | Your work | Whether you only use it or also create, edit, and manage |
 | Additional preparation | Whether you need to connect a personal external account or an administrator must complete initial setup |
 
-First check from a Web browser on a PC, where it is easier to find menus for building and management. Depending on screen width, menus may be collapsed or some entry points may not be shown. This does not mean that every App cannot be used on a smartphone. Check the individual App guidance for its supported environment.
+Open Studio in a Web browser on a PC. **If the screen width is less than 600px, "STUDIO" itself is not shown in the left navigation.** This does not mean that every App cannot be used on a smartphone. Check the individual App guidance for its supported environment.
 
 > If you were instructed to use an existing App or Project, do not create a new organization or Project merely because you cannot find it. First check the access destination and account.
 
@@ -34,14 +34,21 @@ Follow your organization's procedures for sign-in methods and additional authent
 
 ## 3. Choose the entry point for your goal
 
-The basic entry points for Studio are **Apps and Studio Workspace**. Available entry points vary by availability conditions and screen configuration.
+The entry points for Studio are **"STUDIO" > "Workspace"** and **"STUDIO" > "Apps"** in the left navigation.
+
+| Menu | What opens |
+|---|---|
+| "STUDIO" > "Workspace" | The Studio Workspace Project list, used to create and manage Projects and to use shared Projects |
+| "STUDIO" > "Apps" | The "My Apps", "Marketplace", and "Organization Apps" tabs. "Organization Apps" is shown only to organization administrators and others with permission to install Apps |
+
+In organizations with app-only seats, "Workspace" is not shown to members who do not have a chat or speech seat.
 
 | What you want to do | Where to open or what to check |
 |---|---|
-| Move work forward in an installed App | Find the target App in Apps, or open the provided App link |
-| Use a shared Project | Open the provided Project link. Even when finding it from the Studio Workspace list, check the target name. |
-| Create or manage Agents, Workflows, Pages, and more | Open the target Project in Studio Workspace |
-| Consider installing a new App | Check the Marketplace list in Apps if it is available |
+| Move work forward in an installed App | Find the target App in "My Apps" under "Apps", or open the provided App link |
+| Use a shared Project | Open the provided Project link. Even when finding it from the "Workspace" list, check the target name. |
+| Create or manage Agents, Workflows, Pages, and more | Open the target Project in "Workspace". To build without writing code, you can also ask [Studio Assistant](../build/build-with-studio-assistant.md) in the Project |
+| Consider installing a new App | Check the list on the "Marketplace" tab under "Apps" |
 
 **Using an App and installing from Marketplace are separate tasks.** A user does not necessarily need to install an App again to use an installed App.
 
@@ -53,13 +60,13 @@ For differences in terminology, see [How Studio Workspace, Project, App, and Mar
 
 ### Apps list
 
-This is where you find installed Apps. Views related to Marketplace or management of Apps within the organization may also be added, but not everyone sees the same tabs.
+Open it from "STUDIO" > "Apps". Use "My Apps" for installed Apps and the "Marketplace" tab to find new Apps. The "Organization Apps" tab, for managing Apps in the organization, is shown only to people with permission to install Apps.
 
 When opening an App, check its name and description. If there are Apps with similar names, check that it matches the provided link before proceeding.
 
 ### Studio Workspace Project list
 
-This is the entry point for finding Projects to create or manage. When you open a Project, check its name. If you came to use an existing Project, check your access to that Project rather than creating a new one.
+Open it from "STUDIO" > "Workspace". This is the entry point for finding Projects to create or manage. When you open a Project, check its name. If you came to use an existing Project, check your access to that Project rather than creating a new one.
 
 ### Inside an App or Project
 
@@ -103,7 +110,9 @@ First check the following in order. This section only helps isolate issues when 
 | Situation | First thing to check |
 |---|---|
 | The target organization does not appear | The signed-in account and your participation status in the organization |
-| You cannot find STUDIO, Workspace, or Apps | The organization in use, screen width and whether menus are expanded or collapsed, and availability conditions in the organization |
+| "STUDIO" is not in the left navigation | Screen width (it is hidden below 600px) and the organization in use |
+| "Workspace" is not shown | Whether your organization uses app-only seats and you have no chat or speech seat |
+| The "Organization Apps" tab is missing | Whether you are an organization administrator or otherwise have permission to install Apps |
 | An App or Project is not in the list | The target name, provided link, participation status, and the scope you can view |
 | You see participation or access guidance after opening a Project | Whether you are included as an intended user and whether joining procedures are required |
 | The screen opens but you cannot run or edit | Required permissions for the operation, whether the feature is enabled, and initial setup or external connections |

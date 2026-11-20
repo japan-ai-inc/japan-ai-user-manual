@@ -13,8 +13,8 @@ If the app you want to use has already been announced, please refer to [Open the
 > The following explanation focuses on the standard screen on a PC web browser. The displayed menus, apps, buttons, and price information vary depending on your organization's settings, permissions, provision status, etc. Please check the conditions displayed on the screen and your organization's contract and operating rules.
 ## 1. Open Marketplace and search for suggestions
 1. Check whether the currently selected organization is the organization you are considering implementing.
-2. Open the app entrance such as "Studio Apps".
-3. Select "Marketplace".
+2. In the left navigation, open "STUDIO" > "Apps".
+3. Select the "Marketplace" tab (the Apps tabs are "My Apps", "Marketplace", and "Organization Apps"; "Organization Apps" is shown only to organization administrators and similar users).
 4. Enter the app name or related words in the search field to narrow down the list.
 5. Check the name, short description, tags, provider, and installation status of the candidate.
 6. Open the app details using actions such as "View details".
@@ -29,7 +29,7 @@ Read the app overview, images, videos, updated information, etc. The type and de
 | Results | Can you get the output and work results you want? What is the range that people check |
 | Source | Who provides the app? Can I check the contact information for installation and operation? |
 | User | Who will use it? Is there someone in charge of adding and managing users after implementation? |
-| Update/Operation | Can I check updated information and guidance? Is there someone in charge of checking during operation? |
+| Update/Operation | Are update notes published? Can you accept that Marketplace Apps are updated automatically after a new official version is published, with no version choice or rollback? |
 Even if the information is marked as "official" or "certified," we will separately check its suitability for your business and whether it is okay to handle your organization's information. Display alone does not guarantee the accuracy of the output or internal approval within the organization.
 If there are any points that you do not understand from the explanation, do not assume that they are supported, but leave them as things to check before implementation.
 ## 3. Check permissions and connection conditions
@@ -41,7 +41,7 @@ In particular, please review whether the following points are consistent with yo
 - Which user/connected account's authority should be used for processing?
 - Does it match the range of data that can be shown to users?
 These are things to check when deciding to introduce the product. Not everything is explained on the details screen. If you have any questions, please check with the person in charge of the app.
-**"Required permissions" does not indicate that you have the installation permissions. ** Please check separately the permission to install the app, the permission to access the app after installation, and the permission to operate external services.
+**"Required permissions" does not indicate that you have the installation permissions.** Only organization administrators (ADMIN) or users with the `jai.studioapp.install` permission can install Apps. Check this separately from access to the App after installation (App membership) and permission to operate external services.
 ### Connecting to external services
 Check "Setup", "Credentials required after installation", etc., and confirm whether the displayed service can be used in your organization.
 | Things to check | Things to decide before implementing |
@@ -60,22 +60,22 @@ On the standard screen, "free" or "monthly seat system" may be displayed, or the
 |---|---|
 | App price classification | Is it free, or is there a charge depending on the number of people and seats |
 | Unit price and unit | For what, in what period, and how many credits |
-| Planned number of users | Who will use it, including the administrator? What are the conditions when adding users? |
+| Planned number of users | Who will use it, including the administrator? The monthly fee for a paid App is "unit price × number of active members" |
 | Cost of introduction | How much will be billed/credit consumed this time |
 | Continuation costs | How the monthly amount and next renewal date are displayed |
 | Costs to be confirmed separately | Does it include consumption during AI execution, contracts for external services, etc. |
-Don't just look at the unit price details to determine the cost for your entire organization. If a fee is shown on the installation confirmation screen, please check the target number, current cost, and renewal conditions again before finalizing the installation. It may also be displayed that the amount used by the administrator is included.
+Don't just look at the unit price details to determine the cost for your entire organization. If a fee is shown on the installation confirmation screen, please check the target number, current cost, and renewal conditions again before finalizing the installation. For paid Apps, the installer automatically becomes an App administrator and uses 1 seat.
 **"Free" does not mean that there are no costs for using it for business purposes. ** Check separately the app charges and the charges for runtime consumption and external services. Also, the fact that the price is not displayed does not qualify it as free.
-If you are unsure of the fees and renewal suspension conditions when increasing or decreasing the number of people or terminating use, please check with the person in charge before implementing the service. In this article, we do not uniformly specify operations for changing the number of people, canceling a contract, or refund conditions.
+The monthly fee for a paid App is "unit price × number of active members", settled automatically at each monthly renewal based on the member count at that time. Adding or removing members is reflected in the next renewal fee. If you uninstall, no future renewal charges occur and the current month is not refunded. See [Check the number of users, fees, and contract limits for the app](../operations/check-app-seats-pricing-and-limits.md).
 ## 5. Check the displayed installation method
 Depending on the app and current status, the display will be as follows.
 | Main display | What to do next |
 |---|---|
 | Installation | After completing the selection and approval, proceed to the installation procedure. Reconfirm the details and costs on the confirmation screen |
 | Contact JAPAN AI | Without assuming that you will be implementing it yourself, tell us the purpose, organization, expected number of users, and confirmation items |
-| Information regarding installation privileges | Request a person in charge, such as an organization administrator, who can confirm privileges |
+| Information regarding installation privileges | Ask an organization administrator (ADMIN) or someone with the `jai.studioapp.install` permission |
 | Installed/Open | Check if you can use an existing app instead of installing a new one |
-| Participation/Ask administrator | Check participation/access to installed apps. If you select "Participate", you may be required to join the App Project before opening it, so you cannot proceed with the join operation if you only intend to view it. |
+| Join/Ask administrator | The App is already installed. "Join" is shown only to organization administrators and joins them as an administrator (using a seat for paid Apps), so do not proceed if you only want to view it. Regular members ask an App administrator to add them |
 | Installing | Check the current processing status. Do not repeat new installation operations |
 | Installation failure/retry | Apart from selection, check the person in charge of execution and the current status |
 | Information that it is currently unavailable | Inform the administrator or support of the target app and the displayed content |
@@ -91,7 +91,7 @@ Summarize the following items so that the person in charge of implementation can
 > - **Cost**: Screen price classification, unit price, unit, update conditions
 > - **Installation method**: Direct installation/Contact JAPAN AI/Confirmation required
 > - **Approval status**: Approver, scope of approval, remaining confirmation items
-Sharing the URL of the details screen does not give you permission to view or install it. Also check if the person you're sharing with can see information from the same organization.
+Sharing the URL of the details screen does not give you permission to view or install it. Also check that the person you're sharing with belongs to the same organization.
 Once you have confirmed the above, proceed to [Install App from Marketplace](install-marketplace-app.md). For apps that require inquiries, please follow the instructions for contacting them.
 ## When things don't go well
 | Situation | Things to check first |

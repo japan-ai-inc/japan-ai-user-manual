@@ -36,7 +36,15 @@ Where you view Workflow history differs depending on the version you want to che
 
 Open "Execution History" in the target Project's Workflows screen. Filter by Workflow name, date and time, runner, and status. Run logs display published-version runs and exclude draft tests from the editing screen.
 
-Runs with "Automated run" as the runner are started by triggers, schedules, or other means without direct human action.
+The runner is displayed as follows.
+
+| Start method | Runner display |
+|---|---|
+| Manual run | Name of the person who ran it |
+| Trigger or Task Scheduler | Name of the owner of that automation (for a trigger, the person who first published the Start node; for a task, its creator) |
+| Run by a service account | "Automated run" |
+
+Only runs by a service account are displayed as "Automated run." To find trigger or scheduled runs, filter by the owner's name.
 
 ## 2. Read the run details
 
@@ -71,7 +79,7 @@ Check Steps in order from the first node and find the **node where the value fir
 | Input is empty | Incorrect variable reference, or a variable from another path is referenced | [Configure Workflow Variables and Branches](configure-workflow-variables-and-branches.md) |
 | An unexpected branch was taken | Incorrect condition operator or value, partial match for "Contains" | [Configure Workflow Variables and Branches](configure-workflow-variables-and-branches.md) |
 | AI output format breaks down | Insufficient instructions or an ambiguous output format specification | Prompt for the relevant node |
-| Error in an external service | An expired connection, insufficient permissions, or restrictions at the other service | Connection status and administrator |
+| Error in an external service | A missing or expired shared connection, insufficient permissions, or restrictions at the other service (Workflows do not use personal connections) | Status of the Project's shared connections and administrator |
 | Does not start from a trigger | Not published, an expired connection, or filtering conditions | [Configure Workflow Triggers](configure-workflow-triggers.md) |
 | A Project task cannot run | Task or execution-target status, input, connection, or run-condition issues | Task List and History in the Project Task Scheduler |
 
@@ -83,7 +91,7 @@ You may be able to download run data in JSON format from the details screen. Att
 
 ## 5. Rerun a failed execution
 
-If a run started by an event such as a trigger fails, "Retry" may be displayed on the details screen.
+If a run linked to a task fails, "Retry" is displayed on the details screen.
 
 1. Resolve the cause of failure first, such as an expired connection.
 2. Select "Retry."
@@ -92,7 +100,7 @@ If a run started by an event such as a trigger fails, "Retry" may be displayed o
 
 - A retry runs with the **saved input**. You cannot change the input.
 - If writes completed before the failure (such as saving to an Object), **rerunning may duplicate data.** Check the target data before running it.
-- "Retry" may be displayed only for failed runs started by events. To retry a failed manual run, run it again from "Manual run" in the Project's Workflow list or the App's run screen.
+- "Retry" is displayed for every failed run linked to a task. To retry a failed manual run, run it again from "Manual run" in the Project's Workflow list or the App's run screen.
 
 ## 6. Correct and verify
 

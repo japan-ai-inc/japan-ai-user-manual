@@ -19,18 +19,28 @@ Add triggers as **Start nodes** in a Workflow. You may be able to use both a man
 
 > **Triggers become active when you publish.** They do not start when events occur in draft status. The settings screen displays "Publish the workflow to enable the trigger."
 
+### Who a trigger runs as
+
+| Item | Rule |
+|---|---|
+| Run-as user | **The person who first published that Start node.** It is not transferred even if someone else edits and republishes the Workflow |
+| External-service authentication | Workflow tools use **only the Project's shared connections** (the run-as user's personal connections are not used) |
+| When the run-as user leaves the organization | The trigger is automatically disabled |
+| How to change the owner | Delete the trigger node, add it again, and have the new owner publish. **The Webhook URL and Email by JAI receiving address change**, so update settings at the integration source too |
+| Notifications | Each time the trigger runs, a notification is sent to the notification center of every active member of the Project. This notification cannot be turned off |
+
 ## Before you begin
 
 - Confirm that you have permission to edit and publish the target Workflow.
 - Decide specifically which event will start it: which email, which data, and what change.
-- When using external services such as Gmail or Outlook, decide the account to use for the connection.
+- When using external services such as Gmail or Outlook, decide the account to use for the connection. If tools in following nodes operate external services, set up the Project's shared connections.
 - When post-start processing includes external sending or updates, decide filtering conditions in advance to prevent unintended large-scale execution.
 
 ## 1. Add a trigger Start node
 
 1. Open the target Workflow in the editing screen.
 2. Select "Add node" (the + icon) in the operation panel at the bottom of the screen.
-3. From the "Trigger" tab in the displayed menu, select the type to use.
+3. From the "Trigger" tab in the displayed menu, select the type to use. The manual Start node is not in the "Trigger" tab.
 4. A Start node is added to the canvas. Then connect processing nodes after it. For node connection methods, see [Configure Workflow Nodes](configure-workflow-nodes.md).
 
 > **If "Add node" is not displayed:** Adding triggers may be unavailable depending on organization feature settings. Check with the organization administrator.
@@ -39,11 +49,10 @@ Add triggers as **Start nodes** in a Workflow. You may be able to use both a man
 
 ### Trigger types you can select
 
-Displayed types vary with organization feature settings and the Workflow location.
+Displayed types vary with organization feature settings and the Workflow location. The manual Start node (where you configure input fields) is not among the candidates in this "Trigger" tab.
 
 | Name on the screen | Start event | Notes |
 |---|---|---|
-| Manual trigger | A user runs it from the screen | You can configure input fields |
 | Webhook trigger | An HTTP request from an external system | Displayed depending on feature settings |
 | Custom Object trigger | Object record creation, update, or deletion | Only for Workflows in a Project. Displayed depending on feature settings |
 | Storage trigger | A change to a Storage file or folder | Only for Workflows in a Project. Displayed depending on feature settings |
@@ -76,6 +85,10 @@ When you need to verify the sender, select GitHub, Slack, or "Custom" in "Signat
 
 In "Custom Response," you can configure the response type, status code, and response body. Because the response is returned before Workflow processing, you can insert only variables received by the Webhook into the body. As needed, also configure "Challenge API Config," which responds to a test request without running the Workflow. GitHub and Slack verification handshakes are processed automatically.
 
+{% hint style="warning" %}
+**A Webhook trigger and a Webhook task in the Task Scheduler are different mechanisms.** A Webhook trigger supports signature verification. A Webhook task in the [Task Scheduler](configure-task-scheduler.md) has no authentication, and anyone who knows the URL can start it. Use a Webhook trigger when you need to verify the sender, and manage Webhook task URLs strictly.
+{% endhint %}
+
 ### Filter by conditions
 
 You can narrow start conditions for many types.
@@ -101,13 +114,13 @@ You can narrow start conditions for many types.
 
 ### Account subject to Speech triggers
 
-It starts when transcription of a meeting of the user who published it is complete. If the person responsible for publishing changes, the meetings targeted may also change.
+It starts when transcription of a meeting of the trigger's run-as user (the user who first published that Start node) is complete. The target does not change even if someone else republishes.
 
 ## 3. Use output variables in following nodes
 
 A trigger Start node passes event information to following nodes as **Output Variables** (for example, email subject and body, record data, and file information).
 
-- You can check available output variables in "Output Variables" in the Start node's settings area.
+- Available output variables are displayed in "Output Variables" in the Start node's settings area.
 - For how to reference variables in following nodes, see [Configure Workflow Variables and Branches](configure-workflow-variables-and-branches.md).
 - When one Workflow has multiple Start nodes, available variables vary depending on which Start node initiated it. Check each route with branches and tests.
 
@@ -115,8 +128,8 @@ A trigger Start node passes event information to following nodes as **Output Var
 
 1. Save the draft with "Save draft."
 2. In test execution on the editing screen, select the trigger Start node and run it.
-   - For some types, a field to enter test values appears (for example, Gmail and Outlook use email data, and Webhook uses configured parameters).
-   - For types such as Storage and Email by JAI, no input field appears and "No input parameters required" is displayed. In that case, run it with "Start Execution."
+   - For some types, a field to enter test values appears (for example, Gmail, Outlook, and Email by JAI use email data, and Webhook uses configured parameters).
+   - For types such as Storage, no input field appears and "No input parameters required" is displayed. In that case, run it with "Start Execution."
 3. Check results and steps. For test methods, see [Test a Workflow Draft](test-workflow-drafts.md).
 4. Publish it by following [Publish a Workflow](publish-workflow.md).
 
@@ -138,7 +151,9 @@ A trigger Start node passes event information to following nodes as **Output Var
 ## Stop or change triggers
 
 - Even when you change trigger settings, they are not reflected in the running trigger **until you publish**.
-- Merely deleting a Start node in a draft does not stop the trigger in the published version. [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md) covers the official procedures and impact of stopping and changing. If you need to stop urgently, check with the Workflow administrator.
+- Merely deleting a Start node in a draft does not stop the trigger in the published version. [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md) covers the procedures and impact of stopping and changing.
+- **There is no pause feature.** To stop urgently, turn off the Workflow's "Enable" setting. When you do, Email by JAI and Storage triggers are treated as deleted. The Webhook URL changes if the trigger is recreated. When resuming, check whether the receiving address or URL must be reconfigured at the integration source.
+- Check the run-as user in preparation for transfers or departures. When the run-as user leaves the organization, the trigger is automatically disabled, and republishing by someone else does not change the run-as user. To hand over, delete the trigger node, add it again, and publish.
 - If an external-account connection expires, a trigger may stop working. Check the status display regularly.
 
 ## Checklist

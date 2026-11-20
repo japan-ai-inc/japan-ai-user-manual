@@ -16,7 +16,7 @@ Before updating, check changed resources, access settings, credential requiremen
 
 This article is for a **creator** who created an App in the organization and has already self-installed it into the same organization. It covers preparing an updated version from the App publishing screen and applying it to the existing installation destination Project.
 
-Marketplace publishing review, distribution to other organizations or customers, and initial setup performed only by users are outside this scope. Depending on organization settings or permissions, "App publishing" or "App in this organization" may not appear, or preparation and updating may be unavailable. A Project editor or administrator with the required permissions can prepare, install, and update.
+Marketplace publishing review, distribution to other organizations or customers, and initial setup performed only by users are outside this scope. An Editor or higher in the source Project can prepare, install, and update.
 
 > Merely editing resources in the source does not change the installed App. Prepare the version to update, check its contents, execute "Update installed app," and check the result at the installation destination.
 
@@ -47,9 +47,9 @@ Marketplace publishing review, distribution to other organizations or customers,
 ## 3. Apply it to the installed App
 
 1. Check the prepared version and select **"Update installed app."**
-2. In the confirmation screen, compare **"Version to install,"** **"Current installed version,"** the content to check, number of included components, and credential slots.
+2. In the confirmation screen, compare the versions in **"Current → New,"** the **"Included resources,"** and the **"Connectors used."**
 3. Check added, deleted, and changed resources; credential requirements; and the effects of access settings again.
-4. If there are no issues, confirm **"Update installed app"** in the confirmation screen.
+4. If the check flags issues, fix them and select **"Recheck"** (if a value that looks like a fixed ID can be used as-is at the installation destination, select **"Recheck as reviewed"**). If there are no issues, select **"Update"** in the confirmation screen.
 5. If "Request accepted. Check whether the new version is active." appears, do not continue with the same operation. While processing, "Installation or update is in progress. This page will refresh its status." appears.
 6. After completion, check that **"Installed version"** is the intended version, then open the installation destination Project from **"Open installed app."**
 
@@ -82,9 +82,9 @@ When a version changes credential requirements, repairing existing shared creden
 
 ### About rollback
 
-If an update fails, the application process restores managed resources to their original state up to the point at which the process failed. However, this scope could not confirm an operation for a creator to select and restore any past version from the screen. Also, do not conclude from a display alone that rollback itself completed or that user data, external-service operations, and authentication state were restored.
+There is no rollback to a past version. To return to previous content, revert the content in the source Project, prepare it as a new version, and update. If an update fails partway, the application process restores managed resources to their original state up to the point at which it failed, but user data, external-service operations, and authentication state are not necessarily restored.
 
-Therefore, when a failure occurs, do not reinstall or repeatedly update first. Use **"Check installation status again"** to check the current version and status. Record the error, target organization, App name, source/installation destination Project, operation date and time, changed resources, and differences in credential requirements, then consult the distribution owner or support. Do not send Secret values, API keys, tokens, passwords, or customer data.
+Therefore, when a failure occurs, do not reinstall or repeatedly update first. Use **"Check installation status again"** to check the current version and status. Record the error, target organization, App name, source/installation destination Project, operation date and time, changed resources, and differences in credential requirements, then consult JAPAN AI support. Do not send Secret values, API keys, tokens, passwords, or customer data.
 
 ## Completion checklist
 

@@ -11,7 +11,7 @@
 
 ## この記事の範囲
 
-対象は、Node.jsアプリケーション、CI、`jai-studio` CLI、またはStudio PageからSDK・公開APIを利用する開発者です。確認対象のSDK版は **0.11.0** です。
+対象は、Node.jsアプリケーション、CI、`jai-studio` CLI、またはStudio PageからSDK・公開APIを利用する開発者です。このマニュアルは SDK **0.11.0** を基準にしています。
 
 ここでいうSDKの版はnpmパッケージ `@japan-ai-inc/studio-sdk` の版、公開APIの版はURLに含まれるAPI世代を指します。たとえばSDKのObject、Storage、Page、Agent、Workflow、Memberの各クライアントは、`/api/v1/` 配下の公開APIを呼び出します。一方、Workflowの公開済み定義に付く `v1` は、公開APIの世代ではなくWorkflowの公開スナップショットを表します。名称が同じでも、更新手順を混同しないでください。
 
@@ -57,11 +57,13 @@ jai-studio --version
 | 0.2.0のWorkflow待機設定 | 実行完了を待つ処理 | `timeout`を`timeoutMs`へ置き換え、単位をミリ秒として確認します。 |
 | 0.3.0のObject同時更新 | 同じレコードを更新する処理 | `revision`を使う更新・削除方式と、競合時の処理を確認します。 |
 | 0.4.0のCanvas／Workflow機能 | Canvas取得、Workflowの作成・公開を行う処理 | 接続先の公開APIが必要な経路と応答を提供するか確認します。 |
-| 0.5.0〜0.7.0のPRS Agent機能 | 候補比較、Storage添付、Canvas公開、クレジット、App設定 | PRSブラウザ専用の機能・接続先対応を確認し、Canvas公開は第3引数の範囲を指定します。 |
-| 0.8.0のデータセット・予定実行 | PageのRAG参照、Workflowの予定実行 | `datasets`のスコープとPRS経路、`scheduledTasks`の`task:*`スコープ・実行者を確認します。 |
+| 0.5.0の回答比較 | Pageのブラウザでの候補比較 | `compare()`、`adoptCandidate()`、`getTurns()`はPageのブラウザ専用です。組織で回答比較の機能が有効か確認します。 |
+| 0.6.0のStorage添付・Canvas書込み | Agent呼出しへのファイル添付、HTMLスライドの書込み・公開 | `storageFileIds`とCanvasの書込み・公開は、StudioでホストされたPageのブラウザ向けです。 |
+| 0.7.0のCanvas公開・クレジット・App設定 | Canvas公開、利用量表示、App設定画面の呼出し | `publishCanvasArtifact()`は第3引数の公開範囲が必須です（破壊的変更）。`requestId`とクレジット確認のAPI、`platform.openAppSettings()`はPageのブラウザで使います。 |
+| 0.8.0のデータセット・予定実行 | PageのRAG参照、Workflowの予定実行 | `datasets`のスコープとPage実行環境での利用範囲、`scheduledTasks`の`task:*`スコープ・実行者を確認します。 |
 | 0.8.0のAgent定義・Objectルール | Agent構築、Objectアクセス設定 | `agent:write`、`object:policy`、キー作成者の権限と、配列置換・`null`クリアの更新意味を確認します。 |
 | 0.9.0のObject検索 | 件数表示を伴う一覧・検索 | `includeCount: false`時は`total`が0となるため、ページングと件数表示を分けて扱います。 |
-| 0.10.0の一括削除・候補比較 | 大量削除、PRS内の比較UI | `bulkDelete()`の全件成功・全件失敗と削除経路の提供状況、比較モデル、添付、ツール、参照の対応状況を確認します。 |
+| 0.10.0の一括削除・候補比較 | 大量削除、Pageのブラウザでの比較UI | `bulkDelete()`が全件成功か全件失敗のどちらかになること（キーには`object:delete`スコープが必要）、比較モデル、添付、ツール、参照の対応状況を確認します。 |
 | 0.11.0の候補別effort | 比較UIと候補の選択 | `candidateEfforts`と`effortSupported`を確認し、両方の条件を満たす候補だけにeffortを提示します。接続先の応答が`candidateEfforts: false`の場合は、同じモデルの重複やeffortを選択肢として提示しません。 |
 
 追加されたAPIや型は、SDK更新だけで既存環境に必ず現れるとは限りません。接続先が古い場合、未提供の経路は404、追加の入力は無視、応答項目は欠けることがあります。新機能は対応する接続先で確認します。

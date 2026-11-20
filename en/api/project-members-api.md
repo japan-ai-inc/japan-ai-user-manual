@@ -14,7 +14,7 @@ For SDK implementation, see [SDK Members](../development/sdk-members.md); for ch
 
 ## Before you begin
 
-The production base URL for this API is `https://api.japan-ai.co.jp`. When calling it directly with a Project API key, pass the key for the target Project from secure server-side configuration in the `x-api-key` header. `Authorization: Bearer <key>` is also accepted. The examples below use `x-api-key`.
+The production base URL for this API is `https://api.japan-ai.co.jp`. All public API endpoints and request/response schemas are also published in the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)). When calling it directly with a Project API key, pass the key for the target Project from secure server-side configuration in the `x-api-key` header. `Authorization: Bearer <key>` is also accepted. The examples below use `x-api-key`.
 
 ```bash
 export JAI_STUDIO_API_KEY='value retrieved from secure storage'
@@ -32,9 +32,9 @@ To run `GET /api/v1/project-members`, all of the following must be met. Being ab
 | Condition | What to check |
 |---|---|
 | Organization availability | The Members API must be available in the target organization. If it is unavailable, do not substitute other credentials or APIs; check with the organization's administrator. |
-| Authentication | Call it with a Project API key or an authentication context inherited from the Page runtime environment. |
+| Authentication | Call it with a Project API key. From the browser of a Page hosted in Studio, it is technically callable because the Page runtime environment relays the request, but this is currently outside the scope of beta support (it may change without notice). |
 | API key scope | When using a Project API key, `member:read` is required. Do not add unnecessary write or delete scopes. |
-| IAM authorization | The caller must be permitted to read member information for the target Project. Availability may be lost if the key creator's Project access or permission status changes. |
+| IAM authorization | The caller must be permitted to read member information for the target Project. A Project API key is valid only while its creator is an active member of the Project. If the creator is removed from the Project, all keys they created return 403. |
 | Project match | Only the Project associated with authentication is in scope. This is not an API for retrieving members of other Projects or organizations by specifying an ID or search term. |
 
 The response includes users who are active in the target Project and target organization. Users who have left and inactive Project members are not included. Member roles are not included in the response, so do not use this API to retrieve or determine roles.
@@ -102,7 +102,7 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/project-members?search=ada&limit=50&
   -H "x-api-key: $JAI_STUDIO_API_KEY"
 ```
 
-A cursor is an opaque value. Do not parse, generate, or edit it. An unrecognized cursor is treated as the first page, so processes that avoid duplicates must use only the value from the immediately preceding response. Members may be added or disabled during retrieval, so a process that treats results across multiple pages as an unchanging roster must design for the retrieval time and a reconfirmation method.
+A cursor is an opaque value. Do not parse, generate, or edit it. An unrecognized cursor does not return 400 and is treated as the first page, so processes that avoid duplicates must use only the value from the immediately preceding response. Members may be added or disabled during retrieval, so a process that treats results across multiple pages as an unchanging roster must design for the retrieval time and a reconfirmation method.
 
 > Do not unconditionally store `email`, `avatarUrl`, or the whole list in logs, test fixtures, persistent screen storage, or tickets. Implement handling for `name`, `email`, and `avatarUrl` being `null`.
 
@@ -110,10 +110,10 @@ A cursor is an opaque value. Do not parse, generate, or edit it. An unrecognized
 
 | Status | What to check and do |
 |---|---|
-| 400 | Check that `limit` is an integer from 1 to 100, `search` is 255 characters or fewer, and `cursor` was passed unchanged from the response. |
-| 401 | Authentication information may be missing or the authentication context may not be verifiable. Check server-side configuration, the target Project, and the execution mode. |
-| 403 | Check organization availability, `member:read`, key expiration or revocation, the key creator's Project access, and IAM authorization in that order. Do not broaden scopes based on guesswork; if necessary, securely switch to a new key with the minimum scope. |
-| 503 | IAM authorization may not be verifiable. Do not repeatedly retry in a short time. Record the target Project, operation time, HTTP status, and `requestId`, then check with an administrator. |
+| 400 | Check that `limit` is an integer from 1 to 100, `search` is 255 characters or fewer. An invalid `cursor` does not return 400 and is treated as the first page, so watch for duplicate retrieval. |
+| 401 | No authentication information was sent at all. Check server-side configuration, the target Project, and the execution mode. |
+| 403 | An invalid or expired key ("Invalid API key" / "API key has expired") returns 403. Check organization availability, `member:read`, key expiration or revocation, the key creator's Project access, and IAM authorization in that order. Do not broaden scopes based on guesswork; if necessary, securely switch to a new key with the minimum scope. |
+| 503 | IAM authorization could not be completed. Do not repeatedly retry in a short time. Record the target Project, operation time, HTTP status, and `requestId`, then check with an administrator. |
 | Communication failure or timeout | Even for a read, do not determine the result based only on why no response arrived. Retrieve the list again when needed. For common handling, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md). |
 
 Whether 429 occurs and its wait time may differ by environment and route. For common waiting and retry policy, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md), and do not hard-code a fixed retry count or wait time in your implementation.

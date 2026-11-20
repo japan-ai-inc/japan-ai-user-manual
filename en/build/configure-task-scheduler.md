@@ -16,11 +16,22 @@ Open **Task Scheduler** in the target Project's settings. The page has **Task Li
 
 Task Scheduler is configured per Project. It does not replace event starts configured in a Workflow start node.
 
+### Who a task runs as
+
+| Item | Rule |
+|---|---|
+| Run-as user | **The task's creator.** It does not change even if someone else edits the task |
+| External-service authentication for Workflows | **Only the Project's shared connections** are used (the creator's personal connections are not used) |
+| When the creator leaves the organization | The task is automatically disabled |
+| How to change the owner | Have the new owner recreate the task, then delete the old task |
+| Conditions for creating tasks | Tasks cannot be created on the free plan. There is a per-organization limit on the number of tasks |
+
 ## Before you begin
 
 - Check the target Project, Agent or Workflow to run, and the connections and inputs to use.
 - For processing that sends to or updates external services, check the effects of duplicate scheduled runs or **Execute**.
 - Check the Project permissions required to create, update, delete, and run tasks. Available actions vary by permission.
+- A task runs as its creator. If the owner is expected to change, have the person taking over create the task.
 
 ## 1. Create a task
 
@@ -34,9 +45,13 @@ Available start methods vary by task type in a Studio Project. Date-and-time run
 
 Missing required inputs can prevent saving, and unavailable connections used by the execution target can cause runs to fail. For a Webhook task targeting a Workflow, use the Webhook URL generated and displayed after saving. This URL is separate from the Webhook URL used for Slack notifications. Do not copy Webhook URLs or connection credentials into chat or tickets.
 
+{% hint style="warning" %}
+**A Webhook task URL has no authentication.** Anyone who knows the URL can start the task. If you need signature verification, use a Workflow [Webhook trigger](configure-workflow-triggers.md). Webhook tasks and Webhook triggers are different mechanisms.
+{% endhint %}
+
 ## 2. Configure the date, time, and repetition
 
-For a date-and-time run, configure the run date, time, and repetition. The repetition options shown are no repetition, hourly, daily, weekdays, weekly, monthly, and custom.
+For a date-and-time run, configure the run date, time, and repetition. The repetition options shown are no repetition, every hour, every day, weekdays, every week, every month, and custom.
 
 For a custom schedule, configure the days of the week and interval. Choose 10, 15, 20, or 30 minutes, or 1, 2, 3, 4, 6, 8, 12, or 24 hours. Set an end date when the repetition must end.
 
@@ -60,7 +75,7 @@ In **History**, check the date and time, status, result, and error details of a 
 
 Use editing in Task List to review the name, target, inputs, notification destinations, date and time, repetition, and end date. The Agent/Workflow type and the start method, such as Schedule or Webhook, cannot be switched after creation. Before and after a change, check the next scheduled run and effects on external processing.
 
-Before deleting an unneeded task, check whether to retain its history, its Webhook callers, and related Workflow start nodes. Deleting a task does not delete its Agent or Workflow. A Studio Project UI action to temporarily suspend and restart an existing task could not be confirmed on this screen. When scheduled runs must stop, check the impact of deletion and the alternative procedure first.
+Before deleting an unneeded task, check whether to retain its history, its Webhook callers, and related Workflow start nodes. Deleting a task does not delete its Agent or Workflow. **There is no feature to pause a task.** To stop a task targeting a Workflow urgently, turn off the Workflow's "Enable" setting (this has side effects, such as Email by JAI and Storage triggers being treated as deleted; see [Configure Workflow Triggers](configure-workflow-triggers.md)). Otherwise, check the impact of deletion and then delete the task.
 
 ## Checklist
 

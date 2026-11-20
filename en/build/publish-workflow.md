@@ -25,7 +25,7 @@ When you publish, **the draft at that time becomes the published version**. Ther
 
 - Publishing does not necessarily expand visibility automatically.
 - Expanding visibility does not make an unpublished draft available to users.
-- When sharing with everyone in the organization, content written in nodes, such as prompts, templates, and code, also becomes viewable. Do not write passwords or tokens in the body; use connected accounts.
+- When sharing with everyone in the organization, content written in nodes, such as prompts, templates, and code, also becomes viewable. Do not write passwords or tokens in the body; use the Project's shared connections.
 
 ## Before you begin
 
@@ -44,7 +44,7 @@ Before publishing, check the following.
 | Test results | Checked results for representative inputs, branches, and errors |
 | Checklist | No unconnected nodes or unset items remain |
 | Start method | Start-node settings, such as manual or trigger, are as intended |
-| Connections | Connections and authentication with required external services are valid |
+| Connections | **Shared connections** for required external services are valid (Workflows use only shared connections, not personal connections) |
 | Output | Content and format returned to users are decided |
 | Scope of impact | Decided whom to notify of the update and when to switch |
 
@@ -91,6 +91,10 @@ When using external-service triggers such as email, updating the published versi
 - If a notice such as "Published, but failed to configure the Outlook trigger." appears, publication itself is complete. Check the connection and publish again.
 - If the connection is disconnected or disabled, the trigger may not operate after publication. Confirm that it starts with a test event after publishing.
 - [Configure Workflow Triggers](configure-workflow-triggers.md) explains trigger configuration.
+
+{% hint style="warning" %}
+**A trigger runs as the person who first published that start node.** Even if someone else edits and republishes the Workflow, the trigger's run-as user is not transferred. To change the owner, delete the trigger node, add it again, and publish (the Webhook URL and Email by JAI address change). See [Configure Workflow Triggers](configure-workflow-triggers.md) for details.
+{% endhint %}
 
 ### Runs in progress and scheduled processing
 

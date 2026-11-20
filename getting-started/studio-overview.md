@@ -42,7 +42,9 @@ Studioには、作成と利用のための入口があります。
 - **Studio App**：利用者向けに導入・配布するアプリです。導入済みのAppを開き、用意された画面や処理を利用します。
 - **Marketplace**：提供されているAppを探し、内容や導入条件を確認する入口です。
 
-業務に合う機能を新しく作る場合は、Studio Workspaceでの構築ガイドから始めます。すでに使うAppやProjectが決まっている場合は、その利用案内から始めてください。
+画面では、左ナビの「STUDIO」から「Workspace」（Projectの一覧）と「Apps」（導入済みAppとMarketplace）を開きます。
+
+業務に合う機能を新しく作る場合は、Studio Workspaceでの構築ガイドから始めます。コードを書かずに作りたい場合は、Projectで**Studio Assistant**に業務の目的や条件を伝え、構築を依頼する方法があります（組織で機能が有効になっていることと、Projectの編集者以上の権限が必要です）。すでに使うAppやProjectが決まっている場合は、その利用案内から始めてください。
 
 ## 自分の役割に合わせて使う
 
@@ -59,7 +61,7 @@ Studioには、作成と利用のための入口があります。
 
 ### すべての機能でコードが不要なわけではありません
 
-画面操作やAIとの対話で進められる作業があります。一方、Pageの開発、SDK・APIの利用、外部サービスとの連携では、技術知識が必要になる場合があります。
+画面操作やStudio Assistantとの対話で進められる作業があります。一方、Pageの開発、SDK・APIの利用、外部サービスとの連携では、技術知識が必要になる場合があります。
 
 ### 操作できる範囲は人や環境によって異なります
 
@@ -79,3 +81,4 @@ Studioには、作成と利用のための入口があります。
 | 導入済みのAppを使いたい | [導入済みAppを開いて利用を始める](../use/open-installed-app.md) |
 | 共有されたProjectを使いたい | [共有されたProjectで利用を始める](../use/start-with-shared-project.md) |
 | 自分で構築を始めたい | [Projectを作成して基本設定する](../build/create-project-and-basic-settings.md) |
+| AIに構築を依頼したい | [Studio Assistantに構築を依頼する](../build/build-with-studio-assistant.md) |

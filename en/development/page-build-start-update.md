@@ -1,8 +1,8 @@
 # Page Build, Start, and Update
 
-Developers updating a Page build browser-facing artifacts locally, package them as a ZIP, and upload them to the existing Page as a new version. Do not depend on building or dependency installation during registration; prepare completed artifacts. An upload-complete indication alone does not guarantee operation in users' environments.
+Developers updating a Page package the whole source as a ZIP and upload it to the existing Page as a new version. After upload, the runtime for Pages hosted in Studio (the Page runtime) selects Bun, Node, or static according to the lockfile, runs install and `build`, and then starts the Page. An upload-complete indication alone does not guarantee that the build succeeds or that the Page works in users' environments.
 
-This article explains updates to published Pages, the Applied version and rollback, the relationship to access settings, operation verification, and what you can check when builds or display fail. For initial registration and publication, see [Register and Publish a Page from the Screen](../build/register-and-publish-pages.md); for ZIP structure and limits, see [Page Specifications and Limits](../build/page-specs-and-limits.md).
+This article explains updates to published Pages, the Applied version and rollback, the relationship to access settings, operation verification, and how to respond when builds or display fail. For initial registration and publication, see [Register and Publish a Page from the Screen](../build/register-and-publish-pages.md); for ZIP structure and limits, see [Page Specifications and Limits](../build/page-specs-and-limits.md).
 
 ## Related articles
 
@@ -14,7 +14,7 @@ This article explains updates to published Pages, the Applied version and rollba
 ## Before you begin
 
 - Check the target organization, Project, Page name, and version currently "Applied." The `Ver.` label on a Page card helps with checking, but treat "Applied" in "Version History" as authoritative.
-- Create artifacts locally and place only files distributed to browsers, such as HTML, JavaScript, CSS, and images, at the ZIP root. `node_modules` in the ZIP and root-level `dist`, `build`, and similar directories may be excluded from distribution.
+- Place `package.json` and a lockfile (or `index.html` for a static Page) at the ZIP root, and check that install and `build` succeed locally. Do not include `node_modules` or root-level build output such as `dist` and `build`, because they are excluded. Uploading a Next.js build output is rejected. For structure, see [Page Source Structure and Runtime](page-source-structure-and-runtime.md).
 - From changed screens, inputs, data retrieval, registration or update, and external transmission, decide representative operations to perform after publishing. Also check affected users and switching time with relevant parties.
 - A user who can edit the target Page performs the update. If a menu or operation is not shown or cannot be selected, check the target Project, Page, and permissions.
 
@@ -22,14 +22,14 @@ This article explains updates to published Pages, the Applied version and rollba
 
 ## Check build and deployment status
 
-A Page displays items such as "Upload New Version," "Applied," and "Failed to switch version." A screen for tracking Page-specific build and deployment statuses or logs in a list or history could not be confirmed.
+After upload, the Page runtime runs install and `build`. While building and when a build fails, opening the Page shows a dedicated screen for each. The first display can take several minutes (up to 15 minutes). Note that "Failed to switch version" is not displayed immediately after upload.
 
 Do not determine operation by status names alone immediately after upload; combine the following three checks.
 
 | Target to check | How to check | What you can determine |
 |---|---|---|
 | Version application | In "Version History," check that the intended version is "Applied." | The currently referenced version is as intended |
-| Start of delivery | Open the Page from the same entry point as users. | The process of opening the Page and the screen's initial display |
+| Build and start | Open the Page from the same entry point as users and check that the Page, not the building or build-failure screen, is displayed. | Build completion and the screen's initial display |
 | Business operation | Run the representative changed operation and check the screen, saved result, and external processing. | Whether processing needed for actual use succeeds |
 
 > An "Uploaded" or update-complete notification is not evidence that representative operations also succeeded. In particular, for Pages that include authentication, data updates, or external transmission, check under the applicable usage conditions before providing them.
@@ -39,12 +39,14 @@ Do not determine operation by status names alone immediately after upload; combi
 This operation does not create a new Page. Registering a ZIP from "Upload New Version" on the target Page creates a new version with the same Page ID, and its version number increases beyond the existing maximum. To avoid confusing it with a separate new upload that uses the same Page name, always start from the existing Page menu.
 
 1. From the target Page menu, select "Upload New Version."
-2. Select one completed ZIP and check its file name and size. The ZIP must be 100 MB or less.
+2. Select one source ZIP and check its file name and size. The ZIP must be 100 MB or less.
 3. Select "Upload." While processing, do not close the dialog or layer the same update; wait for completion or an error indication.
 4. After completion, open the `Ver.` label on the Page card and "Version History." Check that a new history entry was added and the intended version is "Applied."
-5. Open the Page and check the initial display, representative operations decided in advance, and their results.
+5. Open the Page, wait for the build to complete, and check the initial display, representative operations decided in advance, and their results.
 
-During an update, the new artifacts are reflected in the distribution target, and prior files not included in the new artifacts are not retained. To avoid issues that appear to be references to old assets or caching, include every required HTML, JavaScript, CSS, image, and other file in the ZIP every time.
+During an update, the Page is built again from the source in the new ZIP, and prior files not included in the new ZIP do not remain. Include the complete required source in the ZIP every time.
+
+> When updating with the CLI, always specify `--page-id` in update scripts. If you deploy a build-output folder such as `./dist`, `.jai-studio/page.json`, which stores the Page ID, is deleted on rebuild, and without `--page-id` **a new Page is silently created**. For details, see [Preview and Deploy a Page Locally](local-preview-and-deploy-page.md).
 
 ## 2. Check the Applied version and return if necessary
 
@@ -83,11 +85,11 @@ What you change in "Access Settings" is the authentication and publication condi
 
 ## If something does not work
 
-### I want to see build-failure status or logs
+### The building or build-failure screen appears
 
-A screen that displays detailed Page build/deployment status or build logs users can open could not be confirmed. Record errors displayed during upload or switching, browser network failures, target Page and Project, Applied version, ZIP name, occurrence time, and reproduction steps. Do not include secret values, authentication information, or personal information in ZIP files, screenshots, or inquiries.
+If the building screen continues, wait and reopen the Page, because the first display can take several minutes (up to 15 minutes). If the build-failure screen appears, check that install and `build` succeed locally and that the lockfile matches `package.json`. When making an inquiry, record the displayed errors, browser network failures, target Page and Project, Applied version, ZIP name, occurrence time, and reproduction steps. Do not include secret values, authentication information, or personal information in ZIP files, screenshots, or inquiries.
 
-If the Page does not open, displays a blank screen, or you cannot check operation after the update, extract the ZIP and check artifact placement and reference paths, then check [Page Specifications and Limits](../build/page-specs-and-limits.md). [A Page Fails to Build, Start, or Display](../troubleshooting/page-build-start-display-failures.md) covers failure isolation.
+If the Page does not open, displays a blank screen, or does not work as expected after the update, extract the ZIP and check the root structure, check that the server listens on `process.env.PORT` and returns the first SSR response within about 60 seconds, and then check [Page Specifications and Limits](../build/page-specs-and-limits.md). [A Page Fails to Build, Start, or Display](../troubleshooting/page-build-start-display-failures.md) covers failure isolation.
 
 ### Uploading or switching fails
 

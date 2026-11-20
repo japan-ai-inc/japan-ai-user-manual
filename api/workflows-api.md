@@ -10,7 +10,7 @@ Workflows APIは、Project内のWorkflowの取得・作成、下書き保存、�
 
 ## 始める前に
 
-ベースURLは`https://api.japan-ai.co.jp`、共通パスは`/api/v1/workflows`です。Project APIキーを`x-api-key`ヘッダーへ渡します。各操作に必要なスコープを持つ対象Projectのキーを使います。キーをブラウザ、ソース管理、ログ、共有履歴へ残してはいけません。
+ベースURLは`https://api.japan-ai.co.jp`、共通パスは`/api/v1/workflows`です。Project APIキーを`x-api-key`ヘッダーへ渡します。各操作に必要なスコープを持つ対象Projectのキーを使います。キーをブラウザ、ソース管理、ログ、共有履歴へ残してはいけません。公開APIの全エンドポイントとリクエスト・レスポンスのスキーマは、公開OpenAPI（[APIリファレンス](https://api.japan-ai.co.jp/reference)、[`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)）にも掲載されています。
 
 ```bash
 export JAI_STUDIO_API_KEY='安全な保管場所から取得した値'
@@ -18,7 +18,7 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows?status=all' \
   -H "x-api-key: $JAI_STUDIO_API_KEY"
 ```
 
-正常な応答には`success`と`requestId`が含まれます。キーなし・無効は401、スコープ・権限不足は403です。429と待機情報は[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
+正常な応答には`success`と`requestId`が含まれ、エラー応答にも`requestId`が含まれます。無効・期限切れのキー（"Invalid API key"／"API key has expired"）は**403**で、スコープ・権限不足も403です。401は、認証情報がまったくない場合に一部の経路でだけ返ります。429と待機情報は[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
 
 > 書込み・実行は状態を変えます。検証用Projectで確認し、タイムアウト時は再送前に`runId`または現在の定義を確認してください。
 
@@ -58,14 +58,14 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows?limit=50&status=all' \
 
 ## 2. 作成とメタデータ更新を行う
 
-`POST /api/v1/workflows`は空の下書きを持つ未公開Workflowを作成します。`name`は必須（1〜255文字）、`description`は任意、`enabled`は既定で`true`です。成功時は201で`workflow`を返します。
+`POST /api/v1/workflows`は空の下書きを持つ未公開Workflowを作成します。`name`は必須（1〜255文字）、`description`は任意、`enabled`は既定で`true`です。成功時は201で`workflow`を返します。`enabled: false`で作成したWorkflowは一覧に表示されず、実行も403になるため、通常は`enabled`を指定しません。
 
-`PATCH /{workflowId}`は`name`、`description`、`enabled`の1つ以上を渡します。成功時は200で更新済み`workflow`を返します。`enabled: false`にすると、メールとStorageのトリガーは無効化されます。
+`PATCH /{workflowId}`は`name`、`description`、`enabled`の1つ以上を渡します。成功時は200で更新済み`workflow`を返します。`enabled: false`にすると、メールとStorageのトリガーは削除扱いになり、Workflowは一覧に表示されず実行もできなくなります。
 
 ```bash
 curl -sS -X POST 'https://api.japan-ai.co.jp/api/v1/workflows' \
   -H "x-api-key: $JAI_STUDIO_API_KEY" -H 'content-type: application/json' \
-  --data '{"name":"請求書受付","enabled":false}'
+  --data '{"name":"請求書受付"}'
 ```
 
 ## 3. 下書きを保存して公開する
@@ -104,7 +104,7 @@ curl -sS 'https://api.japan-ai.co.jp/api/v1/workflows/runs/<runId>' \
 
 `GET /runs/{runId}`は`runId`、`status`、必要に応じて`outputs`と`error`を返します。状態は`RUNNING`、`SUCCEEDED`、`FAILED`、`PARTIAL_SUCCEEDED`、`STOPPED`です。`RUNNING`中は同じIDで照会します。不正なIDは400、実行なしは404、照会タイムアウトは408です。
 
-完了まで待つには`POST /{workflowId}/run-and-wait`を使います。`inputs`は任意、`timeout`はミリ秒で既定60,000、1,000〜300,000です。送信からサーバー側照会までを含む期限です。SDKとCLIは通信の猶予時間を確保するため、上限を270秒にしています。REST APIを直接呼ぶ場合の上限は300秒です。408時は`runId`があれば結果照会へ切り替えます。
+完了まで待つには`POST /{workflowId}/run-and-wait`を使います。**タイムアウトしても実行は止まりません。** 408の応答に含まれる`runId`で結果を照会し、同じ実行を再送しないでください。`inputs`は任意、`timeout`はミリ秒で既定60,000、1,000〜300,000です。送信からサーバー側照会までを含む期限です。SDKとCLIは通信の猶予時間を確保するため、上限を270秒にしています。REST APIを直接呼ぶ場合の上限は300秒です。408時は`runId`があれば結果照会へ切り替えます。
 
 ## 6. 予定実行タスクを扱う場合
 
@@ -117,7 +117,7 @@ Workflowの作成・公開・手動実行と、予定実行タスクの管理は
 | 更新 | `PATCH /api/v1/scheduled-tasks/{taskId}` | `task:write`、`workflow:execute` |
 | 削除 | `DELETE /api/v1/scheduled-tasks/{taskId}` | `task:delete` |
 
-作成には`name`、`workflowId`、オフセット付きISO 8601形式の`triggerTime`が必要です。繰返しには`repeatPattern`または`cronSchedule`を指定し、必要に応じて`scheduleTimezone`を指定します。作成・更新は状態不明のまま再送せず、名前で一覧を取得して確認します。`task:*`スコープはAppリリースのマニフェストには宣言できません。詳しい入力形式、停止・引継ぎは[SDK Workflows](../development/sdk-workflows.md)および[定期実行を変更・停止・引き継ぐ](../operations/change-stop-handover-scheduled-runs.md)を参照してください。
+作成には`name`、`workflowId`、オフセット付きISO 8601形式の`triggerTime`が必要です。本文は厳密に検証されます。繰返しの`repeatPattern`または`cronSchedule`と、必要に応じて指定する`scheduleTimezone`は、**`schedule`オブジェクトの中**に入れます。最上位に置くと400になります。作成・更新は状態不明のまま再送せず、名前で一覧を取得して確認します。`task:*`スコープはAppリリースのマニフェストには宣言できません。詳しい入力形式、停止・引継ぎは[SDK Workflows](../development/sdk-workflows.md)および[定期実行を変更・停止・引き継ぐ](../operations/change-stop-handover-scheduled-runs.md)を参照してください。
 
 ## よくある誤解
 
@@ -133,7 +133,7 @@ Workflowの作成・公開・手動実行と、予定実行タスクの管理は
 
 | 状況 | 確認・対応 |
 |---|---|
-| 401または403 | キー、Project、スコープ、キー作成者のアクセスを確認します。 |
+| 401または403 | 401は認証情報がない場合（一部の経路）です。無効・期限切れのキーは403になります。キー、Project、スコープ、キー作成者のアクセスを確認します。 |
 | 409で保存・公開できない | `GET /{workflowId}`で最新定義と`draftUpdatedAt`を取り直します。 |
 | 公開後に起動しない | `unregisteredTriggers`、公開状態、`enabled`、接続を確認します。 |
 | 408または通信失敗 | `runId`と実行結果を先に照会し、確認前に再送しません。 |

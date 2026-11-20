@@ -47,8 +47,12 @@ Ms. Tanaka will prepare the first draft by the next meeting. The date of the nex
 
 1. In the Studio Workspace, confirm the target organization and open **"Create Project"** from **"Create."**
 2. Enter the Project name and description from the sample table. Do not add members who are not participating this time.
-3. Select **"Setup,"** and if you will build later, open the Project with **"Skip"** on the screen.
-4. Confirm that the name and description identify the Project as a test environment.
+3. Of the dialog buttons **"Cancel,"** **"Plan and create,"** and **"Create,"** select **"Create."**
+4. When the created Project opens, confirm that the name and description identify the Project as a test environment.
+
+{% hint style="warning" %}
+If you press "Back" right after creation, the creation dialog reopens in edit mode. If you then press "Cancel" or close the dialog, the newly created Project is deleted without confirmation. To fix the name or description, edit it in the dialog and save.
+{% endhint %}
 
 For details, see [Create a Project and configure basic settings](../build/create-project-and-basic-settings.md). **Checkpoint:** You can open `Practice_meeting-notes-summary` and identify it as a test Project.
 
@@ -60,6 +64,8 @@ For details, see [Create a Project and configure basic settings](../build/create
 2. Paste the preceding instruction into **"Instructions (System Prompt)."**
 3. Check the options displayed in **"Available Models,"** add options to test if needed, and select **"Set as default."**
 4. Do not add tools, Skills, Datasets, or external connections. Reopen the Agent and check its name, description, instructions, and model.
+
+Every Agent in a Studio Project automatically receives the `custom_object_sql` tool, which runs Object SQL and cannot be removed. Besides reading Objects, it can add, update, and delete records and create or change Objects (DDL). No extra step is needed in this exercise, but to restrict operations on Objects, use role permissions rather than instructions.
 
 For details, see [Create an Agent and configure instructions and models](../build/create-agent-instructions-and-models.md). **Checkpoint:** The Agent configuration is retained and you can confirm the model being tested.
 
@@ -78,7 +84,7 @@ For conversation procedures, see [Chat with an Agent and check results](../use/c
 
 | Misunderstanding | What to check |
 |---|---|
-| Writing it in instructions also removes permission for external actions | Instructions, tools, connections, and permissions are separate. This exercise does not add them. |
+| Writing it in instructions also removes permission for external actions | Instructions, tools, connections, and permissions are separate. This exercise does not add them. However, `custom_object_sql` is automatically given to every Agent, so control Object operations with role permissions. |
 | Closing the screen removes Agent changes | Agent settings are automatically saved. Reopen it to check the saved state. |
 | A natural response means the content is correct | Compare it with the original input, unconfirmed items, and next actions. |
 

@@ -1,8 +1,10 @@
 # Connect Your Own External Accounts
 
-An Agent or Workflow that uses an external service, or an App that contains one, may require authentication by the user. This article explains how to **create a personal connection with your own account, check its status, and disconnect or re-authenticate it when needed**.
+An Agent that uses an external service, or an App that contains one, uses the user's own authentication (personal connection). This article explains how to **create a personal connection with your own account, check its status, and disconnect or re-authenticate it when needed**.
 
 A personal connection authenticates you to an external service that you use. Its purpose and administrator differ from those of a shared connection used by an entire Project or App and from Secrets such as API keys. Do not assume that other users' settings or App-wide settings are complete merely because your own connection is ready. See [Choose Between Personal Connections, Shared Connections, and Secrets](choose-personal-shared-connections-and-secrets.md) for how to choose.
+
+> **Personal connections are used only by Agents that you run.** Workflows and automatic runs by triggers or Task Scheduler use shared connections, so creating your own personal connection does not make them work.
 
 If you are starting from an installed App, first see [Open an Installed App and Get Started](../use/open-installed-app.md). If you are starting from a shared Project, first see [Get Started in a Shared Project](../use/start-with-shared-project.md).
 
@@ -37,7 +39,7 @@ If "Personal connectors" is not shown in "Connector Settings," or "New Connector
 1. Open the App or Project you will use and identify the feature that says a connection is required.
 2. Open "Connector Settings" from "Settings" or the indicated entry point. If a connection screen opens in the App, proceed from that screen.
 3. Choose "Personal connectors." On the add screen, choose "Personal connector."
-4. Select the external service indicated in the guidance. Only available services, such as Google or Microsoft, may be shown.
+4. Select the external service indicated in the guidance. Only services available in your organization are shown.
 5. Confirm the service name, account to connect, and purpose, then select "Connect" or the displayed connection action.
 
 If you move to an external-service authentication screen, sign in to that service and review and allow the requested permissions. Required permissions and screens vary by connection target. Do not connect using an account that is not approved for business use, another person's account, or an account whose test status is unclear.
@@ -59,13 +61,16 @@ The App requirements screen may show "Using shared connector" instead of "Connec
 
 ## How Agents and Workflows use it
 
-A personal connection is used by features that require the connected external service. Not every Agent or Workflow automatically uses your connection.
+Which connection is used is determined by what runs.
 
-| What you use | Relationship to a personal connection | What to check before use |
+| What you use | Connection used | What to check before use |
 |---|---|---|
-| Agent | Used when an external tool or connector configured on the Agent requires your authentication. | Agent name, services it references or runs, and data scope |
-| Workflow | Used when processing that uses an external service in the Workflow requires your authentication. | Run target, whether it sends, updates, or saves, and the result |
-| App work screen | You may be asked for a personal connection when the screen uses an external service through an Agent or Workflow in the background. | Screen guidance and whether the required connection is personal or shared |
+| An Agent in a Project | The first one found in this order: the runner's personal connection → the Project's shared connection → the organization-wide connection | Agent name, services it references or runs, and data scope |
+| Workflow | Shared connections only. The runner's personal connection is not used. | Whether a shared connection is configured, whether it sends, updates, or saves, and the result |
+| A connection declared as personal in an App | Only the runner's own personal connection. It does not fall back to a shared connection. | Screen guidance and whether the required connection is personal or shared |
+| Automatic runs by triggers or Task Scheduler | A shared connection is required. | Whether an administrator has configured a shared connection |
+
+For Agents, your personal connection takes priority over the Project's shared connection. If you want processing to use the shared business account, do not create a personal connection for the same service.
 
 > External services may be accessed with the permissions of the connected account. Connecting alone does not necessarily run an operation, but check target data and external effects before running an Agent or Workflow.
 
@@ -80,7 +85,7 @@ If you change accounts, finish using a service, or authentication becomes invali
 3. Select "Disconnect," check the target again on the confirmation screen, and complete "Disconnect."
 4. Confirm that the status changed in the list or App requirements screen.
 
-Disconnecting may make Agent, Workflow, or App features that depend on the connection unavailable. Disconnect only connections you no longer need. Do not change shared connections or other users' connections at your own discretion.
+After you disconnect, Agent and App features that depended on the connection either switch to the Project's shared connection or the organization-wide connection, or become unavailable. Disconnect only connections you no longer need. Do not change shared connections or other users' connections at your own discretion.
 
 ### Reconnect or re-authenticate
 
@@ -96,7 +101,8 @@ For decisions and handover when a connection expires or an owner changes, see [H
 | The service is not in the list | App requirements, availability conditions, and permissions. Do not connect a service that is not shown by another method at your own discretion. |
 | The authentication screen fails or does not return | The account you signed in with, external-service authentication conditions, and the displayed error. Do not share credentials. |
 | It does not become "Connected" | Reopen the original screen after authentication. Check whether you selected a different service, account, or a non-personal connection. |
-| It is connected but the Agent or Workflow fails | Run permissions, external-service access, target data, need for a shared connection, and runtime errors |
+| It is connected but the Agent fails | Run permissions, external-service access, target data, and runtime errors |
+| It is connected but a Workflow or automatic run fails | Workflows do not use personal connections. Ask an administrator to configure a shared connection |
 | You cannot change or disconnect a connection | Connection type, permission to operate it, and App configuration. If it is shared, ask an administrator. |
 
 If it remains unresolved, provide the responsible person with the organization name, App or Project name, relevant Agent, Workflow, or screen, connection service, actions taken, occurrence date and time, and displayed message. Do not send passwords, API keys, tokens, or unnecessary information from authentication screens.

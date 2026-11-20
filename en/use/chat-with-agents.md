@@ -84,7 +84,7 @@ If you want to continue modifying the same material or answer, write an addition
 If you want to move on to a different customer, project, or purpose, it will be easier to organize the conversation by breaking it up into a new conversation. In a new conversation, specify the information you need instead of assuming that the material and decisions from the previous conversation will automatically be inherited.
 ### Open past conversation
 1. Open the App/Project you were using.
-2. Open the entrance to the app's "chat room" or the conversation list/history in Project.
+2. In an App, open the chat rooms; in a Project, open the conversation list, which is labeled as tasks on screen.
 3. If a search or filter appears, find the conversation you're looking for. If you cannot find it, review your search conditions and display targets.
 4. Open the conversation and check the previous request/result/Agent before continuing.
 Just because you can read a shared conversation doesn't mean you can provide additional input. Also, just because you are participating in a Project, you cannot necessarily see all the conversations of everyone.

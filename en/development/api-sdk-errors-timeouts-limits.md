@@ -62,9 +62,19 @@ try {
 }
 ```
 
-`ObjectsApiError`, `StorageApiError`, `WorkflowsApiError`, `PagesApiError`, and `PlatformApiError` also inherit from the common type. `TurnCandidatesApiError` inherits from `AgentsApiError`. Put common processing first, and determine dedicated types only where necessary.
+`ObjectsApiError`, `StorageApiError`, `WorkflowsApiError`, and `PagesApiError` also inherit from the common type. `TurnCandidatesApiError` inherits from `AgentsApiError`. Put common processing first, and determine dedicated types only where necessary.
 
-> An unsuccessful HTTP response becomes a module-specific error. `statusCode` may be absent for network failures, parsing failures, and timeouts. Its absence is not evidence of success or that no operation occurred.
+The following failures are not `SdkApiError`. Always handle them in the `else` branch.
+
+| Failure | How it is received |
+|---|---|
+| Network error | An exception other than `SdkApiError` |
+| Abort (via `AbortSignal`) | An exception other than `SdkApiError`. Check with `signal.aborted`. |
+| Disconnection while reading a stream | An exception other than `SdkApiError` |
+| Failure of a `platform` method | An ordinary `Error` |
+| Failure of `platform.openTask()` | Not an exception; an object with `code` is returned. |
+
+> An unsuccessful HTTP response becomes a module-specific error. The failures above have no `statusCode`. Its absence is not evidence of success or that no operation occurred.
 
 ## 3. Separate decisions by HTTP status
 
@@ -73,8 +83,8 @@ An API can return input deficiencies, insufficient authentication or permission,
 | Example status | Decision | Action |
 |---|---|---|
 | Low 400s | Input or request conditions are insufficient | Check parameters, target ID, and execution mode. |
-| 401 | The API key is missing or invalid, or the session has expired | Check the key value and expiry, and the PRS sign-in state. |
-| 403 | There is an issue with the key or operation permission | Check the target Project, required scopes, and permissions. |
+| 401 | No credentials (API key or session) were sent at all (some routes only) | Check that you pass the key and the sign-in state of the Studio-hosted Page. |
+| 403 | Invalid key (`Invalid API key`), expired key (`API key has expired`), or insufficient scopes or operation permissions | Check the message, then the key value, expiry, and revocation, the target Project, required scopes, and permissions. |
 | 404 | The target does not exist or cannot be referenced | Check the ID, Project, environment, and sharing scope. |
 | 409 | A state conflict or concurrent operation occurred | Retrieve the current state again. |
 | 408 or timeout | The start or completion state is unknown | Check the invocation result or resources that may have been created. |
@@ -87,7 +97,11 @@ Public API read paths and Page deployment have usage controls and may return 429
 
 The SDK's normal default timeout is **30 seconds**. You can change it with `timeoutMs` in `createClient()` or on each call, and can also specify `AbortSignal`.
 
-Agents are an exception: `invoke()` defaults to **5 minutes**, and `invokeStream()` defaults to **10 minutes**. These are not common limits for other modules or the HTTP API as a whole.
+The following are exceptions.
+
+- The client-wide `timeoutMs` passed to `createClient()` does not apply to `agents`, `pages`, or `workflows.runAndWait()`. Specify it on each call for these (the second argument for `runAndWait()`).
+- For Agents, `invoke()` defaults to **5 minutes**, and `invokeStream()` defaults to **10 minutes**. These are not common limits for other modules or the HTTP API as a whole.
+- In direct mode (Project API key), a stream is no longer subject to the timeout after the response headers are received. To limit the total duration, abort it with `AbortSignal`.
 
 ```ts
 const controller = new AbortController();
@@ -121,10 +135,10 @@ The SDK's common communication processing does not automatically retry failures.
 
 | Situation | What to check and do |
 |---|---|
-| It always returns 403 | Check the API key, target Project, required scopes, and execution mode. |
+| It always returns 403 | If the message is `Invalid API key` or `API key has expired`, check the key value, revocation, and expiry; otherwise, check the target Project, required scopes, and execution mode. |
 | 429 continues | Check the response guidance, and reduce parallelism and resend frequency. |
 | You do not know whether you can run again after a timeout | Query the target resource or invocation result. |
-| `statusCode` is absent | Check the network, client cancellation, and SDK timeout. |
+| `statusCode` is absent | Check for network errors, client cancellation, stream disconnection, or a `platform` error. |
 | You cannot identify the SDK type | Process it as `SdkApiError` and record the SDK version and `message`. |
 
 For an inquiry, include the target feature, SDK version, execution mode, operation time, request type, `statusCode`, error, and reproduction steps. Do not include API keys, authentication headers, cookies, Secret values, personal information, or input data.

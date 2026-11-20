@@ -9,7 +9,7 @@ If your goal is to resolve a configuration error or update issue, first see [Com
 ## Before you begin
 
 - Check the target organization, App, and provider. Avoid confusing it with an App of the same name or the developer's Project.
-- Confirm approval to end use of the App and that you have permission to perform the action.
+- You have approval to end use of the App. Only organization administrators (ADMIN) or users with the `jai.studioapp.install` permission can uninstall.
 - Tell users about the planned end date and check whether any in-progress work or handover remains.
 - Check the storage location for necessary data, files, and deliverables, and the scope you are permitted to save.
 - Check how to handle automatic execution, notifications, calls from other systems, and other items affected by ending use.
@@ -26,10 +26,18 @@ First, organize what you want to end.
 | You only want to stop using the App yourself | Check leaving or member changes. Keep this separate from uninstalling the entire App. |
 | You want to end an App installed from Marketplace | Proceed to the Marketplace procedure below. |
 | You want to end an App installed through in-organization self-install | Check "For in-organization self-install" in this article. Data guidance differs from the Marketplace version. |
-| An App installed through another method, such as JAPAN AI distribution or management | Follow the displayed guidance and ask the distribution owner or JAPAN AI. |
+| An App installed through another method, such as JAPAN AI distribution or management | Follow the displayed guidance and ask JAPAN AI. |
 | You want to remove a Project or App that is being created from publication | Treat it as an action separate from uninstalling an installed App. |
 
-Being able to open an App, change App settings, and uninstall an organization's App do not require the same permissions. Ending a Marketplace installation checks the permissions needed to manage organization Apps. Do not conclude that you can always delete an App just because you are an App administrator; if you cannot perform the action, ask the person with permission.
+Being able to open an App, change App settings, and uninstall an organization's App do not require the same permissions.
+
+| Operation | Who can do it |
+|---|---|
+| Uninstall, view the "Organization Apps" tab | Organization administrators (ADMIN), or users with the `jai.studioapp.install` permission |
+| Configure shared connections, Secrets, and members | App administrators only |
+| Open and use the App | App members |
+
+Even App administrators cannot uninstall without the organization permission above. In that case, ask someone who has it.
 
 ## 2. Complete handover before deletion
 
@@ -55,12 +63,12 @@ Do not delete connections or Secrets first and stop other Apps or business tasks
 
 ### Open the confirmation screen for the target App
 
-1. Open the Studio Apps list in the correct organization.
+1. In the correct organization, open "STUDIO" > "Apps" in the left navigation.
 2. If "Uninstall" is displayed in the target App's menu, select it.
 3. When acting from the App's settings, select "Uninstall" displayed in the settings screen.
 4. Check that the App name on the confirmation screen matches the App you want to end.
 
-Depending on your permission, you may also be able to act from "Organization Apps." Even if there are multiple entry points, always check the target on the confirmation screen. If you cannot find the button, do not substitute deleting another App or the developer's Project; check the installation method and permissions.
+Organization administrators (ADMIN) and users with the `jai.studioapp.install` permission can also act from the "Organization Apps" tab. Even if there are multiple entry points, always check the target on the confirmation screen. If you cannot find the button, do not substitute deleting another App or the developer's Project; check the installation method and permissions.
 
 ### Read the deletion and charge guidance
 
@@ -70,7 +78,7 @@ For an App that charges according to the number of users, the following charge g
 
 > No future renewal charges will occur. Charges for the current month will not be refunded.
 
-This guidance applies to renewal charges for that App. Do not interpret it as meaning charges for past usage, already finalized costs, other JAPAN AI contracts, or external-service charges will also be canceled. Do not conclude that all related costs will become zero just because charge guidance is not displayed.
+The monthly fee for a paid App is "unit price × number of active members". As stated, after uninstalling no further renewal charges occur for that App, and the current month is not refunded. This guidance applies to that App's charges. Do not interpret it as meaning charges for past usage, already finalized costs, other JAPAN AI contracts, or external-service charges will also be canceled. Do not conclude that all related costs will become zero just because charge guidance is not displayed.
 
 For charge and contract-limit details, see [Check App Seats, Pricing, and Contract Limits](../operations/check-app-seats-pricing-and-limits.md).
 
@@ -81,7 +89,7 @@ For charge and contract-limit details, see [Check App Seats, Pricing, and Contra
 3. Select "Uninstall" to confirm.
 4. Check the processing result.
 
-You cannot confirm the action if the name you entered does not match the displayed name. If guidance says the App name has changed, check the latest name and target again.
+The uninstall cannot be executed if the name you entered does not match the displayed name. If guidance says the App name has changed, check the latest name and target again.
 
 To cancel before confirming, select "Cancel." **Closing the screen after a request has been accepted does not cancel an uninstall that has already been accepted.** Avoid repeated actions while processing is in progress. If the result is unclear, check the status in the next procedure.
 
@@ -118,7 +126,7 @@ Even if guidance says the action failed, processing may have completed. Check th
 
 When retrying an accepted Marketplace installation, you may not be required to enter the App name again. This is not an action to delete a new installation; it is an action to complete deletion that was already accepted.
 
-Even if it is not visible in the list, the organization, search conditions, or viewing permissions may differ. Do not reinstall while the result is unconfirmed or repeatedly delete it from another screen.
+Even if it is not visible in the list, the organization, search conditions, or viewing permissions may differ. Do not reinstall while the result is unclear or repeatedly delete it from another screen.
 
 ## 6. Check and communicate after ending use
 
@@ -136,8 +144,8 @@ For detailed organization of data, permissions, and audit records, see [Check De
 
 ## When things do not go as expected
 
-- **"Uninstall" is not displayed:** Check the target organization, installation method, and action permissions. Permission to use the App alone may not be enough.
-- **You are told to contact JAPAN AI:** Ask the person responsible for managing that installation. Do not substitute another deletion feature.
+- **"Uninstall" is not displayed:** Check the target organization and installation method. Only organization administrators (ADMIN) or users with the `jai.studioapp.install` permission can uninstall; permission to use the App or App administrator rights alone are not enough.
+- **You are told to contact JAPAN AI:** Follow the guidance and contact JAPAN AI. Do not substitute another deletion feature.
 - **The App cannot be used but is shown as incomplete:** Check disabled use and completed deletion separately.
 - **It does not complete even after retrying:** Tell Support the target, displayed guidance, whether it was accepted, and checks already performed.
 

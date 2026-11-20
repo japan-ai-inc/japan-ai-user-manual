@@ -15,11 +15,11 @@ Studio SDKの`objects`モジュールでは、Object定義、フィールド、�
 ## 始める前に
 
 - Node.jsでのSDK／CLI利用は22以降です。
-- APIキーは安全な環境変数から渡し、ブラウザ、公開環境変数、ログには置きません。PRSブラウザではAPIキーを設定せず、`baseUrl: ""`で初期化します。
+- APIキーは安全な環境変数から渡し、ブラウザ、公開環境変数、ログには置きません。StudioでホストされたPageのブラウザではAPIキーを設定せず、`baseUrl: ""`で初期化します。
 - Object ID、フィールド名、型を確認し、構造変更前に影響するレコード・連携先を確認します。制約は[Objectの仕様・制限](../build/object-specs-and-limits.md)に従います。
 
 ```bash
-npm install @japan-ai-inc/studio-sdk
+npm install @japan-ai-inc/studio-sdk@0.11.0
 ```
 
 ```ts
@@ -36,12 +36,13 @@ const studio = createClient({ baseUrl: "https://api.japan-ai.co.jp", apiKey });
 
 Object定義の一覧、取得、作成、更新、削除には順に`list()`、`get()`、`create()`、`update()`、`delete()`を使います。
 
-レコード操作には`studio.objects.define<T>(objectId)`を作ります。`T`は`RecordItem<T>`の`data`と、`create()`・`update()`のデータ部分に適用されます。`recordId`と`revision`は`data`の外側です。
+レコード操作には`studio.objects.define<T>(objectId)`を作ります。`objectId`には、Object名ではなく**ObjectのUUID**を指定します。名前（例：`"contacts"`）を渡すと400になります。IDは`studio.objects.list()`の結果で確認します。`T`は`RecordItem<T>`の`data`と、`create()`・`update()`のデータ部分に適用されます。`recordId`と`revision`は`data`の外側です。
 
 ```ts
 type Contact = { name: string; email: string; company?: string };
 
-const definition = await studio.objects.get("contacts");
+// "<Object UUID>" は studio.objects.list() で確認したObjectのIDに置き換えます。
+const definition = await studio.objects.get("<Object UUID>");
 const contacts = studio.objects.define<Contact>(definition.objectId);
 
 const added = await studio.objects.create({
@@ -81,9 +82,9 @@ await contacts.bulkCreate([
 
 ### 複数レコードを削除する
 
-`bulkDelete(recordIds)`（SDK 0.10.0以降）は、対応する公開APIがある接続先で、最大1,000件のレコードを1回で削除します。キーには`object:delete`スコープが必要です。削除不能なレコードが1件でもあれば全件を削除せずに失敗します。すでに存在しないIDはスキップされ、結果の`skippedIds`と`skippedCount`で確認できます。
+`bulkDelete(recordIds)`（SDK 0.10.0以降）は、最大1,000件のレコードを1回で削除します。キーには`object:delete`スコープが必要です。結果は全件成功か全件失敗のどちらかで、削除できないレコードが1件でもあれば1件も削除されません。すでに存在しないIDはスキップされ、結果の`skippedIds`と`skippedCount`に入ります。
 
-SDK 0.11.0は`DELETE /api/v1/objects/:objectId/records/bulk`を送り、本文は`[{ "recordId": "..." }]`形式です。空配列はSDKが送信せず、0件の結果を返します。2026-11-11時点で、本番の公開REST APIには同じパスの一括**作成**（`POST`）はありますが、この一括削除は提供を確認できていません。開発中の版には実装があるため、提供開始の時期は接続先ごとに異なります。利用前に、接続先がこの削除経路を提供することを確認してください。
+SDK 0.11.0は公開APIの`DELETE /api/v1/objects/:objectId/records/bulk`を送り、本文は`[{ "recordId": "..." }]`形式です。空配列はSDKが送信せず、0件の結果を返します。
 
 ```ts
 const result = await contacts.bulkDelete(["record-id-1", "record-id-2"]);
@@ -142,17 +143,17 @@ if (page.hasNextPage && page.cursor) {
 `objects.recordRules.list|create|delete`は、Studioの「アクセスルール」と同じレコードアクセスルールを扱います。キーには`object:policy`が必要で、キー作成者にも対象Objectのポリシーを読む・設定する権限が必要です。作成・削除はObject書込み権限も必要です。ルールの優先順位と削除の影響を、画面上の既存ルールを含めて確認します。
 
 ```ts
-const { roles, items } = await studio.objects.recordRules.list("contacts");
+const { roles, items } = await studio.objects.recordRules.list("<Object UUID>");
 const staff = roles.find(role => role.name === "Staff");
 if (!staff) throw new Error("対象ロールがありません");
 
-const created = await studio.objects.recordRules.create("contacts", {
+const created = await studio.objects.recordRules.create("<Object UUID>", {
   name: "本人作成レコード",
   status: "edit",
   conditions: [{ field: "created_by", operator: "eq", value: "$principal.id", valueType: "variable" }],
   principals: [{ principalType: "role", principalId: staff.id }],
 });
-await studio.objects.recordRules.delete("contacts", created.ruleGroupId);
+await studio.objects.recordRules.delete("<Object UUID>", created.ruleGroupId);
 ```
 
 ルールは優先順に評価されます。部分的な書込み・削除のエラーでは`code`と`params`を記録し、推測で再実行せず、`list()`で現在のルールを確認します。
@@ -188,7 +189,7 @@ await contacts.updateField(phone.fieldId, { displayName: "連絡先電話番号"
 
 | 状況 | 確認・対応 |
 |---|---|
-| Objectまたはレコードを取得できない | Object ID、対象Project、実行モード、認証、閲覧権限を確認します。 |
+| Objectまたはレコードを取得できない（400を含む） | Object IDにObject名ではなくUUIDを渡しているか（`objects.list()`で確認）、対象Project、実行モード、認証、閲覧権限を確認します。 |
 | 作成・更新でエラーになる | フィールド名、型、必須・一意性・リレーション、既存データとの整合を確認します。 |
 | 更新後に値が消えた | `update()`へ渡した`data`が完全か確認します。 |
 | Revision conflictになる | 最新レコードを再取得し、競合した変更を確認してから操作します。 |

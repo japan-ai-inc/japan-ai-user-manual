@@ -14,14 +14,18 @@ For conversation history and Canvas, see [SDK Agents: Conversation History and C
 ## Before you begin
 
 - Use `@japan-ai-inc/studio-sdk` **0.11.0** and Node.js **22 or later**. Pin the SDK version.
-- Keep API keys only on the server side for local and PRS server use. In a PRS browser, do not pass a key; initialize with `createClient({ baseUrl: "" })`.
+- Keep API keys only on the server side for local use and Page runtime server processing. In the browser of a Studio-hosted Page (the "Page browser" below), do not pass a key; initialize with `createClient({ baseUrl: "" })`.
 - Do not expose API keys, Cookies, authentication headers, or confidential information in browser code, public environment variables, or logs.
 
-> A shared Project API key cannot isolate the conversation viewing scope of each calling user. Implement browser screens that handle each user's conversations through a PRS session route.
+> A shared Project API key cannot isolate the conversation viewing scope of each calling user. Implement browser screens that handle each user's conversations through the Page runtime session route.
+
+{% hint style="warning" %}
+In the Page browser, calls that do not specify `isEphemeral` are treated as ephemeral conversations and do not read or write history. To continue a conversation by passing `sessionId`, **specify `isEphemeral: false` in every call**. Otherwise, the second and later calls have no prior context, and `getMessages()` returns nothing. In the Page browser, `systemPrompt` and `skipHistory` are also ignored (no error is returned).
+{% endhint %}
 
 ## Create and update Agent definitions with a Project API key
 
-In SDK 0.11.0, you can use `agents.create()`, `agents.getDefinition()`, and `agents.update()` with a Project API key. The required key scope is `agent:write`, and the key creator must also have permission to create and edit Agents. These cannot be used from a PRS browser. Creation is not idempotent. Check with `list({ search })` before recreating.
+In SDK 0.8.0 or later, you can use `agents.create()`, `agents.getDefinition()`, and `agents.update()` with a Project API key. The required key scope is `agent:write`, and the key creator must also have permission to create and edit Agents. These cannot be used from the Page browser. Creation is not idempotent. Check with `list({ search })` before recreating.
 
 ```ts
 const created = await studio.agents.create({
@@ -43,7 +47,7 @@ The `definition` from `getDefinition()` can be passed to `update()`. Fields not 
 
 ## 1. Receive a complete response
 
-`invoke(agentId, input, requestOptions?)` returns `Promise<InvokeResponse>`. `input.prompt` is required. Passing `sessionId` to the next input continues the conversation.
+`invoke(agentId, input, requestOptions?)` returns `Promise<InvokeResponse>`. `input.prompt` is required. Specifying `isEphemeral: false` and passing the response's `sessionId` to the next input continues the conversation (`isEphemeral: false` is required in the Page browser).
 
 ```ts
 import { AgentsApiError, createClient } from "@japan-ai-inc/studio-sdk";
@@ -60,11 +64,20 @@ const agentId = "<Agent UUID>";
 try {
   const result = await studio.agents.invoke(agentId, {
     prompt: "Summarize this document",
+    isEphemeral: false, // Specify when continuing the conversation
   });
   if (result.status === "failed") {
     throw new Error(result.errorMessage ?? "Agent invocation failed");
   }
   console.log(result.text, result.sessionId);
+
+  // Continue the same conversation. Specify isEphemeral: false in follow-up calls too.
+  const next = await studio.agents.invoke(agentId, {
+    prompt: "Narrow it down to three key points",
+    sessionId: result.sessionId,
+    isEphemeral: false,
+  });
+  console.log(next.text);
 } catch (error) {
   if (error instanceof AgentsApiError) {
     console.error(error.statusCode, error.message);
@@ -82,10 +95,10 @@ You can specify the following optional fields in `input`. Verify combinations in
 | Field | Purpose |
 |---|---|
 | `sessionId` | Continues an existing conversation. |
-| `model`, `temperature`, `systemPrompt`, `skipHistory` | Specifies the runtime model, temperature, instructions, and history handling. |
-| `isEphemeral` | Specifies a run that is not saved to conversation history. |
+| `model`, `temperature`, `systemPrompt`, `skipHistory` | Specifies the runtime model, temperature, instructions, and history handling. In the Page browser, `systemPrompt` and `skipHistory` are ignored. |
+| `isEphemeral` | `true` specifies a run that is not saved to conversation history. In the Page browser, it is treated as `true` when omitted, so specify `false` to continue a conversation. |
 | `files` | Attaches a `File` or `Blob`. |
-| `storageFileIds` | Attaches Storage `fileId` values in a PRS browser. Maximum **20 items**. |
+| `storageFileIds` | Attaches Storage `fileId` values in the Page browser. Maximum **20 items**. |
 | `enableHandoffLongRunJob` | Permits handoff of a long-running job. |
 
 You cannot specify `isEphemeral: true` and `enableHandoffLongRunJob: true` together. For handoff, retain `sessionId`, set `isEphemeral: false`, and check the history.
@@ -112,11 +125,11 @@ for await (const event of studio.agents.invokeStream(agentId, {
 }
 ```
 
-A `delta` has `responseId`, `content`, `finishReason`, and, as needed, `sessionId`, `imageAsset`, and `file`. `imageUrl` is a compatibility alias. For an `error` event, do not finalize preceding text as a successful result. Authentication, HTTP, input, and timeout failures before streaming starts can become `AgentsApiError`, so wrap the loop in `try/catch`.
+A `delta` has `responseId`, `content`, `finishReason`, and, as needed, `sessionId`, `imageAsset`, and `file`. `imageUrl` is a compatibility alias. For an `error` event, do not finalize preceding text as a successful result. Authentication, HTTP, and input failures before streaming starts become `AgentsApiError`. Network errors, aborts, and disconnections while reading the stream are thrown as exceptions other than `AgentsApiError`, so wrap the loop in `try/catch` and handle both.
 
-## Compare candidates in a PRS browser
+## Compare responses in the Page browser
 
-`agents.compare()`, `listCompareModels()`, `getTurns()`, and `adoptCandidate()` are for a signed-in user's PRS browser. They cannot be used by the public API or in direct development. First use `listCompareModels(agentId)` to obtain models that the user's organization settings, plan, and Agent settings allow for comparison. Follow the returned `min` to `max` range (currently 2 to 4 candidates) and `models`; do not guess and specify a model not in the list.
+`agents.compare()`, `listCompareModels()`, `getTurns()`, and `adoptCandidate()` are for the Page browser. They cannot be used by the public API or in direct development. They require the response comparison feature to be enabled for the organization and the viewer to be a signed-in JAPAN AI user. They cannot be used in Pages with anonymous access or external customer authentication. First use `listCompareModels(agentId)` to obtain models that the user's organization settings, plan, and Agent settings allow for comparison. Follow the returned `min` to `max` range (currently 2 to 4 candidates) and `models`; do not guess and specify a model not in the list.
 
 ```ts
 const available = await studio.agents.listCompareModels(agentId);
@@ -124,6 +137,7 @@ if (available.models.length < available.min) throw new Error("Not enough compara
 
 for await (const event of studio.agents.compare(agentId, {
   prompt: "Compare the proposals",
+  // Specify models returned by listCompareModels(). Placeholder values such as "model-a" are rejected.
   models: ["model-a", "model-b"],
   primaryIndex: 0,
   tools: available.toolsAvailable ? ["web_search"] : undefined,
@@ -140,9 +154,9 @@ If `candidateEfforts` is `true` and the model's `effortSupported` is `true`, you
 
 For comparison `error` events or `TurnCandidatesApiError` before streaming, check `model_not_allowed` and `policy_unavailable`. Refer to `models` for rejected models and retrieve the list again.
 
-## 4. Handle `requestId` and credits in a PRS browser
+## 4. Handle `requestId` and credits in the Page browser
 
-In SDK 0.11.0, `requestId`, a turn identifier in the credit ledger, may be included in a PRS browser `invoke()` response and `invokeStream()` `delta`.
+`requestId`, a turn identifier in the credit ledger, may be included in a Page browser `invoke()` response and `invokeStream()` `delta`.
 
 ```ts
 const requestIds = new Set<string>();
@@ -160,14 +174,18 @@ for await (const total of studio.agents.followRoomCredits(roomId)) showRoomCredi
 
 `getTurnCredits()` aggregates a signed-in user's own turns from the last 24 hours using **1 to 200** `requestId` values per request. `getRoomCredits()` gets the total for a readable room. `followTurnCredits()` and `followRoomCredits()` reread after 5 seconds, 30 seconds, 2 minutes, and 5 minutes, returning only the increased total.
 
-These require a PRS Page opened by a signed-in user and the corresponding PRS route. In an unsupported runtime, they can return 404, and outside PRS they result in `AgentsApiError`.
+Use these in a Studio-hosted Page opened by a signed-in user. Outside the Page runtime, they result in `AgentsApiError`.
 
 ## 5. Implement timeouts and cancellation
 
-The default timeout is **5 minutes** for `invoke()` and **10 minutes** for `invokeStream()`. You can specify `timeoutMs` and an `AbortController` `signal`.
+The default timeout is **5 minutes** for `invoke()` and **10 minutes** for `invokeStream()`. You can specify `timeoutMs` and an `AbortController` `signal` per call in `requestOptions`.
+
+- The client-wide `timeoutMs` passed to `createClient()` does not apply to Agent calls.
+- In direct mode (Project API key), a stream is no longer subject to the timeout after the response headers are received. To limit the total stream duration, abort it with an `AbortController`.
 
 ```ts
 const controller = new AbortController();
+const timer = setTimeout(() => controller.abort(), 120_000); // Limit for the whole stream
 try {
   for await (const event of studio.agents.invokeStream(
     agentId,
@@ -180,23 +198,26 @@ try {
 } catch (error) {
   if (controller.signal.aborted) showCancelled();
   else throw error;
+} finally {
+  clearTimeout(timer);
 }
 
 // Run this when the user chooses "Cancel".
 controller.abort();
 ```
 
-The scope of processing, history, and output changes after cancellation cannot be determined. Do not automatically rerun the same request; check the conversation and business result before resuming.
+Cancellation stops receiving on the client side. Do not automatically rerun the same request; check the conversation and business result before resuming.
 
 ## If it does not work
 
 | Situation | Check and response |
 |---|---|
 | An authentication or permission error occurs | Check the target Project, key, execution mode, and required scopes. |
-| It does not work in a PRS browser | Check that it runs within PRS and initializes with `baseUrl: ""` without passing a key. |
-| `storageFileIds` fails | Check whether the call is from a PRS browser, whether there are 20 or fewer IDs, and whether the user can handle the target files. |
+| It does not work in the Page browser | Check that it runs within a Studio-hosted Page and initializes with `baseUrl: ""` without passing a key. |
+| The second call does not carry over the previous context | In the Page browser, specify `isEphemeral: false` and the previous `sessionId` in every call. |
+| `storageFileIds` fails | Check whether the call is from the Page browser, whether there are 20 or fewer IDs, and whether the user can handle the target files. |
 | A response fails or stops midway | Record `status`, `errorMessage`, stream `error`, and exception `statusCode` separately, and do not immediately resend. |
-| Cannot retrieve credits | Check 0.11.0, a signed-in PRS Page, the number of `requestId` values, and the room ID. |
+| Cannot retrieve credits | Check that you use SDK 0.7.0 or later, that a signed-in user opened the Page, the number of `requestId` values, and the room ID. |
 
 For an inquiry, include the SDK version, execution mode, Agent ID, time, `statusCode`, and reproduction steps. Do not send keys, Cookies, or authentication information.
 

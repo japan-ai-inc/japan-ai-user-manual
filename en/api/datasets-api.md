@@ -12,7 +12,7 @@ The Datasets API is a public API that uses HTTP to list Datasets and search them
 
 ## Scope of this article
 
-This article covers only the two read routes. The same `/api/v1/datasets` path also has routes for creating, updating, and deleting Datasets and for adding and deleting documents, but it could not be confirmed whether these may be publicly used, so this article does not cover them. The SDK `datasets` module is also read-only (`list()` and `search()`).
+This article covers only the two read routes. The same `/api/v1/datasets` path also has routes for creating, updating, and deleting Datasets and for adding and deleting documents, and these exist in production, but they are currently outside the scope of support of this manual (they may change without notice). For their specifications, see the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)). The SDK `datasets` module is read-only (`list()` and `search()`).
 
 ## Before you begin
 
@@ -67,7 +67,7 @@ The response contains document chunks close to the question. The caller generate
 
 It cannot. It requires a signed-in user session.
 
-### You can check every document for omissions
+### Search alone guarantees that no document is missed
 
 Search returns nearby chunks, so it is not suitable for a full-text review such as listing every issue in a contract without omissions.
 
@@ -75,12 +75,12 @@ Search returns nearby chunks, so it is not suitable for a full-text review such 
 
 | Status | What to check |
 |---|---|
-| 401 | Check the key value and expiration date. |
-| 403 | Check the target Project, `dataset:read`, and whether `scope=organization` is called with a user session. |
+| 401 | No authentication information was sent. Check the `x-api-key` or `Authorization` header. |
+| 403 | An invalid or expired key ("Invalid API key" / "API key has expired") returns 403. Check the key value and expiration date, the target Project, `dataset:read`, and whether `scope=organization` is called with a user session. |
 | 404 | Check `datasetId` and the target Project. Do not search for IDs in other Projects. |
 | 429 | Follow the response `Retry-After` and `retryAfterSeconds`, and avoid repeated retries. |
 
-When contacting support, record the target Project, API route, `requestId`, `datasetId`, time of execution, and HTTP status. Do not include API keys or Authorization headers.
+Error responses also include `requestId`. When contacting support, record the target Project, API route, `requestId`, `datasetId`, time of execution, and HTTP status. Do not include API keys or Authorization headers.
 
 ## Checklist
 

@@ -79,10 +79,13 @@ Under "Field Type," you can select the following types. Choose a type based not 
 3. In "Description," enter the meaning of the value, examples, and notes for input. Agents also use the description to understand the field.
 4. Select a "Field Type."
 5. As necessary, configure "Default Value," "Auto-fill current time," "Allow empty value," "Unique constraint," and other options.
-6. To apply conditions to values, add the required conditions under "Validation rules."
-7. Review the content and save it.
+6. Review the content and save it.
 
-Turning off "Allow empty value" makes the field required. "Unique constraint" prevents the same value from being duplicated across records. Use it for a value that identifies only 1 record, such as an employee ID or opportunity number. If you add or change a required or unique constraint or validation condition for an Object that has existing data, the existing records are validated, and you may be unable to make the change if there are blank values, duplicates, or similar issues.
+{% hint style="info" %}
+Validation rules (maximum length, numeric minimum/maximum, regular expressions, allowed values, and so on) cannot be set on the field screen. Fields created on the screen have no validation rules. To apply conditions to values, set them through the API, SDK, or Object SQL (DDL). See [Objects API](../api/objects-api.md) and [Object SQL DDL](../object-sql/object-sql-ddl.md).
+{% endhint %}
+
+Turning off "Allow empty value" makes the field required. "Unique constraint" prevents the same value from being duplicated across records. Use it for a value that identifies only 1 record, such as an employee ID or opportunity number. If you add a required or unique constraint to an Object that has existing data, the existing records are validated, and you cannot make the change if there are blank values or duplicates.
 
 > **Do not use only values that may have variations in notation or duplicate names as identifiers.** Names of people or companies may not be suitable for unique constraints. If there is a number that is uniquely managed in the business, create a dedicated field for it.
 
@@ -103,7 +106,7 @@ Before creating a relationship, confirm the following:
 - The reference target has a non-duplicated identifying field.
 - You have decided whether every record in the referencing Object must have a reference target.
 - You have selected a field that provides stable identification rather than a display value that may change, such as a customer name.
-- You have checked the business impact if the reference target is deleted or hidden.
+- You have checked the business impact if the reference target is deleted or hidden. Records referenced by other records cannot be deleted.
 
 > **A relationship does not inherit access permissions.** Even when there is a related link, users cannot necessarily view or update all records in the reference target. Design access conditions for the referencing and referenced Objects separately.
 
@@ -111,7 +114,7 @@ Before creating a relationship, confirm the following:
 
 Consider permissions to operate an Object separately from access conditions for data in that Object. Whether the access settings menu appears depends on enabled features and permissions. If it does not appear or you cannot open it, check with the Project administrator or organization administrator.
 
-When you open "Access settings" from the Object's action menu, you can review the following targets.
+When you open "Access settings" from the Object's action menu, you can configure the following targets.
 
 | Setting | Scope managed | Design example |
 |---|---|---|
@@ -119,6 +122,10 @@ When you open "Access settings" from the Object's action menu, you can review th
 | "All data" | Default access permissions for data across the Project | Check the Project's standard data access |
 | "Field" | View and edit permissions for each field | Allow only managers to edit expected amounts |
 | "Record Access Rules" | Condition-based, record-level access control | Show only records for the responsible department |
+
+{% hint style="warning" %}
+**Control Object updates by Agents with access settings.** Every Agent in a Studio Project is automatically given an Object SQL tool that can run SELECT/INSERT/UPDATE/DELETE/DDL on Objects, and it cannot be removed. Writing "read only" in an Agent's instructions does not prohibit updates. To make an Agent read-only, set its permission in these access settings to "Read" or otherwise to the minimum required.
+{% endhint %}
 
 In the "Object" access settings, you can select "No access," "Read," "Edit," or "Manage" for each target. Select targets to add from "Search roles, departments, members, or agents" on the screen. When selecting a department as a target, a notice appears that the department may include members without Object viewing permission, so also check their actual permissions.
 
@@ -141,7 +148,7 @@ After configuring the structure and access conditions, check representative case
 5. When using it from a Page, Agent, or Workflow, confirm that each can handle the required fields and records.
 6. Record the design table, change date and time, check results, and contact point.
 
-> To enable a unique constraint, you must first enable the index and wait for rebuilding to complete before configuring it. You also cannot enable it if existing records have duplicate values.
+> When you enable a unique constraint, the required index is set automatically. You cannot enable it if existing records have duplicate values; resolve duplicates first.
 
 If testing reveals issues such as too many fields to enter easily, the same information in multiple places, or permissions that cannot be explained, review the structure before full-scale operation. For details on limit values and applicable conditions, see [Object Specifications and Limits](object-specs-and-limits.md).
 
@@ -150,7 +157,7 @@ If testing reveals issues such as too many fields to enter easily, the same info
 - [ ] Decided the business unit represented by 1 record and the person responsible for managing the Object
 - [ ] Checked for duplication with existing Objects and the impact on Pages, Agents, and Workflows
 - [ ] Chose the Object name, display name, and description according to their purposes
-- [ ] Decided each field's type, required status, default value, unique constraint, and input conditions
+- [ ] Decided each field's type, required status, default value, and unique constraint (validation rules, if needed, are set through the API, SDK, or SQL)
 - [ ] Designed an identifier that does not allow duplicates separately from the display name
 - [ ] Confirmed the relationship reference target and reference fields that can be selected on screen
 - [ ] Designed access conditions for the Object, all data, fields, and records separately

@@ -4,6 +4,19 @@ Scheduled runs configured in a Studio Project's Task Scheduler and event starts 
 
 For new setup, see [Configure the Task Scheduler](../build/configure-task-scheduler.md). For event starts, see [Configure Workflow Triggers](../build/configure-workflow-triggers.md).
 
+## Summary: who each automation runs as
+
+| Automation | Runs as | What does not change | When the owner leaves the organization |
+|---|---|---|---|
+| Workflow trigger (event start in a start node) | The person who first published that start node | Republishing by someone else does not transfer it | Automatically disabled |
+| Task Scheduler task | The task creator | Editing the task does not change who it runs as | Automatically disabled |
+| Scheduled run created with the SDK or API | The creator of the Project API key used | The key is valid only while its creator is an active member of the Project | When the creator is no longer an active Project member, the key returns 403 errors |
+
+- Automatic runs **require a shared connection** for external services. Workflows use only shared connections.
+- In execution history, runs started by triggers or schedules show the owner's name. "Automatic run" is shown only for runs by a service account.
+- **There is no pause feature.** To stop in an emergency, turn off the Workflow's enable switch (see "3. Stop").
+- To change the owner, you must **delete and re-add the trigger node** or **recreate the task**. Republishing or editing by the successor does not change who it runs as (see "4. Hand over when the owner changes").
+
 ## Scope of this article
 
 | Type | Start trigger | Main place to check |
@@ -13,82 +26,92 @@ For new setup, see [Configure the Task Scheduler](../build/configure-task-schedu
 
 Editing or deleting a Project task is separate from changing and publishing a Workflow start node. Changing a start node only in a draft does not change a published event start.
 
+> **Task Scheduler Webhook tasks have no authentication.** Anyone who knows the URL can start them. They are a different mechanism from Workflow Webhook triggers (which verify signatures). Treat a Webhook task URL like a password.
+
 ## Before you begin
 
 - Check the organization, Project, App, execution target, external send or update destination, and notification destinations.
 - Check the Project permissions required to change or stop the target.
 - For high-impact processing, decide the stop time, restart conditions, reviewer, and contact.
-- When connections or authentication are involved, check the authentication account and shared or personal connections.
+- When connections or authentication are involved, check the shared connection and its authentication account.
 
 ## 1. Inventory running automation
 
 ### Check Project tasks
 
 1. In the target Project's settings, open **Task Scheduler** and find the target in **Task List**.
-2. Check the task name, execution target, start method, status, creator, and notification destinations.
+2. Check the task name, execution target, start method, status, creator, and notification destinations. The creator is who the task runs as.
 3. For a date-and-time run, record its run time, repetition, and end date.
 4. In **History**, check the latest success or failure, date and time, errors, and run result.
 
 ### Check Workflow event starts
 
 1. Open the target Workflow and check whether its start node has an event start.
-2. Check the event type, target, filtering conditions, and connection state for external accounts.
-3. Check whether the Workflow is published.
-4. In execution history, check whether it starts on intended events and whether there are duplicates or consecutive failures.
+2. Check the event type, target, filter conditions, and the status of the shared connection used.
+3. Check that the Workflow is published and that its enable switch is on.
+4. In execution history, check whether it starts on the expected events and whether there are duplicate or consecutive failures. The executor column shows the trigger's owner (the person who first published the start node).
 
-Webhook URLs and receiving addresses can be used to start processing externally. Do not copy them unnecessarily into inventory sheets or inquiries, and limit their sharing scope.
+### Check scheduled runs created with the SDK or API
+
+Scheduled runs created with a Project API key run as the key's creator. Check the key creator and whether that person is an active member of the Project. For key management, see [Manage Project API Keys](manage-project-api-keys.md).
+
+Webhook URLs and receiving addresses are information that can start processing externally. Do not copy them into inventories or inquiries more than necessary, and limit their sharing scope.
 
 ## 2. Change a Project task
 
-Edit the target in Task List and review its name, execution target, inputs, notification destinations, date and time, repetition, and end date.
+Edit the target in the task list and review its name, execution target, input, notification destinations, date, time, repetition, and end date.
 
-1. Before changing it, record the execution target, inputs, notification destinations, and next run time.
-2. If a run is scheduled during the change, ensure that its next run time does not overlap the change work.
-3. Edit the required items. When changing the date and time or repetition, check the run date, time, repetition, and end date together.
-4. After saving, check status, run time, and notification destinations again.
-5. Check the run result under low-impact conditions and, as necessary, the result in the external service.
+1. Before changing it, record the execution target, input, notification destinations, and the latest run time.
+2. If a run is scheduled during the change, make sure the next run time does not overlap with your work.
+3. Edit the items to change. When changing date, time, or repetition, check the run date, time, repetition, and end date together.
+4. After saving, check the status, run time, and notification destinations again.
+5. Check the result with low-impact conditions, and check the result in the external service if needed.
 
-The Agent/Workflow type and the start method, such as Schedule or Webhook, cannot be switched after creation. When switching to a different type or start method, check the target's inputs, connections, and notifications, then create a new task and prevent it from running alongside the old task. When changing a Workflow's configuration, publish it after testing.
+Editing a task does not change who it runs as (the creator). You cannot switch between Agent and Workflow, or between a schedule and a Webhook start method, after creation. To switch to a different type or start method, check the target's input, connections, and notifications, create a new task, and prevent duplicate runs with the old task. If you change a Workflow's structure, test it before publishing.
 
-## 3. What to check before stopping
+## 3. Stop
 
-### Project tasks
+There is no pause or resume feature. Stop each target as follows.
 
-A Studio Project UI action to temporarily suspend and restart an existing task could not be confirmed in Task Scheduler. When scheduled runs must stop, before deletion check the scope of impact, alternative procedure, need to retain history, Webhook callers, and notification recipients. Deleting a task does not delete its Agent or Workflow.
+| Target | How to stop | Notes |
+|---|---|---|
+| Workflow (including triggers) | Turn off the Workflow's enable switch. Use this for emergency stops too | Email by JAI and storage triggers are treated as deleted. If you recreate a Webhook trigger, its Webhook URL changes. When restarting, check the triggers and caller settings |
+| Only a Workflow event start | Change or delete the start node and publish | Changing only a draft does not stop the published event start |
+| Project task | Delete the task | Before deleting, check the scope of impact, alternative procedure, history that must be kept, Webhook callers, and notification recipients. Deleting a task does not delete the target Agent or Workflow itself |
 
-### Workflow event starts
+## 4. Hand over when the owner changes
 
-To stop a Workflow event start, change or delete the target Workflow's start node and publish it. Changing only a draft does not stop the published event start.
+Who an automation runs as does not change when a successor republishes or edits it. When the former owner leaves the organization, that person's triggers and tasks are automatically disabled. Before the change, switch to the successor using the following steps.
 
-## 4. Hand over when ownership changes
-
-Tasks and Workflow event starts can depend on their creator or publisher, or on that person's connections. Inventory targets and external accounts before the handover.
-
-1. In the Project's Task List, check target tasks and their creators. Also check external accounts used by Workflow event starts.
-2. Record the purpose, execution target, inputs, schedule or conditions, notification destinations, connections, and recent history.
-3. Prepare the Project, Workflow, and external-service permissions required by the successor. Do not assume that the former owner's personal connection remains usable.
-4. Prepare a new task or connection in the successor's configuration. Ensure it does not run at the same time as the old task.
-5. Run under low-impact conditions and check History, notifications, and the result in the external service.
-6. After confirming that the new configuration runs stably, decide whether to delete the old task or retain necessary settings and history separately as a record.
-7. For Workflow event starts, separately check the successor's connection, target conditions, and publishing state. When changing them, publish after testing.
+1. In the Project task list, check the target tasks and their creators. Also list Workflow triggers and the Project API keys used to create scheduled runs with the SDK or API.
+2. Record the purpose, execution target, input, date, time or conditions, notification destinations, connections, and recent history.
+3. Prepare the Project, Workflow, and external-service permissions the successor needs. Check that the shared connection used for automatic runs is authenticated with a business account that remains usable after the former owner leaves.
+4. Have the successor take over.
+   - **Task**: The successor creates a new task. To prevent it from running at the same time as the old task, delete the old task after creating the new one.
+   - **Workflow trigger**: The successor deletes and re-adds the trigger node, then publishes. The Webhook URL and Email by JAI receiving address change, so update the callers and senders.
+   - **Scheduled run created with the SDK or API**: The successor creates a Project API key and recreates the scheduled run with that key.
+5. Run it under low-impact conditions, and check that the executor in history is the successor, along with notifications and results in the external service.
+6. Keep needed settings and history as records, then proceed with removing the former owner from the Project or other steps.
 
 ## 5. When failures repeat
 
-1. If there is impact, check the effect of deleting the Project task or change and publish the Workflow event start to stop new starts.
-2. In the task's **History** or Workflow execution history, check the failure time, target, displayed message, latest success, and whether it followed a change.
-3. Check task status, execution target, inputs, connections, notification destinations, and Workflow publishing state.
-4. Check external-service permissions and target data.
-5. For a failure in a Workflow, check nodes, inputs, outputs, and errors in execution history.
-6. After correction, check with a limited target, compare success, notifications, and external-service results, then restart.
+1. If there is impact, stop new starts by turning off the Workflow's enable switch or deleting the task.
+2. In the task's **History** or the Workflow's execution history, check the failure date and time, target, displayed message, latest success, and whether it occurred right after a change.
+3. Check the task status, execution target, input, shared connection, notification destinations, and the Workflow's publishing state and enable switch.
+4. Check whether the owner (the task creator, the person who first published the trigger, or the API key creator) is still in the organization and Project.
+5. Check permissions and target data in the external service.
+6. For failures inside a Workflow, check the node, input, output, and error in execution history.
+7. After fixing it, check a limited target and match success, notifications, and external-service results before resuming.
 
 ## Checklist
 
-- [ ] I checked the Project's Task List, History, and Workflow start nodes
-- [ ] I recorded the effects of changes or stopping on external processing and notification destinations
-- [ ] Before deleting a Project task, I checked its impact and the history that must be retained
-- [ ] I published after changing or stopping a Workflow event start
-- [ ] For ownership changes, I checked Project permissions, connections, and external-service permissions
-- [ ] After restarting, I checked History, notifications, and the external-service result
+- [ ] I checked the Project task list, history, Workflow start nodes, and scheduled runs created with the SDK or API.
+- [ ] I recorded who each automation runs as (creator, first publisher, or API key creator).
+- [ ] I recorded the impact of changing or stopping it on external processing and notification destinations.
+- [ ] I have not shared Webhook task URLs more than necessary.
+- [ ] I used the enable switch for emergency stops and checked trigger settings when restarting.
+- [ ] For an owner change, I re-added the trigger node or recreated the task.
+- [ ] After resuming, I checked history, notifications, and external-service results.
 
 ## Related articles
 
@@ -96,4 +119,5 @@ Tasks and Workflow event starts can depend on their creator or publisher, or on 
 - [Configure Run Result Notifications](configure-run-result-notifications.md)
 - [Configure Workflow Triggers](../build/configure-workflow-triggers.md)
 - [Handle Expired Connections and Owner Changes](handle-expired-connections-and-owner-changes.md)
+- [Manage Project API Keys](manage-project-api-keys.md)
 - [A Workflow Does Not Start or Fails](../troubleshooting/workflow-not-starting-or-failing.md)

@@ -12,11 +12,13 @@ For task creation and schedule configuration, see [Configure the Task Scheduler]
 
 ## Notification destinations and required settings
 
+> **Notification Center notifications reach all active Project members and cannot be turned off.** Everyone is notified every time a trigger runs, so frequently started triggers produce many notifications for members. Even if you want only some people to know the results, Notification Center notifications cannot be stopped.
+
 Open **Task Scheduler** in the target Project, then create or edit the target in **Task List**. In **Notification Destination**, you can select multiple methods below.
 
 | Notification destination | Required setting | What to check |
 |---|---|---|
-| Notification Center | None | The scope in which Project members can view results |
+| Notification Center | No destination input. All active Project members are notified every time a trigger runs. It cannot be turned off | Whether it is acceptable for all Project members to be informed of run results |
 | Email | Email address | Recipients, delivery restrictions, and shared-mailbox viewers |
 | Slack | Slack Webhook URL | Destination channel and its visibility scope |
 | Chatwork | Chatwork API token and room ID | Token validity, posting permission, and room participants |
@@ -25,12 +27,12 @@ Open **Task Scheduler** in the target Project, then create or edit the target in
 
 1. In the target Project's settings, open **Task Scheduler** and create or edit the target task in **Task List**.
 2. Check the target, inputs, run time or start method, and status.
-3. In **Notification Destination**, select the required destinations. Notification Center alone requires no additional destination input.
+3. In **Notification Destination**, select the required destinations among email, Slack, and Chatwork. Notification Center requires no destination input.
 4. Enter an email address for email, a Slack Webhook URL for Slack, and an API token and room ID for Chatwork.
 5. When selecting a destination other than Notification Center, configure **Display output in notification** as needed.
 6. After creating or updating, check notification destinations and task status.
 
-You can use multiple notification destinations. Because the same output or link can arrive in several places, use the minimum necessary destinations. A task may not save if required values are empty.
+You can use multiple notification destinations. Because the same output or link can arrive in several places, use the minimum necessary destinations. A task cannot be saved if required values are empty.
 
 ## 2. Decide on output display and automatic share links
 
@@ -40,13 +42,15 @@ When you select a destination other than Notification Center, you can configure 
 
 ### Auto Share Link
 
-For an Agent task, you can enable **Auto Share Link**. When enabled, a shared link to the run result is generated automatically and can be included in notifications such as email, Slack, and Chatwork. For a Workflow task, use of this setting from the same screen could not be confirmed; check Workflow result sharing according to the permissions and sharing specification of the run screen.
+For an Agent task, you can enable **Auto Share Link**. When enabled, a shared link to the run result is generated automatically and can be included in notifications such as email, Slack, and Chatwork. Workflow task results are shared according to the permissions and sharing settings of the run screen.
 
 ## 3. Check after saving
 
 Check notifications and run results once with low-impact input or a scheduled run.
 
 1. For a scheduled task, use **Execute** if needed to run without waiting for the scheduled time. It is unavailable for disabled tasks and Webhook tasks. Check the effect of external sending or updates before running it.
+
+> Webhook tasks have no authentication, and anyone who knows the URL can start them. Notifications are also sent each time they are started, so limit who can see the URL.
 2. In **History**, check the start time, status, run result, and errors.
 3. At every selected destination, check the task name, success or failure, link to the result, and output display where needed.
 4. If Auto Share Link is enabled, check its destination and sharing scope.
@@ -60,7 +64,7 @@ When no notification arrives, check the run itself separately from notification 
 |---|---|
 | No entry in History | Check task status, run time, end date, and the target task |
 | The run failed | Check the error in History, connections, permissions, and input |
-| It does not appear in Notification Center | Check that Notification Center is selected and check Project members and result-access scope |
+| It does not appear in Notification Center | Check that you are an active Project member and check result-access scope |
 | Email does not arrive | Check the email address, spam or delivery rules, and receiving-side settings |
 | It does not arrive in Slack | Check the Webhook URL, destination channel, active state of the Webhook, and channel permissions |
 | It does not arrive in Chatwork | Check the API token, room ID, token expiration, and posting permission |
@@ -72,7 +76,8 @@ A missing notification alone does not mean that the run failed. When correcting 
 
 - [ ] I checked the target Project, task, execution target, and notification owner
 - [ ] I checked the viewing scope of destinations and whether output may be shared
-- [ ] I selected the minimum necessary Notification Center, email, Slack, and Chatwork destinations
+- [ ] I understand that Notification Center notifies all active Project members
+- [ ] I selected the minimum necessary email, Slack, and Chatwork destinations
 - [ ] After saving, I checked History, each destination, the link destination, and the external-service result
 - [ ] I checked notification delivery failure separately from run failure
 

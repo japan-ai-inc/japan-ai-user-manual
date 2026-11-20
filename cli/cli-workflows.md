@@ -11,7 +11,7 @@
 
 ## 始める前に
 
-SDKパッケージ`@japan-ai-inc/studio-sdk` 0.11.0とNode.js 22以降を使います。認証情報は、グローバルオプション、環境変数、プロファイルの順で優先されます。`--key`は履歴やプロセス一覧に残り得るため、通常はプロファイルまたは`JAI_STUDIO_API_KEY`を使ってください。
+SDKパッケージ`@japan-ai-inc/studio-sdk` 0.11.0とNode.js 22以降を使います。認証情報は「グローバルオプション ＞ 環境変数 ＞ プロファイル」の順で優先されます。`--key`は履歴やプロセス一覧に残り得るため、通常はプロファイルまたは`JAI_STUDIO_API_KEY`を使ってください。
 
 ```text
 jai-studio --profile <profile> workflows list
@@ -27,7 +27,19 @@ jai-studio --profile <profile> workflows list
 | `--pretty` | いいえ | 成功時JSONを整形します。 |
 | `--debug` | いいえ | サーバーエラーの詳細を表示します。共有ログでは使いません。 |
 
-成功結果はJSONを標準出力へ出します。`--json`オプションはありません。失敗時はJSONエラーを標準エラーへ出し、終了コードは1です。
+成功結果はJSONを標準出力へ出します。`--json`オプションはありません。APIの失敗時はJSONエラーを標準エラーへ出し、終了コードは1です。使い方の誤りでは標準エラーにテキストが出ます。通常のエラー出力では`runId`や`requestId`が除去されます（`--debug`時だけ表示）。
+
+### コマンドと必要スコープ
+
+| コマンド | 必要スコープ |
+|---|---|
+| `list`、`get`、`status` | `workflow:read` |
+| `create`、`update`、`save-draft`、`publish` | `workflow:write` |
+| `delete` | `workflow:delete` |
+| `run`、`run-and-wait` | `workflow:execute` |
+| `scheduled-tasks list` | `task:read` |
+| `scheduled-tasks create`、`scheduled-tasks update` | `task:write`、`workflow:execute` |
+| `scheduled-tasks delete` | `task:delete` |
 
 > `publish`、`delete`、`run`、`run-and-wait`は外部送信やデータ更新を起こし得ます。実行前にProject、ID、定義、入力を確認し、APIキー、Webhook Secret、業務データをコマンド、定義、CIログへ残さないでください。
 
@@ -78,8 +90,10 @@ jai-studio workflows create --name <name> [--description <desc>] [--disabled]
 | `--disabled` | いいえ | 有効 | 無効状態で作成します。 |
 
 ```bash
-jai-studio workflows create --name "請求書受付" --disabled
+jai-studio workflows create --name "請求書受付"
 ```
+
+> 無効（`enabled: false`）のWorkflowは`list`に表示されず、`run`も403になります。通常は`--disabled`を付けずに作成します。
 
 ### `update`
 
@@ -92,7 +106,7 @@ jai-studio workflows update <workflowId> [--name <name>] [--description <desc>] 
 | `<workflowId>` | はい | — | 更新するWorkflow IDです。 |
 | `--name <name>` | いいえ | 変更なし | 名前を更新します。 |
 | `--description <desc>` | いいえ | 変更なし | 説明を更新します。 |
-| `--enable` / `--disable` | いいえ | 変更なし | 有効・無効を切り替えます。同時指定できません。`--disable`はトリガーを無効化します。 |
+| `--enable` / `--disable` | いいえ | 変更なし | 有効・無効を切り替えます。同時指定できません。`--disable`にすると、メールとStorageのトリガーは削除扱いになります。無効なWorkflowは`list`に表示されず、実行もできません。 |
 
 少なくとも1つの更新オプションが必要です。
 
@@ -156,7 +170,7 @@ jai-studio workflows run <workflowId> [--input <json>]
 jai-studio workflows run <workflowId> --input '{"documentUrl":"https://example.invalid/input.pdf"}'
 ```
 
-`runId`があれば、`status`で状態・出力を取得します。再送前に取得済みの`runId`を確認してください。
+結果JSONの`runId`を記録し、`status`で状態・出力を取得します。再送前に取得済みの`runId`を確認してください。
 
 ### `run-and-wait`
 
@@ -175,6 +189,13 @@ jai-studio workflows run-and-wait <workflowId> [--input <json>] [--timeout <seco
 ```text
 jai-studio workflows run-and-wait <workflowId> --input '{"query":"確認"}' --timeout 60
 ```
+
+{% hint style="warning" %}
+**タイムアウトしても実行は止まりません。** `--timeout`を過ぎると、サーバーは`runId`つきの408を返しますが、Workflowの実行は続きます。CLIの通常のエラー出力では`runId`が除去され、`--debug`を付けた場合だけ表示されます。終了コード1だけを見て`run-and-wait`を再実行すると、**同じWorkflowが重複して実行されます**。
+
+- 長時間かかるWorkflowは`run`で開始し、返った`runId`を`status`で照会します。
+- `run-and-wait`がタイムアウトした場合は再実行せず、`--debug`で`runId`を確認するか、Studioの実行履歴で実行状況を確認します。
+{% endhint %}
 
 ### `status`（実行結果）
 
@@ -203,7 +224,14 @@ jai-studio scheduled-tasks update <taskId> --file ./patch.json
 jai-studio scheduled-tasks delete <taskId>
 ```
 
-作成JSONでは`name`、`workflowId`、`triggerTime`が必須です。繰返しには`repeatPattern`または`cronSchedule`を`schedule`へ指定し、省略すると1回実行になります。作成は冪等ではないため、作成前と5xx後の再送前に名前で一覧を確認します。更新は指定項目だけを変え、`inputs`はキー単位でマージします。
+| コマンド | 位置引数 | フラグ | 必要スコープ | 内容 |
+|---|---|---|---|---|
+| `scheduled-tasks list` | なし | `--search <query>`（任意） | `task:read` | 予定実行タスクを一覧します。 |
+| `scheduled-tasks create` | なし | `--file <path>`（必須） | `task:write`、`workflow:execute` | JSONファイルの内容でタスクを作成します。 |
+| `scheduled-tasks update` | `<taskId>`（必須） | `--file <path>`（必須） | `task:write`、`workflow:execute` | JSONファイルで指定した項目だけを更新します。 |
+| `scheduled-tasks delete` | `<taskId>`（必須） | なし | `task:delete` | タスクを削除します。 |
+
+作成JSONでは`name`、`workflowId`、`triggerTime`が必須です。繰返しには`repeatPattern`または`cronSchedule`（必要に応じて`scheduleTimezone`）を`schedule`オブジェクトの中に指定し、省略すると1回実行になります。これらを最上位に置くと400になります。作成は冪等ではないため、作成前と5xx後の再送前に名前で一覧を確認します。更新は指定項目だけを変え、`inputs`はキー単位でマージします。
 
 ## うまくいかない場合
 
@@ -213,7 +241,8 @@ jai-studio scheduled-tasks delete <taskId>
 | `--file`で失敗する | `graph`、保存した`.definition`、最新の`draftUpdatedAt`を確認します。 |
 | 保存・公開が競合する | `get`で定義を取り直し、最新の`draftUpdatedAt`を使います。 |
 | 入力JSONまたはタイムアウトが不正 | 引用符、JSON、`--timeout`が1〜270の整数であることを確認します。 |
-| エラー詳細が不足する | 対象ID、CLI版、時刻、エラーJSONを記録します。必要な場合だけ、安全な環境で`--debug`を使います。 |
+| `run-and-wait`がタイムアウトした（終了コード1） | 実行は続いています。再実行せず、`--debug`で`runId`を確認して`status`で照会するか、実行履歴を確認します。 |
+| エラー詳細が不足する | 対象ID、CLI版、時刻、エラーJSONを記録します。`requestId`や`runId`は通常の出力から除去されるため、必要な場合だけ安全な環境で`--debug`を使います。 |
 
 ## チェックリスト
 

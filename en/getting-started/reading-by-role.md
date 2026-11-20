@@ -36,7 +36,7 @@ If data operations are part of your work, proceed to [View and Update Object Dat
 People combining Agents, Workflows, data, Pages, and more first decide the purpose and minimum configuration before feature-specific operations.
 
 1. Use [Choose Features by Goal](choose-features-by-goal.md) to organize inputs, outputs, and required features.
-2. If you need a new work area, proceed to [Create a Project and Configure Basic Settings](../build/create-project-and-basic-settings.md). When changing an existing Project, first check the target of the change and its scope of impact.
+2. If you need a new work area, proceed to [Create a Project and Configure Basic Settings](../build/create-project-and-basic-settings.md). When changing an existing Project, first check the target of the change and its scope of impact. To build without writing code, read [Ask Studio Assistant to Build for You](../build/build-with-studio-assistant.md) (the feature must be enabled for your organization, and you need Editor or higher permission in the Project).
 3. Proceed to the building article for the feature you selected. For example, use [Create an Agent and Set Its Instructions and Models](../build/create-agent-instructions-and-models.md) for an Agent or [Configure Workflow Nodes](../build/configure-workflow-nodes.md) for a Workflow.
 4. Test before handing it to users. See [Test and Improve an Agent](../build/test-and-improve-agents.md) for Agents and [Test a Workflow Draft](../build/test-workflow-drafts.md) for Workflows.
 
@@ -66,7 +66,7 @@ People who handle Page code, SDKs, CLIs, and APIs should not start with a method
 
 If the person writing code differs from the person managing API keys, permissions, and connections, check the required setup with the management owner. Being able to read developer articles is different from having permission to operate target data and settings.
 
-## Distribution owner: Deliver an App you created
+## People who distribute: Deliver an App you created
 
 People delivering a completed configuration as an App start with [Design App Distribution from a Project](../distribution/design-app-distribution-from-project.md). Then use [Constraints on Distribution Scope, Dependencies, and Authentication Settings](../distribution/distribution-scope-dependencies-auth.md) to check what to distribute and what to configure in the installing organization.
 

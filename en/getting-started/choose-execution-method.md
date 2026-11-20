@@ -26,6 +26,19 @@ If you want to start by selecting features such as Agents and Workflows, see [Ch
 
 These are selection guidelines. Available triggers and setup screens vary by availability conditions, organization settings, permissions, and the target Workflow. Confirm that the candidate method is available in the environment you will actually use.
 
+## Who runs it and which connections are used
+
+Automatic runs use the permissions and connections of someone who is not operating the screen. The run principal for each method is fixed.
+
+| Method | Runs as | Notes |
+|---|---|---|
+| Manual run | The person who runs it | — |
+| Task Scheduler task | The task creator | It does not change when someone else edits the task |
+| Workflow event trigger | The person who first published that start node | It is not transferred when someone else republishes |
+
+- When the owner of an automatic run leaves the organization, their triggers and tasks are disabled automatically. To change the owner, delete the trigger node and add it again (the Webhook URL and Email by JAI address change), or recreate the task. See [Change, Stop, and Hand Over Scheduled Runs](../operations/change-stop-handover-scheduled-runs.md).
+- **Workflows use only the Project's shared connections for external services.** Personal connections are not used, so a shared connection must be configured for any Workflow that runs automatically.
+
 > A "trigger" is what starts processing. Screens and technical materials may use the term to include manual runs. In this article, event-based triggers are called "event triggers," and date-and-time settings are called "schedules."
 
 ## 1. When to choose a manual run first
@@ -84,6 +97,10 @@ For example, when you want to organize content after a file is added to a target
 
 If you can use a "Webhook trigger," you can start a Workflow from an HTTP request sent by an external system. Configure the Webhook URL generated after publishing in the external system, and check the recipient, authentication method including signature verification, data format to send, and how it corresponds to Workflow inputs.
 
+{% hint style="warning" %}
+The Workflow "Webhook trigger" (with signature verification) and a Task Scheduler Webhook task are different mechanisms. A Task Scheduler Webhook task has no authentication: anyone who knows the URL can start it. Treat the URL as a secret.
+{% endhint %}
+
 If the external side does not send a notification, it cannot run in response to that notification. Direct execution from an SDK or API is another option, but check the supported scope in the developer guides.
 
 ### Separate publishing processing from preparing connections
@@ -111,12 +128,12 @@ If you configure both a date-and-time start and an event start for the same proc
 
 - [ ] I decided the target data and success conditions for the processing.
 - [ ] I checked the result and the impact of updates or sending with test input.
-- [ ] I confirmed whose permissions and account will access data and operate external services.
+- [ ] I confirmed the run principal (the task creator, or the person who first published the start node) and the shared connections that will be used.
 - [ ] I confirmed the date, time, and time zone, or the event target and conditions.
 - [ ] I decided who handles expired credentials and changes in responsibility.
 - [ ] I decided where to review run history and who handles failures.
 - [ ] I checked whether reruns or duplicate starts might register or send the same data twice.
-- [ ] I confirmed how to stop and change it. Confirm separately whether stopping also affects processing that is already running.
+- [ ] I confirmed how to stop and change it. Workflows have no pause feature; in an emergency, turn off the Workflow's enable setting (Email by JAI and storage triggers are treated as deleted, and a recreated Webhook trigger gets a new URL).
 
 Even if no result appears on the screen, the processing itself may still be continuing. Do not rerun it immediately; first check the history and the status of the processing destination.
 

@@ -10,7 +10,7 @@ A **Dataset** is a collection of data that imports business materials and extern
 
 Data imported into a Dataset can be used by an Agent or Workflow to find information relevant to a question or processing task. "Data Integration" on the screen explains: **"RAG search of datasets is available from agents and workflows."**
 
-A RAG reference is a mechanism that searches for information relevant to a question and uses it in an answer. Even when you configure a Dataset, the full text of all materials is not necessarily used in every answer. For a use case such as checking every provision of a particular contract without omissions, design a separate procedure that explicitly identifies the target file and verification scope.
+A RAG reference is a mechanism that searches for information relevant to a question and uses it in an answer. Even when you configure a Dataset, the full text of all materials is not necessarily used in every answer. For a use case such as checking every provision of a particular contract without omissions, design a separate procedure that explicitly identifies the target file and the scope to review.
 
 | Purpose | Example suited to a Dataset | What to decide beforehand |
 |---|---|---|
@@ -35,7 +35,7 @@ A Dataset has a different purpose from ordinary file storage. Merely storing mat
 1. Open "Data Integration" in the target organization or Project.
 2. In "Dataset List," select "Create dataset."
 3. In "Dataset Name," enter a name that shows the purpose and scope of the materials. For example, use a name such as "HR Regulations_FY2026" that distinguishes the version and target.
-4. If it appears, check "Sharing Settings." For an organization Dataset, select "Private (only you)" or "Shared (entire organization or selected departments)." For a Project, "Accessible only to creator" or "Accessible to all project members" may appear.
+4. If it appears, check "Sharing Settings." For an organization Dataset, select "Private (only you)" or "Shared (entire organization or selected departments)." For a Project, select "Accessible only to creator" or "Accessible to all project members."
 5. If it appears, check the departments permitted to reference it in "Department Settings" or "Shared Departments."
 6. Select "Add."
 
@@ -63,11 +63,13 @@ If the data-addition screen does not appear immediately after creation, open the
 5. Return to the Dataset data list and check the "Status" of the data you added.
 6. Confirm that it is "Completed" before proceeding to reference testing.
 
-Importing may take time to complete. Treat data marked "Pending," "In Progress," or "Updating" as being processed. Data marked "Failed," "No content," or "Unreadable" may not be referenced as expected as it is. Check the material, access to the acquisition source, and supported format, and review the data as needed.
+Importing may take time to complete. Treat data marked "Pending," "In Progress," or "Updating" as being processed. Data that was stopped (aborted) or is marked "Failed," "No content," or "Unreadable" may not be referenced as expected as it is. Check the material, access to the acquisition source, and supported format, and review the data as needed.
 
-> Repeatedly registering the same material makes it difficult to determine whether an old or new version should be referenced. For updates, decide beforehand whether to replace existing data or retain it as a version. For conditions such as format, capacity, and item count, see [Dataset Specifications and Limits](dataset-specs-and-limits.md).
+> The file size limit is 200 MiB per file. Files larger than 200 MiB cannot be uploaded. Repeatedly registering the same material makes it difficult to determine whether an old or new version should be referenced. For updates, decide beforehand whether to replace existing data or retain it as a version. For conditions such as format, capacity, and item count, see [Dataset Specifications and Limits](dataset-specs-and-limits.md).
 
-### When importing PDFs
+### When importing PDFs and XLSX files
+
+For PDF and XLSX files, you can choose a reading method when importing. For PDFs, you can choose text detection or OCR, and AI OCR depending on availability. For XLSX, follow the options shown on the screen.
 
 If "AI OCR for PDF" appears, it is a setting that detects and processes images in PDFs with an AI model. Whether it appears may vary by organization settings. You can change this setting after creating the Dataset. Credits are used for each PDF page.
 
@@ -106,7 +108,7 @@ Even when you can select multiple Datasets, we recommend initially limiting them
 ## 5. Test reference results
 
 1. Open the target Agent.
-2. Enter a question whose answer you can check in advance using information in the Dataset.
+2. Enter a question whose answer you already know from the information in the Dataset.
 3. Check the answer content and, if it appears, "Answer Data References."
 4. Compare it with the original materials and confirm that the needed materials are used and old materials are not mixed in.
 5. If it differs from expectations, check the question, Agent instructions, Dataset selection, data-list status, and sharing scope in order.

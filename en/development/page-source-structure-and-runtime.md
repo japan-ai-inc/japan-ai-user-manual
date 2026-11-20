@@ -1,8 +1,19 @@
 # Page Source Structure and Runtime
 
-Developers delivering a Page package locally generated browser output into a ZIP. Studio registration inspects the received ZIP and places its files for delivery. It has not been confirmed that dependencies are installed or `package.json` scripts are run during upload.
+Developers who deliver a Page put the **project source** into a ZIP and upload it. The runtime for Pages hosted in Studio (the Page runtime) selects Bun, Node, or static according to the lockfile in the uploaded source, runs dependency installation and `build`, and then runs the Page as a Node/Bun server (static Pages are served as files).
 
-Therefore, prepare completed HTML, JavaScript, CSS, images, and other files that a user's browser can load, rather than the complete repository source. For registration and publishing screen operations, see [Register and Publish Pages from the Screen](../build/register-and-publish-pages.md). For limits such as capacity and ZIP structure, use [Page Specifications and Limits](../build/page-specs-and-limits.md) as the source of truth.
+For registration and publishing screen operations, see [Register and Publish Pages from the Screen](../build/register-and-publish-pages.md). For limits such as capacity and ZIP structure, use [Page Specifications and Limits](../build/page-specs-and-limits.md) as the source of truth.
+
+## Key points
+
+| Item | Details |
+|---|---|
+| What to upload | The project source. `package.json` and a lockfile at the root, or `index.html` for a static Page |
+| What Studio does | Selects Bun, Node, or static according to the lockfile, runs install and `build`, and starts Node/Bun as a server |
+| Rejected ZIPs | ZIPs containing an uploaded Next.js build output; ZIPs with neither `package.json` nor `index.html` at the root |
+| Server listening | Listen on the port given by `process.env.PORT` |
+| Delivery path | Pages are served under a sub-path, so match the framework's `basePath` setting to the delivery URL |
+| Time | The build can take several minutes (up to 15 minutes) before the first display. The first SSR response must be returned within about 60 seconds |
 
 ## Related articles
 
@@ -12,105 +23,112 @@ Therefore, prepare completed HTML, JavaScript, CSS, images, and other files that
 
 ## Scope of this article
 
-This article explains the files to include in a ZIP, content excluded during registration, and the handling of confirmed runtime behavior. Whether specific frameworks such as React, Vue, and Next.js, server runtimes such as Node.js, server-side rendering, API routes, or arbitrary build commands are supported cannot be determined within this scope.
+This article explains the source structure to put in the ZIP, content excluded during registration, and runtime handling. For environment variables and Secrets used in server processing, see [Page Server Processing, Environment Variables, and Secret References](page-server-env-and-secrets.md). For URLs and routing, see [Page Navigation and Deep Links](page-navigation-and-deep-links.md).
 
-The Page delivery location is accessed as a Page host separate from Studio, and Studio displays it in an iframe. However, the checked source alone cannot determine which URLs the Page host maps to the base file, how it handles SPA deep URLs, or whether it can run server processing. Do not configure routing or a backend based on unconfirmed behavior.
+Pages are served from a Page host separate from Studio itself and are displayed in an iframe in Studio.
 
 ## Before you begin
 
-- Confirm the target Project, Page name, first screen users open, and intended browsers.
-- Complete the build locally and collect only the generated output in a separate folder. Do not ZIP the original source, dependencies, and development configuration as-is.
-- Confirm that the initially loaded HTML and its referenced JavaScript, CSS, images, fonts, and other files are available at relative paths in the output.
+- Check the target Project, Page name, the first screen users open, and the intended browsers.
+- Check that `package.json` and a lockfile are at the root (or `index.html` for a static Page). The type of lockfile determines whether Bun or Node is used, so include the lockfile of the package manager you use locally.
+- Check that the `build` script in `package.json` completes without errors locally.
+- For Pages with a server, listen on `process.env.PORT`. Do not hard-code the port number.
 - Do not include passwords, API keys, tokens, Project Secret values, or personal information in files delivered to the browser. For Secret management, see [Register, Update, and Delete Project Secrets](../operations/manage-project-secrets.md).
 
-> You do not need to include `package.json`, lock files, source maps, or environment files for building during registration. Do not mix files that may contain secret values into the output.
+> Do not include `node_modules` or local build output (`dist`, `build`, and so on). Dependencies and build output are created by Studio's install and `build`. Uploading a Next.js build output is rejected.
 
-## Structure to prepare for delivery
+## Source structure to upload
 
-Registration reads ordinary files in the ZIP and places allowed paths as delivery targets. It has not been confirmed that HTML file names, entry point names, the existence of `package.json`, or `scripts` names are validated. Nor has validation requiring `index.html` been confirmed within this scope.
-
-For this reason, use a structure like the following, placing "files to deliver to the browser after the build" at the root of the ZIP. File names are examples and do not specify this structure or framework for Studio.
+Place `package.json`, the lockfile, and the source at the ZIP root. File names are examples.
 
 ```text
-page-release.zip
+page-source.zip
+├── package.json
+├── package-lock.json   (the lockfile of the package manager you use)
+├── src/
+│   └── ...
+└── public/
+    └── ...
+```
+
+For a static Page (HTML, JavaScript, and CSS without a build step), place `index.html` at the root.
+
+```text
+page-static.zip
 ├── index.html
 ├── assets/
-│   ├── app-xxxxx.js
-│   └── app-xxxxx.css
+│   ├── app.js
+│   └── app.css
 └── images/
     └── logo.svg
 ```
 
-Paths referenced by HTML must resolve based on their placement after ZIP extraction. If they depend on development-server-specific transformations, proxies, environment variables, or History API fallback, verify them first with built output.
+A ZIP with neither `package.json` nor `index.html` at the root is rejected.
 
 ### Handling `package.json` and build scripts
 
-Even if you include `package.json`, there is no confirmation that `npm run build`, `pnpm build`, `yarn build`, or similar commands run during registration. Processing that restores dependencies, detects an output destination from a framework name, or automatically selects an output folder has also not been confirmed.
+After upload, the Page runtime selects Bun, Node, or static according to the lockfile, installs dependencies, and then runs the `build` script. Check the following locally before uploading:
 
-Therefore, build with your toolchain during development and put **its output expanded at the ZIP root**. For example, if you make a local `dist` or `build` only the parent folder of a ZIP, that folder name may be excluded during registration and the output may not be delivered.
-
-> Whether a particular framework or server output can run could not be confirmed. Decide based on whether it can ultimately produce browser output.
+- The lockfile matches `package.json`, and installation succeeds
+- The `build` script succeeds locally
+- If you start a server, it listens on `process.env.PORT`
+- The framework's `basePath` (delivery path prefix) setting matches the Page's delivery URL
 
 ## Folders and files excluded during registration
 
 Paths containing `__MACOSX`, `node_modules`, `.git`, `.DS_Store`, `.jai-studio`, `__staging`, `__upload-lock.json`, `__backup`, or `__versions`, as well as common build-output folders at the root, are excluded. Use [Page Specifications and Limits](../build/page-specs-and-limits.md) as the source of truth for details.
 
-When a ZIP encloses all files in only one parent folder, that parent folder is removed. Since a build-output folder directly under that parent folder is also excluded, a ZIP like the following is unsuitable.
-
-```text
-page-release.zip
-└── my-app/
-    └── dist/
-        └── index.html
-```
-
-Extract the output and rebuild the ZIP with HTML and assets at the root. If a path element in the ZIP represents the current or parent directory, it is a structural error. A ZIP with no delivery-target files remaining after exclusions also cannot be registered.
+In a ZIP where a single parent folder wraps all files, that parent folder is removed. If a path in the ZIP contains an element representing the current or parent directory, a structure error occurs. A ZIP with no files left after exclusions also cannot be registered.
 
 ## Runtime display
 
-Registration extracts the ZIP and places files. When you update a Page, files from the previous output that are not included in the new output do not remain as delivery targets. For version operations, see [Manage Page Versions](../build/manage-page-versions.md).
+After upload, the Page runtime runs install and `build` before serving. While building and when a build fails, dedicated screens are displayed. The first display can take several minutes (up to 15 minutes). When you update a Page, it is built again from the new source. For version operations, see [Manage Page Versions](../build/manage-page-versions.md).
 
-When you open a Page in Studio, Studio creates a URL on the Page host and, for a Page that requires authentication, sets an iframe destination URL with short-lived authentication information. A Page using external customer authentication has a route that does not attach authentication information in the same way. Under every access setting, do not embed secret values into client code or configuration on the assumption that delivered files reach the browser.
+- Pages that run as Node/Bun servers listen on `process.env.PORT`. Reserved keys such as `PORT`, `NODE_ENV`, and `PRS_*` are excluded even if a developer sets them in `.env`.
+- Paths such as `/api/v1/*` and `/api/storage` are used by the platform. Do not use these paths for your own server's API routes.
+- The first SSR response has a limit of about 60 seconds. Do not put time-consuming processing before the first response.
+- Static Pages have an SPA fallback, and `<base href>` is inserted automatically.
 
-The runtime has not been confirmed to compile registered source again. JavaScript runs in the user's browser. Server-side processing, secure references to secret values, and available environment variables cannot be determined from this structure alone, so review [Page Server Processing, Environment Variables, and Secret References](page-server-env-and-secrets.md) before implementing them.
+When you open a Page within Studio, Studio creates the Page host URL and, for Pages that require authentication, sets a URL with short-lived authentication information as the iframe target. In any access setting, do not embed secret values in files delivered to the browser. Handle secret values in server processing. For details, see [Page Server Processing, Environment Variables, and Secret References](page-server-env-and-secrets.md).
 
 ## Common misunderstandings
 
-### Put the entire development project in the ZIP
+### You can ZIP the locally built `dist`
 
-Registration does not install or build a project. `node_modules` is excluded, as are common root output folders. Include only completed deliverables containing HTML and assets.
+No. Studio runs install and `build` from the source. Common build-output folders at the root are excluded, and Next.js build output is rejected. Upload the source including `package.json` and the lockfile.
 
-### If `index.html` exists, it will always display
+### The port can be fixed
 
-Registration validation for the existence of `index.html` has not been confirmed. The file to which the Page host resolves an arbitrary URL also cannot be determined within this scope. Prepare HTML, referenced assets, and relative paths, then open the registered Page to verify it.
+No. The server listens on `process.env.PORT`. `PORT` is a reserved key, so setting it in `.env` has no effect.
 
 ### A Secret is acceptable in client-side configuration
 
-Values delivered to the browser may be obtained by users or browser developer tools. Obfuscation, renaming variables, and hidden screen elements are not protection. Do not put secret values in distributed files, source maps, initial data, or logs.
+Values delivered to the browser can be obtained by users or through browser developer tools. Obfuscation, renamed variables, and hidden screen elements do not provide protection. Do not put secret values in delivered files, source maps, initial data, or logs.
 
 ## If it does not work
 
 | Situation | Check and response |
 |---|---|
-| A required file cannot be found after registration | Extract the ZIP and check whether HTML and assets are at the ZIP root and not under an excluded folder name. |
-| It displays locally but not as a Page | Check whether it depends on development-server-specific proxies, rewrites, environment variables, or History API fallback. In the browser network view, check the failed file URL and Content-Type. |
-| An old screen or asset displays after an update | Check whether the new ZIP includes all required HTML, JavaScript, and CSS, then check the active version and the actual Page display. |
-| A ZIP structure error occurs | Check whether paths contain elements representing the current or parent directory and whether ordinary delivery-target files remain after exclusions. For limits and structural requirements, see [Page Specifications and Limits](../build/page-specs-and-limits.md). |
-| You want to use server code or a Secret | Do not place an alternative implementation on the client. Check the supported runtime and secure reference method in [Page Server Processing, Environment Variables, and Secret References](page-server-env-and-secrets.md). |
+| The ZIP is rejected | Check whether `package.json` or `index.html` is at the root and whether you uploaded a Next.js build output. |
+| The build failure screen appears | Check that the lockfile and `package.json` are consistent and that the `build` script succeeds locally. |
+| The building screen continues | The first display can take several minutes (up to 15 minutes). Wait and open the Page again. |
+| It does not start or respond | Check that it listens on `process.env.PORT` and returns the first SSR response within about 60 seconds. |
+| Assets or APIs return 404 | Check the `basePath` setting and whether your paths conflict with platform paths such as `/api/v1/*` and `/api/storage`. |
+| A ZIP structure error occurs | Check whether paths contain elements representing the current or parent directory and whether files remain after exclusions. For limits and structural requirements, see [Page Specifications and Limits](../build/page-specs-and-limits.md). |
 
-When making an inquiry, share the target Project and Page name, file list in the ZIP, occurrence time, displayed message, failed browser request, and reproduction steps. Do not include Secrets, API keys, tokens, or personal information in ZIPs, logs, or screenshots.
+When making an inquiry, share the target Project and Page name, the file list in the ZIP, the date and time of occurrence, displayed messages, failed browser requests, and reproduction steps. Do not include Secrets, API keys, tokens, or personal information in ZIPs, logs, or screenshots.
 
 ## Checklist
 
-- [ ] Completed the build locally and extracted only browser output
-- [ ] Confirmed the initially displayed HTML and paths to referenced assets
-- [ ] Do not assume `package.json` scripts run or dependencies are installed
-- [ ] Did not place delivery-required files under excluded folder names
-- [ ] Extracted the ZIP and confirmed there is no unnecessary parent folder or path to a parent directory
+- [ ] `package.json` and a lockfile (or `index.html` for a static Page) are at the root
+- [ ] Install and `build` succeed locally
+- [ ] The server listens on `process.env.PORT`, and `basePath` matches the delivery URL
+- [ ] `node_modules`, local build output, and Next.js build output are not included
+- [ ] Extracted the ZIP and confirmed there are no unnecessary parent folders or paths to parent directories
 - [ ] Files delivered to the browser do not contain secret values or personal information
-- [ ] Are ready to open the actual Page after registration and verify typical display and operations
+- [ ] Ready to wait for the build to finish after registration, open the actual Page, and check representative display and operations
 
-## Next article
+## Next articles
 
 - [Preview and Deploy a Page Locally](local-preview-and-deploy-page.md)
 - [Page Specifications and Limits](../build/page-specs-and-limits.md)

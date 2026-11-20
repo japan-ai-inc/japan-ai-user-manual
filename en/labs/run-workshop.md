@@ -67,14 +67,14 @@ For permissions, see [Understand organization, Project, and App permissions](../
 3. If results differ from expectations, learners record the target on screen, input, permissions, and displayed messages. The instructor does not have them run the same operation repeatedly.
 4. For Agent, Workflow, Page, and other run results, compare fictional input and expected results rather than checking only that the screen reports success.
 
-The BUILD/USE/OPS articles linked by the main material are the source of truth for operating details. For example, see [Chat with an Agent and check results](../use/chat-with-agents.md) for conversations, [Run a published Workflow](../use/run-published-workflow.md) for published Workflow checks, and [Work with Pages](../use/work-with-pages.md) for Page use. **Checkpoint:** The goal is not to match the instructor's result, but for learners to explain their own targets and results.
+The articles linked by the main material are the source of truth for operating details. For example, see [Chat with an Agent and check results](../use/chat-with-agents.md) for conversations, [Run a published Workflow](../use/run-published-workflow.md) for published Workflow checks, and [Work with Pages](../use/work-with-pages.md) for Page use. **Checkpoint:** The goal is not to match the instructor's result, but for learners to explain their own targets and results.
 
 ## Step 4. Check sharing, automatic execution, and external impact
 
 **Goal:** Understand impacts added in the exercise before it ends.
 
 1. If you shared or published a Page, Agent, chat, or App, check the target, users, URL, and publication scope.
-2. If you added Workflow triggers or schedules, check the target, next run, notifications, and person responsible for stopping them.
+2. If you added Workflow triggers or schedules, check the target, next run, notifications, and person responsible for stopping them. A trigger runs as the person who first published that start node, and a Task Scheduler task runs as its creator.
 3. If you used external connections, Secrets, or API keys, check which Project and process use them; do not record or share the values themselves.
 4. To avoid leaving publications, automatic executions, or connections that are unnecessary for the exercise, decide the cleanup owner and completion criteria.
 

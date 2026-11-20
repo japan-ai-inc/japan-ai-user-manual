@@ -14,14 +14,18 @@ Studio SDKのAgent呼出し、出力・失敗・クレジットの扱いを説�
 ## 始める前に
 
 - `@japan-ai-inc/studio-sdk` **0.11.0**とNode.js **22以降**を使います。SDKの版は固定します。
-- ローカルとPRSサーバーではAPIキーをサーバー側だけに保管します。PRSブラウザではキーを渡さず、`createClient({ baseUrl: "" })`で初期化します。
+- ローカルとPage実行環境のサーバー処理ではAPIキーをサーバー側だけに保管します。StudioでホストされたPageのブラウザ（以下「Pageのブラウザ」）ではキーを渡さず、`createClient({ baseUrl: "" })`で初期化します。
 - APIキー、Cookie、認証ヘッダー、秘密情報をブラウザ用コード、公開環境変数、ログへ出してはいけません。
 
-> 共有したProject APIキーでは、呼出し元の利用者ごとに会話の閲覧範囲を分離できません。利用者ごとの会話を扱うブラウザ画面は、PRSセッション経路で実装してください。
+> 共有したProject APIキーでは、呼出し元の利用者ごとに会話の閲覧範囲を分離できません。利用者ごとの会話を扱うブラウザ画面は、Page実行環境のセッション経路で実装してください。
+
+{% hint style="warning" %}
+Pageのブラウザでは、`isEphemeral`を指定しない呼出しは一時的な会話として扱われ、履歴を読み書きしません。`sessionId`を渡して会話を続けるには、**すべての呼出しで`isEphemeral: false`を指定**します。指定しないと2回目以降の呼出しに前の文脈がなく、`getMessages()`も空になります。また、Pageのブラウザでは`systemPrompt`と`skipHistory`は無視されます（エラーにはなりません）。
+{% endhint %}
 
 ## Project APIキーでAgent定義を作成・更新する
 
-SDK 0.11.0では、Project APIキーで`agents.create()`、`agents.getDefinition()`、`agents.update()`を使えます。必要なキーのスコープは`agent:write`で、キーの作成者にもAgentを作成・編集する権限が必要です。これらはPRSブラウザからは使えません。作成は冪等ではありません。再作成前に`list({ search })`で確認します。
+SDK 0.8.0以降では、Project APIキーで`agents.create()`、`agents.getDefinition()`、`agents.update()`を使えます。必要なキーのスコープは`agent:write`で、キーの作成者にもAgentを作成・編集する権限が必要です。これらはPageのブラウザからは使えません。作成は冪等ではありません。再作成前に`list({ search })`で確認します。
 
 ```ts
 const created = await studio.agents.create({
@@ -43,7 +47,7 @@ await studio.agents.update(created.agentId, {
 
 ## 1. 応答をまとめて受け取る
 
-`invoke(agentId, input, requestOptions?)`は`Promise<InvokeResponse>`を返します。`input.prompt`は必須です。`sessionId`を次の入力へ渡すと、会話を継続できます。
+`invoke(agentId, input, requestOptions?)`は`Promise<InvokeResponse>`を返します。`input.prompt`は必須です。`isEphemeral: false`を指定し、応答の`sessionId`を次の入力へ渡すと、会話を継続できます（Pageのブラウザでは`isEphemeral: false`が必須です）。
 
 ```ts
 import { AgentsApiError, createClient } from "@japan-ai-inc/studio-sdk";
@@ -60,11 +64,20 @@ const agentId = "<Agent UUID>";
 try {
   const result = await studio.agents.invoke(agentId, {
     prompt: "この文書を要約してください",
+    isEphemeral: false, // 会話を続ける場合に指定します
   });
   if (result.status === "failed") {
     throw new Error(result.errorMessage ?? "Agentの実行に失敗しました");
   }
   console.log(result.text, result.sessionId);
+
+  // 同じ会話を続けます。続きの呼出しでも isEphemeral: false を指定します。
+  const next = await studio.agents.invoke(agentId, {
+    prompt: "要点を3つに絞ってください",
+    sessionId: result.sessionId,
+    isEphemeral: false,
+  });
+  console.log(next.text);
 } catch (error) {
   if (error instanceof AgentsApiError) {
     console.error(error.statusCode, error.message);
@@ -82,10 +95,10 @@ try {
 | 項目 | 用途 |
 |---|---|
 | `sessionId` | 既存の会話を継続します。 |
-| `model`、`temperature`、`systemPrompt`、`skipHistory` | 実行時のモデル、温度、指示、履歴の扱いを指定します。 |
-| `isEphemeral` | 会話履歴へ残さない実行を指定します。 |
+| `model`、`temperature`、`systemPrompt`、`skipHistory` | 実行時のモデル、温度、指示、履歴の扱いを指定します。Pageのブラウザでは`systemPrompt`と`skipHistory`は無視されます。 |
+| `isEphemeral` | `true`で会話履歴へ残さない実行を指定します。Pageのブラウザでは未指定時に`true`として扱われるため、会話を続けるには`false`を指定します。 |
 | `files` | `File`または`Blob`を添付します。 |
-| `storageFileIds` | PRSブラウザでStorageの`fileId`を添付します。最大**20件**です。 |
+| `storageFileIds` | PageのブラウザでStorageの`fileId`を添付します。最大**20件**です。 |
 | `enableHandoffLongRunJob` | 長時間実行の引継ぎを許可します。 |
 
 `isEphemeral: true`と`enableHandoffLongRunJob: true`は同時に指定できません。引継ぎでは`sessionId`を維持し、`isEphemeral: false`として履歴を確認してください。
@@ -112,11 +125,11 @@ for await (const event of studio.agents.invokeStream(agentId, {
 }
 ```
 
-`delta`には`responseId`、`content`、`finishReason`、必要に応じて`sessionId`、`imageAsset`、`file`があります。`imageUrl`は互換用の別名です。`error`イベントでは、それまでの本文を成功結果として確定しません。開始前の認証・HTTP・入力・タイムアウト失敗は`AgentsApiError`になる場合があり、ループを`try/catch`で囲みます。
+`delta`には`responseId`、`content`、`finishReason`、必要に応じて`sessionId`、`imageAsset`、`file`があります。`imageUrl`は互換用の別名です。`error`イベントでは、それまでの本文を成功結果として確定しません。開始前の認証・HTTP・入力の失敗は`AgentsApiError`になります。ネットワークエラー、中断（abort）、ストリーム読取り中の切断は`AgentsApiError`以外の例外になるため、ループを`try/catch`で囲み、両方を処理します。
 
-## PRSブラウザで候補比較を行う
+## Pageのブラウザで回答比較を行う
 
-`agents.compare()`、`listCompareModels()`、`getTurns()`、`adoptCandidate()`は、署名済み利用者のPRSブラウザ向けです。公開APIや直接開発では使えません。まず`listCompareModels(agentId)`で、その利用者・組織の設定・プラン・Agent設定で比較可能なモデルを取得します。返る`min`〜`max`の範囲（現在は2〜4候補）と`models`に従い、一覧にないモデルを推測して指定しません。
+`agents.compare()`、`listCompareModels()`、`getTurns()`、`adoptCandidate()`は、Pageのブラウザ向けです。公開APIや直接開発では使えません。使うには、組織で回答比較の機能が有効で、閲覧者がサインイン済みのJAPAN AIユーザーである必要があります。匿名アクセスと外部顧客認証のPageでは使えません。まず`listCompareModels(agentId)`で、その利用者・組織の設定・プラン・Agent設定で比較可能なモデルを取得します。返る`min`〜`max`の範囲（現在は2〜4候補）と`models`に従い、一覧にないモデルを推測して指定しません。
 
 ```ts
 const available = await studio.agents.listCompareModels(agentId);
@@ -124,6 +137,7 @@ if (available.models.length < available.min) throw new Error("比較可能なモ
 
 for await (const event of studio.agents.compare(agentId, {
   prompt: "提案を比較してください",
+  // listCompareModels() が返したモデルを指定します。"model-a" などの仮の値のままでは拒否されます。
   models: ["model-a", "model-b"],
   primaryIndex: 0,
   tools: available.toolsAvailable ? ["web_search"] : undefined,
@@ -140,9 +154,9 @@ for await (const event of studio.agents.compare(agentId, {
 
 比較の`error`イベントや開始前の`TurnCandidatesApiError`では、`model_not_allowed`・`policy_unavailable`を確認します。拒否されたモデルは`models`を参照し、一覧を取り直します。
 
-## 4. PRSブラウザで`requestId`とクレジットを扱う
+## 4. Pageのブラウザで`requestId`とクレジットを扱う
 
-SDK 0.11.0では、PRSブラウザの`invoke()`応答と`invokeStream()`の`delta`に、クレジット台帳上のターン識別子`requestId`が含まれる場合があります。
+Pageのブラウザの`invoke()`応答と`invokeStream()`の`delta`に、クレジット台帳上のターン識別子`requestId`が含まれる場合があります。
 
 ```ts
 const requestIds = new Set<string>();
@@ -158,16 +172,20 @@ for await (const total of studio.agents.followTurnCredits(ids)) showTurnCredits(
 for await (const total of studio.agents.followRoomCredits(roomId)) showRoomCredits(total);
 ```
 
-`getTurnCredits()`は、署名済み利用者自身の直近24時間のターンを、1回につき**1〜200件**の`requestId`で集計します。`getRoomCredits()`は読取り可能なroomの累計を取得します。`followTurnCredits()`と`followRoomCredits()`は5秒、30秒、2分、5分後に再読し、増えた合計だけを返します。
+`getTurnCredits()`は、サインイン済みの利用者自身の直近24時間のターンを、1回につき**1〜200件**の`requestId`で集計します。`getRoomCredits()`は読取り可能なroomの累計を取得します。`followTurnCredits()`と`followRoomCredits()`は5秒、30秒、2分、5分後に再読し、増えた合計だけを返します。
 
-これらは署名済み利用者が開いたPRS Pageと対応するPRS経路が必要です。未対応の実行環境では404になることがあり、PRS外では`AgentsApiError`になります。
+これらはサインイン済みの利用者が開いたStudioでホストされたPageで使います。Page実行環境の外では`AgentsApiError`になります。
 
 ## 5. タイムアウトとキャンセルを実装する
 
-既定タイムアウトは、`invoke()`が**5分**、`invokeStream()`が**10分**です。`timeoutMs`と`AbortController`の`signal`を指定できます。
+既定タイムアウトは、`invoke()`が**5分**、`invokeStream()`が**10分**です。呼出しごとの`requestOptions`で`timeoutMs`と`AbortController`の`signal`を指定できます。
+
+- `createClient()`に指定したクライアント全体の`timeoutMs`は、Agentの呼出しには効きません。
+- 直接モード（Project APIキー）のストリームは、レスポンスヘッダーを受信した後はタイムアウトの対象外です。ストリーム全体の時間を制限するには、`AbortController`で中断します。
 
 ```ts
 const controller = new AbortController();
+const timer = setTimeout(() => controller.abort(), 120_000); // ストリーム全体の上限
 try {
   for await (const event of studio.agents.invokeStream(
     agentId,
@@ -180,23 +198,26 @@ try {
 } catch (error) {
   if (controller.signal.aborted) showCancelled();
   else throw error;
+} finally {
+  clearTimeout(timer);
 }
 
 // 利用者が「キャンセル」を選んだときに実行します。
 controller.abort();
 ```
 
-キャンセル後の処理、履歴、出力への反映範囲は確定できません。同じ依頼を自動再実行せず、会話と業務結果を確認してから再開してください。
+キャンセルはクライアント側で受信を中断する操作です。同じ依頼を自動再実行せず、会話と業務結果を確認してから再開してください。
 
 ## うまくいかない場合
 
 | 状況 | 確認・対応 |
 |---|---|
 | 認証・権限エラーになる | 対象Project、キー、実行モード、必要なスコープを確認します。 |
-| PRSブラウザで動かない | PRS内で実行し、キーを渡さず`baseUrl: ""`で初期化しているか確認します。 |
-| `storageFileIds`で失敗する | PRSブラウザの呼出しか、IDが20件以下か、利用者が対象ファイルを扱えるか確認します。 |
+| Pageのブラウザで動かない | StudioでホストされたPage内で実行し、キーを渡さず`baseUrl: ""`で初期化しているか確認します。 |
+| 2回目の呼出しで前の文脈が引き継がれない | Pageのブラウザでは、すべての呼出しに`isEphemeral: false`と前回の`sessionId`を指定します。 |
+| `storageFileIds`で失敗する | Pageのブラウザの呼出しか、IDが20件以下か、利用者が対象ファイルを扱えるか確認します。 |
 | 応答が失敗・途中停止する | `status`、`errorMessage`、ストリームの`error`、例外の`statusCode`を分けて記録し、直ちに再送しません。 |
-| クレジットを取得できない | 0.11.0、署名済みPRS Page、`requestId`数とroom IDを確認します。 |
+| クレジットを取得できない | SDK 0.7.0以降か、サインイン済みの利用者が開いたPageか、`requestId`数とroom IDを確認します。 |
 
 問い合わせにはSDK版、実行モード、Agent ID、日時、`statusCode`、再現手順を添えます。キー・Cookie・認証情報は送らないでください。
 

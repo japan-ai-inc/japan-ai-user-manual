@@ -42,7 +42,7 @@ If the link points to an individual Page, conversation, or other item rather tha
 If you do not have a shared link or want to reopen the Project later, find it in the list.
 
 1. Open the organization you will use this time.
-2. Open the Studio Workspace entry point, such as "Workspace," in the navigation. It may appear under "Studio."
+2. In the left navigation, open "STUDIO" > "Workspace".
 3. Enter the Project name you were given in "Search by project name."
 4. Check the name and description, then open it from the target Project-name link.
 
@@ -59,15 +59,15 @@ If you can already use it, the screen opens without a joining action. Check the 
 | Display or status | What to do |
 |---|---|
 | The Project or intended screen opens directly | Check the target and proceed to the feature you will use. |
-| "Join" is displayed | Read the destination and description, and check whether it matches the role you were given. |
+| "Join" is displayed | Read the join confirmation and check that it matches the role you were given. If you will not manage the Project, do not join; ask a Project administrator to add you. |
 | "Not assigned" is displayed and you cannot join | Ask the person in charge to add you as a user or grant required permissions. |
 | You return to the list or cannot access it | Check the account, organization, link, and participation status. Do not determine the cause based only on the screen change. |
 | A connection-source restriction is displayed | Check conditions for use, such as the network specified by the organization. |
 
-The joining confirmation may show an explanation that indicates **joining as an administrator**, such as "Join this project as Admin?" Do not proceed assuming it is the same as ordinary user enrollment.
+If the join confirmation shows "Join this project as Admin?", **you will join as an administrator.** Do not proceed assuming it is the same as ordinary user enrollment.
 
 - If you were instructed to manage the Project and the target and role match, confirm that you want to join and check that the Project opens.
-- If you are responsible only for using it, or your role is unclear, use "Back," "Cancel," or a similar option to go back, then ask the person in charge how to be added.
+- If you are responsible only for using it or your role is unclear, go back without confirming, and ask a Project administrator how to be added.
 
 Not everyone needs to become an administrator. Also, joining a Project does not necessarily permit you to view, run, edit, and delete everything.
 
@@ -145,7 +145,7 @@ When asking for help, provide the Project name, target feature name, account to 
 - [ ] I checked guidance about joining and permissions, and access it in a way that fits my role.
 - [ ] I know the names and entry points for the Pages, Agents, Workflows, and other features I will use.
 - [ ] I checked whether I need a personal connection or shared settings.
-- [ ] For my first action, I was able to check the result and update destination.
+- [ ] For my first action, I checked the result and update destination.
 
 ## Next articles to read
 

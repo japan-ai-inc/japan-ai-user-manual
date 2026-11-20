@@ -13,7 +13,7 @@ If there is already an App that fits your goal or a Project you can join, you ma
 - **There is a candidate in Marketplace**: Check its features, installation conditions, required connections, and costs, then consult the person responsible for installation.
 - **Existing resources cannot meet the goal**: Organize what is missing and consider creating something new or changing the existing configuration.
 
-When reusing existing resources, do not confuse linking with copying. Before proceeding, check whether changing the original configuration would affect other users.
+You can link and reuse existing resources in a Project only for organization-level resources and official resources. A link refers to the same resource, so changes to the original are reflected immediately everywhere it is linked. To use a resource created in another Project, recreate it or go through App publishing and installation (there is no feature for copying between Projects).
 
 ## 2. State the goal in one sentence
 
@@ -109,7 +109,7 @@ When in doubt, use **whether the configuration lets you enter one representative
 
 "What to combine" and "how to create and operate it" are separate decisions.
 
-- **Web UI and AI building assistance**: Consider methods for reviewing settings on screen or conveying requirements to create a configuration.
+- **Web UI and Studio Assistant**: Configure on screen, or tell [Studio Assistant](../build/build-with-studio-assistant.md) in the Project your requirements and have it create the configuration. This is the main way to build without writing code. Studio Assistant requires the feature to be enabled for your organization and Editor or higher permission in the Project.
 - **SDK, CLI, and API**: When operation or integration from code is needed, check the supported scope with a developer.
 
 Even for the same feature, creation, editing, execution, and reference may not all be possible through the same method. The scope also varies by SDK execution location and version, authentication method, and server-side support. Do not conclude that integration with any external production system is supported merely because you can call an API.

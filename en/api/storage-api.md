@@ -13,7 +13,7 @@ The Storage API is a public API to list, upload, retrieve, and delete files and 
 
 ## Before you begin
 
-The base URL is `https://api.japan-ai.co.jp`, and the main route is `/api/v1/storage`. The following sections cover this main route. Pass a Project API key in `x-api-key` or `Authorization: Bearer <key>`, and grant only the scopes required for the operation.
+The base URL is `https://api.japan-ai.co.jp`, and the main route is `/api/v1/storage`. The following sections cover this main route. Pass a Project API key in `x-api-key` or `Authorization: Bearer <key>`, and grant only the scopes required for the operation. All public API endpoints and request/response schemas are also published in the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)). Note that the OpenAPI lists the Storage limit as "2GB total", but the actual limit is 3 GB, as described in this article.
 
 ```bash
 export JAI_STUDIO_API_KEY='value retrieved from secure storage'
@@ -25,7 +25,7 @@ curl -H "x-api-key: $JAI_STUDIO_API_KEY" \
 
 ## Common response and error information
 
-JSON responses generally include `success` and `requestId`. Obtain IDs from create and list responses. Authentication issues return 401 or 403, invalid input returns 400, and a missing target returns 404. For 429, use the response `retryAfterSeconds` as a guide for waiting. For details, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
+JSON responses generally include `success` and `requestId`, and error responses also include `requestId`. Obtain IDs from create and list responses. Missing authentication information returns 401, an invalid or expired key or insufficient scope returns 403, invalid input returns 400, and a missing target returns 404. For 429, use the response `retryAfterSeconds` as a guide for waiting. For details, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
 
 The default path is `/` when omitted. Paths containing `..` cannot be used, and consecutive `/` characters are normalized. File and folder names must be 1-255 characters after leading and trailing whitespace is removed; path separators, control characters, `.`, `..`, and similar values are not accepted.
 
@@ -92,7 +92,7 @@ When omitted, `expiresInMinutes` is 60 minutes. Specify a positive integer; it i
 
 The ZIP `maxSizeMb` is an integer of 1 or greater. A value over the limit is treated as 500 MB, and empty or oversized folders cannot be retrieved. To delete a file, use `DELETE /api/v1/storage/files/:fileId`, which also requires `storage:delete`. On success, it returns `fileId` and a message; a missing target returns 404.
 
-> Check the scope of impact before deleting. Deleting a folder also affects its contents. A restore operation in the standard UI could not be confirmed.
+> Check the scope of impact before deleting. Deleting a folder also affects its contents. This manual does not cover restoring files deleted through the API.
 
 ## Common misconceptions
 

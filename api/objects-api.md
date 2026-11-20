@@ -11,7 +11,9 @@ Objects APIは、ProjectのObject定義、フィールド、レコードをHTTP�
 
 ## 始める前に
 
-ベースURLは`https://api.japan-ai.co.jp`、共通パスは`/api/v1/objects`です。操作に応じて`object:read`、`object:write`、`object:delete`を付与します。
+ベースURLは`https://api.japan-ai.co.jp`、共通パスは`/api/v1/objects`です。操作に応じて`object:read`、`object:write`、`object:delete`を付与します。公開APIの全エンドポイントとリクエスト・レスポンスのスキーマは、公開OpenAPI（[APIリファレンス](https://api.japan-ai.co.jp/reference)、[`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)）にも掲載されています。
+
+パスの`{objectId}`には**ObjectのID（UUID）**を指定します。`contacts`のようなObject名を渡すと400になります。IDは`GET /api/v1/objects`の応答の`objectId`から取得します。
 
 認証には`x-api-key`ヘッダーへ実値を入れます。`Authorization: Bearer <キー>`も受け付けます。キーをブラウザ、コード、ログ、問い合わせに含めません。
 
@@ -26,13 +28,13 @@ curl -sS "https://api.japan-ai.co.jp/api/v1/objects" \
 
 ## この記事の範囲
 
-本記事はProject APIキーで呼び出す定義、フィールド、レコード、検索、一括作成を扱います。CSV、SQL、権限設定、構造設計は対象外です。App提供のObjectは構造変更が403になることがあります。
+本記事はProject APIキーで呼び出す定義、フィールド、レコード、検索、一括作成・一括削除を扱います。CSV、SQL、権限設定、構造設計は対象外です。App提供のObjectは構造変更が403になることがあります。
 
 ## 共通の応答・ページング
 
 一覧・検索の主な応答は`data`、`total`、`limit`、`cursor`、`hasNextPage`、`queryTimestamp`です。次ページは同じ条件・並び順で`cursor`を渡します。`limit`・`offset`は数値文字列、`include_deleted`は`true`または`false`です。
 
-成功時は`GET`・`PATCH`・検索は200、`POST`は201、削除は204です。入力不正は400、認証・スコープ・権限不足は403、対象不在は404、`expectedRevision`不一致は409です。読み取りが429になった場合は`retryAfterSeconds`と`Retry-After`に従います。再試行・エラーは[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
+成功時は`GET`・`PATCH`・検索は200、`POST`は201、削除は204です。入力不正（`objectId`にUUID以外を渡した場合を含む）は400、無効・期限切れのキー、スコープ・権限不足は403、対象不在は404、`expectedRevision`不一致は409です。読み取りが429になった場合は`retryAfterSeconds`と`Retry-After`に従います。エラー応答には`requestId`が含まれるため、問い合わせ時に記録します。再試行・エラーは[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
 
 ## 1. Object定義を操作する
 
@@ -55,7 +57,7 @@ curl -sS "https://api.japan-ai.co.jp/api/v1/objects" \
 | 更新 | `PATCH /api/v1/objects/{objectId}/fields/{fieldId}` | `object:write` | body: 表示名、フラグ、参照先、既定値、範囲、検証ルールなど変更項目。 |
 | 削除 | `DELETE /api/v1/objects/{objectId}/fields/{fieldId}` | `object:delete` | 成功時は204、本文はありません。 |
 
-`dataType`は`text`、`string`、`number`、`boolean`、`datetime`、`date`、`json`、`array`、`relationship`、`file`、`select`、`multiselect`、`url`、`email`、`phone`、`auto_increment`です。`maxLength`は1〜65,535の整数です。応答は`fieldId`、`fieldName`、`displayName`、`dataType`、`fieldNum`、各`is...`フラグ、`refObjectId`、`refFieldId`、`defaultValue`、`validationRules`です。
+`dataType`は`text`、`string`、`number`、`boolean`、`datetime`、`date`、`json`、`array`、`relationship`、`file`、`select`、`multiselect`、`url`、`email`、`phone`、`auto_increment`です。`email`は`text`の別名です。`maxLength`は1〜65,535の整数です。応答は`fieldId`、`fieldName`、`displayName`、`dataType`、`fieldNum`、各`is...`フラグ、`refObjectId`、`refFieldId`、`defaultValue`、`validationRules`です。
 
 `validationRules`は配列で全置換、空配列で解除、未指定なら保持です。
 
@@ -73,8 +75,6 @@ curl -sS "https://api.japan-ai.co.jp/api/v1/objects" \
 
 `PATCH`の`data`は部分更新ではなく**完全置換**です。保持するフィールドも含めます。`expectedRevision`は1〜2,147,483,647の整数です。取得した`revision`を更新本文または削除queryへ渡し、不一致なら409です。省略時、更新はlast-write-wins、削除は無条件です。競合時は最新レコードを取得します。
 
-> SDK 0.11.0には`objects.define(objectId).bulkDelete(recordIds)`がありますが、2026-11-11時点で、本番の公開REST APIには対応する一括削除経路（`DELETE /api/v1/objects/{objectId}/records/bulk`）の提供を確認できていません。開発中の版には実装があり、本番に提供された後は`object:delete`で1〜1,000件を削除でき、1件でも削除できなければ全件失敗します。公開REST APIでは、対象ごとの`DELETE /api/v1/objects/{objectId}/records/{recordId}`を使います。PRSのObjects経路とは区別してください。
-
 ```bash
 curl -sS -X PATCH \
   "https://api.japan-ai.co.jp/api/v1/objects/$JAI_OBJECT_ID/records/RECORD_ID" \
@@ -88,6 +88,9 @@ curl -sS -X PATCH \
 |---|---|---|---|
 | 検索 | `POST /api/v1/objects/{objectId}/records/search` | `object:read` | `filters`、`sort`、`limit`、`offset`、`cursor`、`includeDeleted`は任意。`limit`既定50（1〜1,000）、`offset`既定0、`includeDeleted`既定`false`。ページ応答。 |
 | 一括作成 | `POST /api/v1/objects/{objectId}/records/bulk` | `object:write` | body: `[{"data": {...}}, ...]`。1件以上、**1,000件以下**。作成レコードの配列またはその`data`配列を返します。 |
+| 一括削除 | `DELETE /api/v1/objects/{objectId}/records/bulk` | `object:delete` | 削除するレコードIDを1件以上、**1,000件以下**で指定します。**全件成功か全件失敗**のどちらかで、1件でも削除できなければ1件も削除されません。 |
+
+一括削除のリクエスト本文のフィールド名と応答の形式は、公開OpenAPIを参照してください。SDK 0.11.0では`objects.define(objectId).bulkDelete(recordIds)`が同じ操作を行います。一括削除が失敗した場合は、対象IDの存在、`object:delete`、キー作成者の権限、他のレコードから参照されていないかを確認してから再実行します。
 
 フィルターは`field`、`operator`、任意の`value`です。`operator`は`eq`、`ne`、`gt`、`gte`、`lt`、`lte`、`contains`、`startswith`、`endswith`、`in`、`notin`、`isnull`、`isnotnull`、`exists`、`regex`、`between`、`jsoncontains`です。`sort`は`field`と任意`direction`で、既定`asc`です。`cursor`は`offset`より優先されます。
 
@@ -107,8 +110,8 @@ curl -sS -X PATCH \
 
 | 状況 | 確認・対応 |
 |---|---|
-| 400 | JSON、必須項目、名前、`fieldNum`、検索条件、1,000件以下の一括作成を確認します。 |
-| 403 | キー形式・有効性、対象Project、必要な`object:*`スコープ、権限を確認します。 |
+| 400 | JSON、必須項目、名前、`fieldNum`、検索条件、1,000件以下の一括作成・一括削除を確認します。`{objectId}`にObject名を渡していないか（UUIDが必要）も確認します。 |
+| 403 | 無効・期限切れのキー（"Invalid API key"／"API key has expired"）も403です。キー形式・有効性、対象Project、必要な`object:*`スコープ、権限を確認します。 |
 | 404／409 | IDまたは`expectedRevision`と最新レコードを確認してから操作します。 |
 | 422 | 一覧・検索結果が大きすぎる場合があります。`limit`を下げるか条件を絞ります。1件だけが大きすぎる場合は、Project管理者に内容の見直しを依頼します。 |
 | レコード削除またはアクセスルール変更が失敗する | 対象ID、`object:delete`または`object:policy`、キー作成者のObject権限、既存ルール・リレーション・対象への影響を確認します。状態不明の書込みをそのまま再送しません。 |
@@ -122,7 +125,8 @@ curl -sS -X PATCH \
 - [ ] Object名・フィールド名・型・リレーションの条件を[Objectの仕様・制限](../build/object-specs-and-limits.md)で確認した
 - [ ] レコード更新では残す全フィールドを含む`data`を渡す
 - [ ] 同時更新がある処理では`revision`と`expectedRevision`を扱う
-- [ ] 一括作成は1回1,000件以下に分割した。公開REST APIでレコードを削除する場合は対象ごとの削除経路を使う
+- [ ] 一括作成・一括削除は1回1,000件以下に分割した
+- [ ] `{objectId}`にはObject名ではなくUUIDを指定した
 - [ ] レコードアクセスルールを変更する場合は、既存ルール、優先順位、利用者への影響を確認した
 - [ ] 検索では同じ条件と並び順でcursorを引き継ぐ
 

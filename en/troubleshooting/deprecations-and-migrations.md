@@ -2,7 +2,7 @@
 
 This page lets you check deadlines, impacts, and migration destinations for changes that require updates to existing operations or code. Users should check the impact on daily operations, while developers using the SDK, CLI, or API should review code, automation, and Pages before updating.
 
-Only changes explicitly stated in confirmed primary sources are listed here. This page covers breaking changes and compatibility notes for versions 0.2.0 through 0.11.0 in the SDK/CLI `CHANGELOG.md`. Because no history of deprecations, end dates, or changes requiring migration has been confirmed for the Studio UI, none is provided.
+This page covers model retirement in the Studio UI and the breaking changes and compatibility notes for versions 0.2.0 through 0.11.0 in the SDK/CLI `CHANGELOG.md`.
 
 ## Related articles
 
@@ -16,12 +16,12 @@ Read this page by separating the scope into the following four areas.
 
 | Scope | What to check on this page |
 |---|---|
-| Studio UI | Discontinued screen operations, changes to displays, permissions, and navigation paths, and migration actions users must take. There are currently no confirmed entries. |
+| Studio UI | The model retirement display and the migration users perform (changing the model of Agents and Workflows). |
 | SDK/CLI | Changes to the npm package `@japan-ai-inc/studio-sdk`, `jai-studio`, public methods, types, and command arguments. |
 | Public API | Compatibility with paths, responses, and write behavior used by the SDK. Check SDK updates and the support status of the connection destination separately. |
 | Page runtime | SDK features, sessions, authentication, and supported execution environments available in the browser or server side within Studio Pages. |
 
-“Deprecation” does not simply mean that an older version exists. It means that primary sources indicate that an old feature, argument, or operation will no longer be usable or requires migration. Because the SDK is below 1.0, minor versions may also contain breaking changes. Do not independently treat items without a stated deadline or end date as “scheduled for discontinuation.”
+“Deprecation” does not simply mean that an older version exists. It means that it has been announced that an old feature, argument, or operation will no longer be usable or requires migration. Because the SDK is below 1.0, minor versions may also contain breaking changes. Do not independently treat items without a stated deadline or end date as “scheduled for discontinuation.”
 
 > Do not include Project API keys, cookies, authentication headers, Secret values, or tokens in migration notes, source code, the browser side of a Page, or inquiries. For issuing and managing authentication information, see [Manage Project API Keys](../operations/manage-project-api-keys.md).
 
@@ -43,17 +43,26 @@ SDK 0.11.0 and the CLI require Node.js **22 or later**. In configurations that u
 
 ## Notice entry format
 
-Deprecation and migration notices are described in the following format. Do not fill in unconfirmed deadlines or migration destinations by inference.
+Deprecation and migration notices are described in the following format.
 
 | Item | What to include |
 |---|---|
 | Scope/status | Whether it is Studio UI, SDK/CLI, public API, or Page runtime, and its status, such as deprecation, breaking change, or scheduled end of service |
-| Deadline | A date, version, or end condition in the primary source. If none is stated, “No deadline stated” |
+| Deadline | The announced date, version, or end condition. If none is stated, “No deadline stated” |
 | Impact | Operations that will no longer be usable, data, types, or displays that will change, and affected users and execution environments |
 | Migration destination/action | New arguments, formats, or operations; validation methods; and related procedures |
-| Basis/inquiry contact | Primary sources, related migration articles, and the responsible contact. Do not include authentication information. |
+| Basis/inquiry contact | The source of the announcement, related migration articles, and the responsible contact. Do not include authentication information. |
 
-## Currently confirmed SDK/CLI migration items
+## Studio UI: Model retirement
+
+| Item | Details |
+|---|---|
+| Scope/status | Studio UI. A model scheduled for retirement is shown with a deprecated label and its scheduled retirement date (「非推奨」 and 「（日付） に廃止予定」 in the Japanese UI). |
+| Deadline | The scheduled retirement date shown on screen. |
+| Impact | Scheduled Workflows that use a retired model fail with an error stating that the model has been retired (「モデルが提供終了」 in the Japanese UI). Because automatic runs happen without anyone opening the screen, you may not notice until they fail. |
+| Migration destination/action | When you see the label, change the model in the Agents and Workflow nodes that use it to another model, test, and then publish. Check Workflows run by the Task Scheduler or triggers first. |
+
+## SDK/CLI migration items
 
 ### Full payloads for Object updates (SDK 0.2.0)
 
@@ -121,10 +130,10 @@ On unsupported connection destinations, the new publication path may return 404.
 |---|---|
 | Scope/status | SDK and Page runtime. The types for answer comparison (`compare()`) and messages when it is rejected have changed. |
 | Deadline | Changed in 0.10.0 and 0.11.0. No separate end deadline is stated. |
-| Impact | Turns from `getTurns()` now include `attachments`, and candidates now include `references`, `tools`, and `effort`. Code, tests, and mocks that construct these types manually need the new properties. The message rejecting comparisons with the same model changed from “models must be distinct” to “models must differ in model or effort.” Processes that evaluate the wording are affected. |
-| Migration destination/action | Add the new properties to manually written `Turn` and `TurnCandidate`, and handle errors by error code rather than wording. When listing the same model, specify different effort values in `CompareChoice`. |
+| Impact | Turns from `getTurns()` now include `attachments`, and candidates now include `references` (0.10.0) and `effort` (0.11.0) (candidate `tools` was already added in 0.6.0). Code, tests, and mocks that construct these types manually need the new properties. The message rejecting comparisons with the same model changed from “models must be distinct” to “models must differ in model or effort.” This rejection happens inside the SDK (client side) before sending and has no error code. Processes that evaluate the wording are affected. |
+| Migration destination/action | Add the new properties to manually written `Turn` and `TurnCandidate`. Do not rely on the wording or an error code for duplicate rejection; before sending, check that `models` contains no duplicate combination of the same model and the same effort. When listing the same model, specify different effort values in `CompareChoice`. |
 
-The comparison feature is for the PRS browser. On connection destinations without a supported PRS/agent-service path, `listCompareModels()` fails because the path is unavailable, attachments are empty, and effort is ignored. Do not treat a direct SDK call using a Project API key as a substitute.
+Response comparison is a feature used from the browser of a Page hosted in Studio. It requires the feature to be enabled for your organization and the viewer to be a signed-in JAPAN AI user; it is not available on Pages with anonymous access or external customer authentication. Direct calls with a Project API key are not supported.
 
 ### New APIs that require key scopes (SDK 0.8.0–0.10.0)
 
@@ -132,24 +141,20 @@ The comparison feature is for the PRS browser. On connection destinations withou
 |---|---|
 | Scope/status | SDK/CLI and public API. Scheduled Tasks, creating and updating Agent definitions, Object record access rules, and bulk deletion of Objects were added. |
 | Deadline | These are added features, so there is no end deadline. |
-| Impact | Scheduled Tasks require `task:read`, `task:write` (plus `workflow:execute`), and `task:delete`; Agent definitions require `agent:write`; record rules require `object:read` and `object:policy` for listing and `object:write` and `object:policy` for creation and deletion. `bulkDelete` requires `object:delete`, but the presence of the SDK does not necessarily mean it can also be used with the direct public API. Scopes for Scheduled Tasks, Agent definitions, and record rules cannot be declared in an App release manifest. The key creator must also have the corresponding permissions. |
-| Migration destination/action | Check only the scopes required for the paths and operations you use. The public API for record rules is available in current production. However, availability of `DELETE /api/v1/objects/:objectId/records/bulk` for the `bulkDelete` public API could not be confirmed in production as of 2026-11-11 (it is implemented in a version under development). Do not present it as being for direct Project API keys; check the PRS browser path or support in your environment. For issuance and management, see [Manage Project API Keys](../operations/manage-project-api-keys.md). |
+| Impact | Scheduled Tasks require `task:read`, `task:write` (plus `workflow:execute`), and `task:delete`; Agent definitions require `agent:write`; record rules require `object:read` and `object:policy` for listing and `object:write` and `object:policy` for creation and deletion. `bulkDelete` requires `object:delete`. Scopes for Scheduled Tasks, Agent definitions, and record rules cannot be declared in an App release manifest. The key creator must also have the corresponding permissions. |
+| Migration destination/action | Grant the key only the scopes required for the operations you use. Record rules and bulk delete (`DELETE /api/v1/objects/:objectId/records/bulk`, available in production since 2026-11-13) can be used through the public API with a Project API key. Bulk delete accepts up to 1,000 records and either succeeds for all or fails for all. For issuance and management, see [Manage Project API Keys](../operations/manage-project-api-keys.md). |
 
 ### Dependencies of new features on connection destinations and the Page runtime (SDK 0.3.0–0.11.0)
 
-Page session logout in 0.3.0; Canvas reads and Workflow creation/editing in 0.4.0; answer candidate comparison in browsers within Pages from 0.5.0; Storage file attachment and Canvas writing in 0.6.0; usage checking and App settings in 0.7.0; Dataset search in 0.8.0; answer comparison extensions in 0.10.0; and per-candidate effort specification in 0.11.0 are not necessarily available just because the SDK has been installed. Datasets have an authentication difference: use the `project` scope with a Project API key, and use the `organization` scope with a signed-in user in the PRS browser. Comparison depends on the PRS browser path, organization settings, and user permissions. If a supported public API or Page runtime is not available, you may receive a 404 or rejection, or the feature may not be available.
+Page session logout in 0.3.0; Canvas reads and Workflow creation/editing in 0.4.0; answer candidate comparison in browsers within Pages from 0.5.0; Storage file attachment and Canvas writing in 0.6.0; usage checking and App settings in 0.7.0; Dataset search in 0.8.0; answer comparison extensions in 0.10.0; and per-candidate effort specification in 0.11.0 are not necessarily available just because the SDK has been installed. Datasets have an authentication difference: use the `project` scope with a Project API key, and use the `organization` scope with a user signed in through the Page browser. Comparison depends on use from the Page browser, organization settings, and user permissions. If a supported public API or Page runtime is not available, you may receive a 404 or rejection, or the feature may not be available.
 
 This is not a feature “deprecation deadline”; it is a compatibility note when adopting only a new SDK ahead of other components. Validate the methods you use, target Pages, and displays on failure in supported connection destinations and execution environments. For details, see [SDK and API Version Migration](../development/sdk-api-version-migration.md).
-
-## Studio UI deprecations and migrations (awaiting additions)
-
-There are no confirmed entries about Studio screen deprecations, end dates, or migration destinations that can be included in this article. Documentation owners add the deadline, impact, migration destination, and inquiry contact in the format above only after confirming primary sources. Do not infer operations that are not shown on the screen or announce unsupported end dates.
 
 ## When announcing the end of execution support for an App revision
 
 The end of execution support for an old App revision is an operation separate from updating the SDK version. After support ends, you can still view the history of old rooms, but you cannot run new messages with that old revision. Even if you start a new room with the successor current version, do not assume that the conversation content of the old room is carried over automatically.
 
-In a notice to users, clearly state the target App, target business process, old revision being discontinued, that it can no longer run, the migration destination of the successor version or a new room, any required reconfiguration, and the inquiry contact. Because scheduled end reservations and automatic notification mechanisms could not be confirmed, do not manage the announcement period only through screen operations.
+In a notice to users, clearly state the target App, target business process, old revision being discontinued, that it can no longer run, the migration destination of the successor version or a new room, any required reconfiguration, and the inquiry contact. Manage the announcement period separately through notices to users.
 
 ## Common misunderstandings
 
@@ -157,7 +162,7 @@ In a notice to users, clearly state the target App, target business process, old
 - **The SDK was updated, so the connection destination is also supported**: Check the SDK, public API, and Page runtime separately. Unsupported paths may not be usable.
 - **A 404 means the target resource was deleted**: For private room retrieval since 0.4.0, a 404 can also result from access restrictions for someone other than the owner. Check the target and execution principal.
 
-## If you cannot confirm it
+## If the issue is not resolved
 
 Collect the target organization, Project, Page, or App; SDK/CLI/Node.js versions; connection destination; results before and after the change; occurrence date and time; commands or methods executed; displayed messages and HTTP status; and what has already been checked. Do not include API keys, cookies, authentication headers, Secret values, tokens, or confidential customer data. For gradual SDK and API updates, see [SDK and API Version Migration](../development/sdk-api-version-migration.md).
 

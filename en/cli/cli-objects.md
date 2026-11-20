@@ -10,7 +10,9 @@
 
 ## Before you begin
 
-This article covers the SDK **0.11.0** CLI. Use Node.js 22 or later. Connection information is resolved in the following order: flags, environment variables, then the selected profile.
+This article covers the SDK **0.11.0** CLI. Use Node.js 22 or later. Connection information is resolved in a fixed order: flags > environment variables > the selected profile.
+
+For `<objectId>`, specify the **Object ID (UUID)**. Passing an Object name such as `contacts` returns 400. Get the ID from the `objects list` result.
 
 ```text
 jai-studio --profile <name> objects list --limit 50 --pretty
@@ -18,19 +20,19 @@ jai-studio --profile <name> objects list --limit 50 --pretty
 
 Notation containing `<...>` below is **syntax that requires substitution**. Do not paste it into the shell with the angle brackets; replace it with an actual value.
 
-The common flags are `--profile <name>`, `--env <env>`, `--key <key>`, `--pretty`, and `--debug`. For `--env`, you can specify `production` or an HTTP/HTTPS URL. `--pretty` formats JSON, and `--debug` displays detailed responses in error output. There is no `--json` flag; successful output is JSON.
+The common flags are `--profile <name>`, `--env <env>`, `--key <key>`, `--pretty`, and `--debug`. For `--env`, you can specify `production` or an HTTP/HTTPS URL. `--pretty` formats JSON, and `--debug` displays detailed responses in error output. There is no `--json` flag; successful output is JSON. API failures write JSON to standard error; usage errors write plain text.
 
 > A Project API key is secret information. Do not leave an actual `--key` value in shell history, CI logs, or shared records.
 
 ## 1. Work with Object definitions
 
-| Command | Positional arguments | Flags (required/default) | Description |
-|---|---|---|---|
-| `list` | None | `--cursor <cursor>`, `--limit <n>` (optional) | Retrieves a page of Objects. |
-| `get` | `<objectId>` (required) | None | Retrieves one definition. |
-| `create` | None | `--name <name>` (required), `--display-name <name>`, `--description <desc>` | Creates an Object. |
-| `update` | `<objectId>` (required) | `--name <name>`, `--display-name <name>`, `--description <desc>` (all optional) | Updates the specified definition fields. |
-| `delete` | `<objectId>` (required) | None | Deletes an Object. |
+| Command | Positional arguments | Flags (required/default) | Required scope | Description |
+|---|---|---|---|---|
+| `list` | None | `--cursor <cursor>`, `--limit <n>` (optional) | `object:read` | Retrieves a page of Objects. |
+| `get` | `<objectId>` (required) | None | `object:read` | Retrieves one definition. |
+| `create` | None | `--name <name>` (required), `--display-name <name>`, `--description <desc>` | `object:write` | Creates an Object. |
+| `update` | `<objectId>` (required) | `--name <name>`, `--display-name <name>`, `--description <desc>` (all optional) | `object:write` | Updates the specified definition fields. |
+| `delete` | `<objectId>` (required) | None | `object:delete` | Deletes an Object. |
 
 ```text
 jai-studio objects list [--cursor <cursor>] [--limit <n>]
@@ -42,19 +44,19 @@ jai-studio objects delete <objectId>
 
 ```bash
 jai-studio objects create --name contacts --display-name 'Customer contacts'
-jai-studio objects update object-id --description 'Sales contacts'
+jai-studio objects update <objectId> --description 'Sales contacts'
 ```
 
 `--limit` is parsed as a safe integer. Check `cursor` and `hasNextPage` in the result, and pass the returned cursor to retrieve the next page. Before deletion, check the impact in [Object Specifications and Limits](../build/object-specs-and-limits.md).
 
 ## 2. Work with field definitions
 
-| Command | Positional arguments | Flags (required/default) | Description |
-|---|---|---|---|
-| `fields list` | `<objectId>` (required) | None | Retrieves a field list. |
-| `fields create` | `<objectId>` (required) | `--data <json>` (required) | Creates a field from JSON. |
-| `fields update` | `<objectId> <fieldId>` (required) | `--data <json>` (required) | Updates the specified fields from JSON. |
-| `fields delete` | `<objectId> <fieldId>` (required) | None | Deletes a field. |
+| Command | Positional arguments | Flags (required/default) | Required scope | Description |
+|---|---|---|---|---|
+| `fields list` | `<objectId>` (required) | None | `object:read` | Retrieves a field list. |
+| `fields create` | `<objectId>` (required) | `--data <json>` (required) | `object:write` | Creates a field from JSON. |
+| `fields update` | `<objectId> <fieldId>` (required) | `--data <json>` (required) | `object:write` | Updates the specified fields from JSON. |
+| `fields delete` | `<objectId> <fieldId>` (required) | None | `object:delete` | Deletes a field. |
 
 ```text
 jai-studio objects fields list <objectId>
@@ -66,20 +68,22 @@ jai-studio objects fields delete <objectId> <fieldId>
 The JSON for `fields create` requires `fieldName`, `displayName`, `dataType`, and `fieldNum`. Quote the outside of the JSON for the shell, and use double quotes for internal keys and strings.
 
 ```bash
-jai-studio objects fields create object-id --data '{"fieldName":"email","displayName":"Email","dataType":"email","fieldNum":1}'
+jai-studio objects fields create <objectId> --data '{"fieldName":"email","displayName":"Email","dataType":"text","fieldNum":1}'
 ```
+
+The `email` `dataType` is merely an alias for `text`.
 
 > Check the consistency of field types and constraints with existing values. Before deletion, see [Object Specifications and Limits](../build/object-specs-and-limits.md).
 
 ## 3. Create, retrieve, update, and delete records
 
-| Command | Positional arguments | Flags (required/default) | Description |
-|---|---|---|---|
-| `records list` | `<objectId>` (required) | `--cursor <cursor>`, `--limit <n>` (optional) | Retrieves a page of records. |
-| `records get` | `<objectId> <recordId>` (required) | None | Retrieves one record. |
-| `records create` | `<objectId>` (required) | `--data <json>` (required) | Creates a JSON record. |
-| `records update` | `<objectId> <recordId>` (required) | `--data <json>` (required) | Replaces all record data. |
-| `records delete` | `<objectId> <recordId>` (required) | None | Deletes a record. |
+| Command | Positional arguments | Flags (required/default) | Required scope | Description |
+|---|---|---|---|---|
+| `records list` | `<objectId>` (required) | `--cursor <cursor>`, `--limit <n>` (optional) | `object:read` | Retrieves a page of records. |
+| `records get` | `<objectId> <recordId>` (required) | None | `object:read` | Retrieves one record. |
+| `records create` | `<objectId>` (required) | `--data <json>` (required) | `object:write` | Creates a JSON record. |
+| `records update` | `<objectId> <recordId>` (required) | `--data <json>` (required) | `object:write` | Replaces all record data. |
+| `records delete` | `<objectId> <recordId>` (required) | None | `object:delete` | Deletes a record. |
 
 ```text
 jai-studio objects records list <objectId> [--cursor <cursor>] [--limit <n>]
@@ -90,26 +94,40 @@ jai-studio objects records delete <objectId> <recordId>
 ```
 
 ```bash
-jai-studio objects records create object-id --data '{"name":"Hanako Yamada","email":"hanako@example.example"}'
-jai-studio objects records update object-id record-id --data '{"name":"Hanako Yamada","email":"hanako@example.example","company":"JAPAN AI"}'
+jai-studio objects records create <objectId> --data '{"name":"Hanako Yamada","email":"hanako@example.example"}'
+jai-studio objects records update <objectId> <recordId> --data '{"name":"Hanako Yamada","email":"hanako@example.example","company":"JAPAN AI"}'
 ```
 
 `update` is not a partial update; it is a full replacement. Pass complete JSON that includes regular fields you want to retain. `--data` is interpreted as JSON, and the service determines whether it is consistent with the definition.
 
 ## 4. Specify search, sort order, and pagination
 
-| Command | Positional arguments | Flags (required/default) | Description |
-|---|---|---|---|
-| `records search` | `<objectId>` (required) | `--filter <filter>`, `--sort <sort>`, `--cursor <cursor>`, `--limit <n>` (all optional) | Searches with conditions, sort order, and a cursor. |
+| Command | Positional arguments | Flags (required/default) | Required scope | Description |
+|---|---|---|---|---|
+| `records search` | `<objectId>` (required) | `--filter <filter>`, `--sort <sort>`, `--cursor <cursor>`, `--limit <n>` (all optional) | `object:read` | Searches with conditions, sort order, and a cursor. |
 
 ```text
 jai-studio objects records search <objectId> [--filter <field:operator:value>] [--sort <field:direction>] [--cursor <cursor>] [--limit <n>]
 ```
 
-`--filter` is not JSON; it uses the `field:operator:value` format and can be repeated. Even when a value includes colons, the second and later colons are part of the value. Only `isnull`, `isnotnull`, and `exists` can omit a value. Operators are `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `contains`, `startswith`, `endswith`, `in`, `notin`, `isnull`, `isnotnull`, `exists`, `regex`, `between`, and `jsoncontains`. `--sort` uses the `field:direction` format and can be repeated; directions are `asc`, `desc`, `ascending`, and `descending`. You can omit the direction.
+`--filter` is not JSON; it uses the `field:operator:value` format and can be repeated. Even when a value includes colons, the second and later colons are part of the value.
+
+> **The CLI `--filter` sends every value as a string and performs no type conversion.** As a result, only some combinations work.
+
+| Condition | CLI `--filter` |
+|---|---|
+| Comparing a text field with a string value (`eq`, `ne`, `contains`, `startswith`, `endswith`, etc.) | Works. |
+| `isnull` and `isnotnull`, which take no value | Work (omit the value). |
+| Comparisons against number or boolean fields (`eq`, `gt`, `gte`, `lt`, `lte`, etc.) | Fail, because the value is sent as a string. |
+| `in`, `notin`, `between`, `jsoncontains` | Always fail. |
+| `exists` without a value | Rejected. |
+
+For typed filtering with numbers, booleans, arrays, or JSON, pass correctly typed values with `search()` in [SDK Objects](../development/sdk-objects.md), or use search in the [Objects API](../api/objects-api.md).
+
+`--sort` uses the `field:direction` format and can be repeated; directions are `asc`, `desc`, `ascending`, and `descending`. You can omit the direction.
 
 ```bash
-jai-studio objects records search object-id --filter 'company:contains:AI' --filter 'email:isnotnull' --sort 'name:asc' --limit 50
+jai-studio objects records search <objectId> --filter 'company:contains:AI' --filter 'email:isnotnull' --sort 'name:asc' --limit 50
 ```
 
 > When retrieving the next page of a list or search, keep the same conditions and sort order, and pass the preceding response's `cursor`. The CLI does not define `--offset` or `--include-deleted`.
@@ -124,7 +142,13 @@ jai-studio objects rules create <objectId> --file ./rule.json
 jai-studio objects rules delete <objectId> <ruleGroupId>
 ```
 
-Pass rule JSON to `--file` for `create`. List existing rules first, and check priority and the access impact of deletion. Record the `code` and `params` displayed on failure. If a partial change may have occurred, do not rerun by guesswork; retrieve the list again. The CLI has no flags for `bulkDelete`, `includeCount`, or comparison updates. For bulk deletion, omitting count aggregation, or concurrency protection using `revision`, use the SDK in [SDK Objects](../development/sdk-objects.md).
+| Command | Required scope |
+|---|---|
+| `rules list` | `object:read`, `object:policy` |
+| `rules create` | `object:write`, `object:policy` |
+| `rules delete` | `object:write`, `object:policy` |
+
+Pass rule JSON to `--file` for `create`. List existing rules first, and check priority and the access impact of deletion. Record the `code` and `params` displayed on failure. If a partial change may have occurred, do not rerun by guesswork; retrieve the list again. The CLI has no flags for `bulkDelete`, `includeCount`, or comparison updates. For bulk deletion, omitting count aggregation, or concurrency protection using `revision`, use the SDK in [SDK Objects](../development/sdk-objects.md) or bulk delete (`DELETE …/records/bulk`) in the [Objects API](../api/objects-api.md).
 
 ## Handling revisions and conflicts
 
@@ -136,7 +160,8 @@ SDK record responses may include `revision`, and the SDK lets you specify `expec
 |---|---|
 | It cannot be read as JSON | Check shell quotes, double quotes, and commas. |
 | Required key error when creating a field | Check the four required keys and `fieldNum`. |
-| Invalid search condition | Check `field:operator:value`, the operator, and sort order. |
+| Invalid search condition, or a number/boolean condition fails | Check `field:operator:value`, the operator, and sort order. The CLI sends values as strings, so use the SDK or API for typed conditions. |
+| `<objectId>` returns 400 | Specify the Object ID (UUID) from `objects list`, not the Object name. |
 | Values disappeared after an update | Check whether you passed the complete record, then retrieve the latest value. |
 | You need error details | Use `--debug` only in a test environment, and do not record keys. |
 

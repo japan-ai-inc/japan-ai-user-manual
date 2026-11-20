@@ -14,7 +14,8 @@ Studio SDKの`members`モジュールでは、認証済みのProjectに属する
 ## 始める前に
 
 - `@japan-ai-inc/studio-sdk` **0.11.0**とNode.js **22以降**を使います。
-- この機能はローカルの直接開発、またはPRSサーバーランタイム向けです。ブラウザへAPIキーを渡しません。
+- この機能はローカルの直接開発、またはPage実行環境のサーバー処理向けです。ブラウザへAPIキーを渡しません。
+- StudioでホストされたPageのブラウザからの呼出しは、Page実行環境が中継するため技術的には可能ですが、現時点ではベータのサポート範囲外です（予告なく変更される可能性があります）。
 - 対象の組織・Project・実行モードを確認します。
 - Project APIキーにはメンバー読み取り用の`member:read`スコープが必要です。
 
@@ -105,8 +106,8 @@ jai-studio members list --cursor '<next-cursor>'
 |---|---|
 | `403`でスコープ不足と表示される | 対象Projectのキーに`member:read`があるか確認します。 |
 | `403`で利用できない、または権限不足になる | 組織での提供、対象Project、呼出し元の権限を確認します。 |
-| APIキーが無効と表示される | キーの失効・削除・対象Projectを確認します。 |
-| `400`で取得できない | `limit`、検索語、`cursor`を確認します。 |
+| `403`で`Invalid API key`または`API key has expired`と表示される | キーの失効・削除・有効期限・対象Projectを確認します。 |
+| `400`で取得できない | `limit`と検索語を確認します。無効な`cursor`を渡しても`400`にはならないため、`cursor`はSDKが返した値だけを渡します。 |
 | タイムアウトまたは通信エラーになる | `MembersApiError`の`statusCode`、`message`、実行モードを記録します。 |
 
 SDKはHTTPの非成功応答を`MembersApiError`として返します。この型は`SdkApiError`を継承し、`statusCode`と`responseBody`を持ちます。`responseBody`は無加工で出力しません。既定タイムアウトは**30秒**で、`timeoutMs`、`AbortSignal`を指定できます。詳細は[API／SDK共通のエラー・タイムアウト・制限](api-sdk-errors-timeouts-limits.md)を参照してください。

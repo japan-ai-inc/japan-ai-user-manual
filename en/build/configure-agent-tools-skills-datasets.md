@@ -33,6 +33,10 @@ For example, for an Agent that "creates response drafts based on internal FAQs,"
 
 This is an example of how to consider a configuration; it does not mean that a particular FAQ Skill or connection is provided to every organization.
 
+{% hint style="warning" %}
+**The Object SQL tool is always given.** Every Agent in a Studio Project is automatically given an Object SQL tool that can run SELECT/INSERT/UPDATE/DELETE/DDL on Objects, and it cannot be removed from the plugin field. If you do not want an Agent to change Objects, do not rely on instructions; instead restrict that Agent's permission to "Read" or similar in the Object's "Access settings" ([Design Object Structure](design-object-structure.md)).
+{% endhint %}
+
 **Writing a capability name in instructions alone does not complete tool configuration or authentication.** Also, do not assume that adding a plugin guarantees it will execute in every conversation. State the required operations and reference information in the instructions too, and check the results.
 
 ## 2. Open settings for the target Agent
@@ -113,9 +117,9 @@ Plugins that use external services may display **"Authentication Required."** Ad
 5. Return to Agent settings and check the authentication display and saved content.
 6. Use authorized test data to verify actual behavior, such as reading data.
 
-An on-screen authenticated display alone does not confirm that you can read target files or records or perform required updates. You must verify expiry, permissions at the connection destination, and access to target data through actual operations.
+An on-screen authenticated display does not mean that you can read target files or records or perform required updates. You must verify expiry, permissions at the connection destination, and access to target data through actual operations.
 
-Whether to use a personal connection or shared connection, and whether each user needs individual authentication, depends on the connection method. Do not state that everyone can use the creator's connection.
+Agents in a Project look for credentials in this order: **the running user's personal connection → the Project's shared connection → the organization-wide connection**. Users without a personal connection run on the shared or organization-wide connection, so check in advance whose account permissions will be used. Also, when you register an MCP server with OAuth or Bearer authentication in a Project, the registering user's credentials become the shared credentials for everyone in the Project. Register it with a dedicated least-privilege account.
 
 Do not paste API keys, passwords, or Secret values into Agent instructions or Skill text. [Choose Between Personal Connections, Shared Connections, and Secrets](../operations/choose-personal-shared-connections-and-secrets.md) covers credential management.
 
@@ -142,13 +146,15 @@ What you select here is reference information configured for the Agent. Treat it
 - Whether users may be permitted to reference the materials.
 - Whether you have selected old versions or similar materials redundantly.
 
-Selecting a Dataset does not complete ingestion of original materials or newly grant reference permissions. Even if a new-creation button appears, whether you can create one depends on permissions and other conditions. For material preparation and ingestion, see [Prepare a Dataset and Make an Agent Reference It](prepare-and-reference-datasets.md).
+When you set a private Dataset on an Agent that others also use, a warning is displayed that other users may be able to view the dataset contents. Agent users can receive the Dataset's content in answers through the Agent, so check whether the material may be shown to everyone within the Agent's sharing scope.
+
+Selecting a Dataset does not complete ingestion of original materials. Even if a new-creation button appears, whether you can create one depends on permissions and other conditions. For material preparation and ingestion, see [Prepare a Dataset and Make an Agent Reference It](prepare-and-reference-datasets.md).
 
 ### Separate this from use cases that must read all text without omissions
 
 Configuring a Dataset does not mean that the full text of all materials is used in every response. Design separately for searching relevant information to answer and for comprehensive checking, such as "check every clause in a contract without omissions."
 
-For comprehensive processing, you need a separate procedure to specify target files and verify the scope whose content was retrieved and checked. Even with attachments, do not conclude that the full text was checked merely because a file was attached.
+For comprehensive processing, you need a separate procedure to specify target files and verify the scope that was actually retrieved. Even with attachments, do not conclude that the full text was checked merely because a file was attached.
 
 ## 7. Refine instructions and verify with small inputs
 
@@ -158,7 +164,7 @@ Write in the instructions when and how to use configured capabilities and materi
 
 > Reference the target FAQ materials and create a response draft for the user's question.
 > - Do not fill in content without evidence in the materials by guessing; state that it is unconfirmed.
-> - Separate output into "Response draft," "Confirmed evidence," and "Additional items to confirm."
+> - Separate output into "Response draft," "Evidence," and "Additional items to confirm."
 > - Do not claim to have read materials you cannot reference.
 > - In this test, do not send externally or update business data.
 
@@ -185,7 +191,7 @@ Do not treat an AI response such as "I referenced it" or "I executed it" as comp
 
 Use the removal icon on the target card in the Plugins field, or "Remove" for the target in the add screen. After saving, confirm that the target was removed.
 
-This operation **removes configuration from the Agent**. It does not delete the Skill itself, disconnect an external service, or undo already executed processing.
+This operation **removes configuration from the Agent**. It does not delete the Skill itself, disconnect an external service, or undo already executed processing. The automatically given Object SQL tool cannot be removed.
 
 ### Remove a Dataset
 

@@ -12,7 +12,7 @@ This article covers creating files and folders, uploading, searching, previewing
 
 A Storage trigger uses changes in Storage, but it is a Workflow configuration feature. This article only summarizes changes that can trigger it and filter conditions. For setup, publishing, and test procedures, see [Configure Workflow triggers](configure-workflow-triggers.md).
 
-Files managed by Apps, APIs, operations within Hosted Pages, and organization- or Project-specific permissions and storage capacity are out of scope. Displayed operations and available capacity vary by permissions, feature settings, and contract details.
+Files managed by Apps, APIs, operations within Hosted Pages, and organization- or Project-specific permissions are out of scope. Displayed operations vary by permissions and feature settings.
 
 ## Standard feature specifications
 
@@ -20,7 +20,7 @@ Files managed by Apps, APIs, operations within Hosted Pages, and organization- o
 |---|---|---|
 | Storage unit | Manage files and folders within a Project. Open a folder, then select "Create Folder" or "Upload File" at the current location. | The list displays items such as "File Name," "Uploaded By," "Modified," and "File Size." |
 | Upload | You can select and upload multiple files. Some screens also let you upload files by dropping them. | After selecting files, select "Start Upload." Do not use the dialog closing as confirmation; check the "Pending," "Uploading," "Completed," or "Failed" status or the list. |
-| Accepted formats | Default allowed formats include images, videos, audio, text, PDF, Word, Excel, PowerPoint, JSON, XML, and ZIP, RAR, 7z, TAR, and GZIP archives. | Allowed formats can be changed in environment settings. A format not listed here is not necessarily always rejected, and an extension listed here is not necessarily always accepted. Do not bypass this by changing only the extension. |
+| Accepted formats | Default allowed formats include images, videos, audio, text, PDF, Word, Excel, PowerPoint, JSON, XML, and ZIP, RAR, 7z, TAR, and GZIP archives. | Allowed formats can be changed in environment settings. The extension blocklist is checked against each dot-separated part of the name, so a name such as `app.config.json` that contains a blocked extension in the middle is also rejected. Do not bypass this by changing only the extension. |
 | Search | Use "Search by file name" to filter the list in the currently open location. | No search results do not necessarily mean the item does not exist anywhere in the Project. Check the current folder and search term. |
 | Preview | "Preview" is available for supported image, PDF, and text formats. For unsupported formats, "This file type is not supported for preview" is displayed; download the file to check it. | Use a PDF preview to check the first page and a text preview to check part of the content. Whether a file can be previewed is separate from whether it can be uploaded. |
 | Download | You can download individual files. You can use "Download as ZIP" for a folder or multiple selected items. | You cannot create a ZIP for an empty folder. After downloading, check the contents and scope. |
@@ -29,23 +29,23 @@ Files managed by Apps, APIs, operations within Hosted Pages, and organization- o
 | Renaming | You can use "Rename" for files and folders. For files, change the name portion while retaining the extension. | If the same name exists, you must resolve the conflict. After changing the name or path, check Agents, Workflows, and Pages that reference it. |
 | Moving | You can "Move" files and folders. If an item with the same name exists at the destination, select Replace or Keep Both. | You cannot select the same location as the destination. When operating on multiple items, only some may fail. |
 | Deleting | You can "Delete" files. Deleting a folder also targets its files and folders. | The standard screen states, "This action cannot be undone," and does not provide a restore operation. Check child items and references before deleting. |
-| Items created by others in the organization drive | In the organization drive, when a non-administrator attempts to delete a completed file created by another user, the screen prevents deletion. Server-side permission checks are also performed for each item when deleting folders. | Bulk deletion returns success or failure for each item, and items without permission may show "Permission denied." This article does not make a definitive statement about detailed permission conditions by creator or administrator for folders. |
+| Items created by others in the organization drive | In the organization drive, when a non-administrator attempts to delete a completed file created by another user, the screen prevents deletion. Server-side permission checks are also performed for each item when deleting folders. | Bulk deletion returns success or failure for each item, and items without permission show "Permission denied." |
 | App-managed files | App-managed seed files displayed as "Installed app" are read-only. | They cannot be renamed, moved, or deleted through the standard operations. If a change is required, ask the responsible person about updating or uninstalling the App. |
 
 ## Limits and limit values
 
-The following are only values confirmed in the implementation at the specified time. Storage capacity assigned to an organization or Project varies by contract and settings, so it is not listed as a fixed value.
 
 | Item | Specification | Notes |
 |---|---|---|
-| Maximum size per file | The default is **2GB**. | It can be changed in environment settings. Whether you can actually upload also depends on this value, the remaining storage capacity configured for the organization, and permissions. |
-| Name length | File and folder names must be **1–255 characters**, excluding leading and trailing spaces. | Spaces only, `/`, control characters, `.`, `..`, and reserved names cannot be used. Names are handled with leading and trailing spaces excluded. |
+| Maximum size per file | The default is **2GB**. | It can be changed in environment settings. Whether you can actually upload also depends on this value, the remaining storage capacity of the Project, and permissions. |
+| Name length | File and folder names must be **1–255 characters**, excluding leading and trailing spaces. | Spaces only, `/`, control characters, `.`, `..`, and Windows reserved names (`CON`, `NUL`, and so on) cannot be used. Names are handled with leading and trailing spaces excluded. |
+| Folder hierarchy | Up to **10 levels**. | You cannot create folders deeper than this. |
+| Path length | Up to **1,000 characters**. | The length of the entire path, including folder and file names. |
 | Maximum size for preview | Up to **10MB**. | This is a preview generation limit, not an upload limit. Download files larger than 10MB to check them. |
-| Text preview | Up to **100 lines** and **10,000 characters**. | This is the displayed range in previews of supported text formats. Download the file to check all content. |
+| Text preview | Up to **10,000 characters** (no line limit). | This is the displayed range in previews of supported text formats. Download the file to check all content. |
 | ZIP download for folders or multiple selections | The default total is up to **100MB**. | This applies to the total size of files under the folder or in the selection. It can be changed in environment settings. Empty folders cannot be downloaded. |
 | Bulk deletion | Up to **100 items** per operation. | This is the combined number of selected files and folders. The result may be partial success and partial failure. |
-
-File storage capacity and data storage capacity are determined by the organization-specific setting and current usage. Because a uniform capacity value could not be confirmed, check the displayed limit and remaining capacity.
+| Storage capacity | Determined **per Project**; the default is **10,240MB**. | It may differ from the default depending on settings. Check the displayed limit and remaining capacity. |
 
 MIME types supported for preview are JPEG, PNG, WebP, GIF, SVG, PDF, TXT, JSON, Markdown, CSV, and XML. Images and PDFs are checked as display images, and text is checked as text. Office documents, videos, audio, archives, and similar files are not preview targets even if they are normally uploadable.
 
@@ -79,23 +79,23 @@ With "Keep Both," a number is added to the new file or item. Agents or Workflows
 
 ### References automatically follow renames and moves
 
-The Storage screen does not confirm that all references are automatically updated. Check the referencing Agents, Workflows, Pages, and usage procedures, then test both user operations and automatic execution after the change.
+Assume that references are not updated automatically after renaming or moving. Check the referencing Agents, Workflows, Pages, and usage procedures, then test both user operations and automatic execution after the change.
 
 ### You can quickly restore deleted items from the trash
 
 The standard screen has no restore operation. The deletion confirmation also states that the action cannot be undone. Until you are certain that an item is unnecessary, consider moving or storing it rather than deleting it.
 
-## If you cannot confirm it
+## If something does not work
 
 If you cannot upload, an operation is not displayed, storage capacity is insufficient, or a preview or ZIP download fails, check the following in order.
 
-1. Check the target Project, current folder, file name, and file size.
+1. Check the target Project, current folder, file name, and file size. Also check that the name contains no blocked extension (checked for each dot-separated part) or Windows reserved name, and check the hierarchy depth (up to 10 levels) and path length (up to 1,000 characters).
 2. Check the list statuses "Pending," "Uploading," "Completed," and "Failed," along with the displayed error.
 3. If you cannot determine whether to choose "Replace" or "Keep Both," check the existing file's modified date, size, and purpose, then consult the person responsible for updates.
 4. Before and after renaming, moving, or deleting, check that the referencing Agent, Workflow, and Page can actually use it.
 5. If the issue is not resolved, contact an administrator or responsible person with the Project name, folder, file name, operation date and time, operation performed, and screen display or error. Do not share confidential information or temporary download URLs beyond the necessary scope.
 
-For storage capacity, permissions, and allowed formats that depend on contracts or settings, treat information displayed on screen and guidance from administrators as authoritative. Do not infer fixed values.
+Storage capacity (per Project, default 10,240MB), permissions, and allowed formats can change with settings, so treat information displayed on screen and guidance from administrators as authoritative.
 
 ## Next articles to read
 

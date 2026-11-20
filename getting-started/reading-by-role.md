@@ -36,7 +36,7 @@ AppやProjectを使う人は、構築方法やAPI仕様を先に学ぶ必要は�
 Agent・Workflow・データ・Pageなどを組み合わせる人は、機能ごとの操作より先に、作る目的と最小構成を決めます。
 
 1. [目的から機能を選ぶ](choose-features-by-goal.md)で、入力・出力と必要な機能を整理します。
-2. 新しい作業場所が必要なら、[Projectを作成して基本設定する](../build/create-project-and-basic-settings.md)へ進みます。既存Projectを変更する場合は、変更対象と影響範囲を先に確認します。
+2. 新しい作業場所が必要なら、[Projectを作成して基本設定する](../build/create-project-and-basic-settings.md)へ進みます。既存Projectを変更する場合は、変更対象と影響範囲を先に確認します。コードを書かずに構築する場合は、[Studio Assistantに構築を依頼する](../build/build-with-studio-assistant.md)を読みます（組織で機能が有効で、Projectの編集者以上の権限が必要です）。
 3. 選んだ機能の構築記事へ進みます。例えばAgentなら[Agentを作成して指示・モデルを設定する](../build/create-agent-instructions-and-models.md)、Workflowなら[Workflowのノードを構成する](../build/configure-workflow-nodes.md)です。
 4. 利用者に渡す前にテストします。Agentは[Agentをテストして改善する](../build/test-and-improve-agents.md)、Workflowは[Workflowの下書きをテストする](../build/test-workflow-drafts.md)を参照します。
 
@@ -66,7 +66,7 @@ Pageのコード、SDK、CLI、APIを扱う人は、メソッド一覧から読�
 
 コードを書く担当者と、APIキー・権限・接続を管理する担当者が異なる場合は、必要な設定を管理担当者と確認します。開発者向け記事を読めることと、対象データや設定への操作権限を持つことは別です。
 
-## 配布担当者：作ったAppを届ける
+## 配布する人：作ったAppを届ける
 
 作成済みの構成をAppとして届ける人は、[ProjectからAppへの配布設計](../distribution/design-app-distribution-from-project.md)から始めます。その後、[配布対象・依存・認証設定の制約](../distribution/distribution-scope-dependencies-auth.md)で、何を配布し、導入先で何を設定するかを確認します。
 

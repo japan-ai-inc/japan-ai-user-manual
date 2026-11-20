@@ -9,9 +9,9 @@ When developing with `@japan-ai-inc/studio-sdk`, pin the combination of SDK, Nod
 
 ## Before you begin
 
-The target package is `@japan-ai-inc/studio-sdk`. It includes the SDK and CLI. The version to check is **0.11.0**.
+The target package is `@japan-ai-inc/studio-sdk`. It includes the SDK and CLI. This manual is based on **0.11.0**.
 
-The Node SDK and CLI require **Node.js 22 or later**. Node.js 20 or earlier, and configurations that pass API keys directly to browsers, are out of scope. Browser SDK use is limited to Pages that run within PRS (Pages Rendering Service). In local development and explicitly managed development automation, handle Project API keys on the Node.js side.
+The Node SDK and CLI require **Node.js 22 or later**. Node.js 20 or earlier, and configurations that pass API keys directly to browsers, are out of scope. Browser SDK use is limited to Studio-hosted Pages (Pages that run in the Page runtime). In local development and explicitly managed development automation, handle Project API keys on the Node.js side.
 
 > Project API keys are confidential information. Do not place them in browser JavaScript, environment variables exposed to the browser, logs, or source control. For key issuance, storage, and revocation, see [Manage Project API Keys](../operations/manage-project-api-keys.md).
 
@@ -28,7 +28,7 @@ Confirm that `node --version` returns `v22` or later. Do not use different Node.
 
 ### Align versions
 
-Confirm SDK 0.11.0 in the package definition and `SDK_VERSION`. Align dependencies, lockfiles, and CI to the same version.
+Check the installed SDK version in the package definition and `SDK_VERSION`. Align dependencies, lockfiles, and CI to the same version.
 
 | Item to check | What to check |
 |---|---|
@@ -57,7 +57,7 @@ const studio = createClient({
 });
 ```
 
-This example is for Node.js-side configuration. Do not return the value to a screen. For authentication and initialization of a PRS Page running in a browser, see [Execution Modes, Authentication, and Supported Scope](execution-modes-and-auth.md).
+This example is for Node.js-side configuration. Do not return the value to a screen. For authentication and initialization of a Studio-hosted Page running in a browser, see [Execution Modes, Authentication, and Supported Scope](execution-modes-and-auth.md).
 
 ## 1. Install the SDK
 
@@ -111,8 +111,8 @@ Whether you can use the SDK is not determined by npm installation alone. Check t
 | Usage location | Required prerequisites |
 |---|---|
 | Local Node.js | Node.js 22 or later and a developer-managed Project API key. This does not support arbitrary external production hosting. |
-| PRS browser | A PRS session. Do not configure or reference a Project API key. |
-| PRS server | Node.js 22 or later and PRS-managed server-side settings. Do not return keys to the browser. |
+| Page runtime (browser) | A Page runtime session. Do not configure or reference a Project API key. |
+| Page runtime (server) | Node.js 22 or later and environment variables the developer defines in the root `.env` (a Project API key is not injected automatically). Do not return keys to the browser. |
 
 > Updating the SDK does not automatically align functionality at the destination. Check prerequisites in the CHANGELOG and verify representative operations.
 
@@ -130,7 +130,7 @@ An SDK in the 0.x series can include breaking changes in a minor update (for exa
 
 ## Make update decisions with the CHANGELOG
 
-The SDK version published to npm and functionality available in your environment (public API and PRS) are not necessarily available at the same time. A method in a newer version may not yet be available in the environment. Before updating, check whether the feature you use is available.
+The SDK version published to npm and functionality available in your environment (public API and the Page runtime) are not necessarily available at the same time. A method in a newer version may not yet be available in the environment. Before updating, check whether the feature you use is available.
 
 Before updating, check the `CHANGELOG.md` included in the package. The CHANGELOG is primary information for checking changes and compatibility considerations. In particular, check the following.
 
@@ -138,7 +138,7 @@ Before updating, check the `CHANGELOG.md` included in the package. The CHANGELOG
 2. Check `Changed`, `Fixed`, and execution-environment and destination prerequisites for added features.
 3. Align the SDK, CLI, and lockfile to the update candidate, then verify representative operations and failure handling.
 
-From 0.6.0 to 0.11.0, the public Canvas `publishCanvasArtifact()` requires a third visibility argument. Credit checking and `platform.openAppSettings()` in 0.11.0 are used in the supported PRS execution environment. [SDK and API Version Migration](sdk-api-version-migration.md) covers migration details.
+In 0.7.0, the public Canvas `publishCanvasArtifact()` began requiring a third visibility argument (a breaking change), and credit-checking APIs were added. `platform.openAppSettings()`, also added in 0.7.0, is used in the Page runtime browser. Agent definition operations such as `agents.create()` and `scheduledTasks` were added in 0.8.0. [SDK and API Version Migration](sdk-api-version-migration.md) covers migration details.
 
 ## Common misunderstandings
 
@@ -152,7 +152,7 @@ The CLI is provided by the same package. When pinning the SDK to 0.11.0, also ch
 
 ### With CommonJS configuration, the SDK can be used directly in any browser
 
-Whether CommonJS or ESM is primarily a Node.js-side module-loading issue. Browser SDK support is separate: you must check whether the Page is in PRS, its authentication method, and the module you use.
+Whether CommonJS or ESM is primarily a Node.js-side module-loading issue. Browser SDK support is separate: you must check whether the Page is a Studio-hosted Page, its authentication method, and the module you use.
 
 ### A minor update in the 0.x series is always safe
 
@@ -165,7 +165,7 @@ This SDK can include breaking changes in pre-1.0 minor updates. Pin the version,
 | `node --version` is lower than 22 | Switch to an environment that uses Node.js 22 or later. Do not decide to lower only the SDK for an older Node.js version until checking supported scope and the CHANGELOG. |
 | `jai-studio` cannot be found or displays an unexpected version | Check `command -v jai-studio` and `jai-studio --version`, then review the executable on PATH and the globally installed version. |
 | `npm ls` and `SDK_VERSION` do not match | Check the execution directory, lockfile, and workspace dependencies. If multiple versions are resolved, pin the version used to one. |
-| Authentication or API-key issues occur in a browser | Do not add an API key to the browser. Check whether the execution location is within PRS or on the Node.js side. See [Execution Modes, Authentication, and Supported Scope](execution-modes-and-auth.md) and [Manage Project API Keys](../operations/manage-project-api-keys.md). |
+| Authentication or API-key issues occur in a browser | Do not add an API key to the browser. Check whether the execution location is within a Studio-hosted Page or on the Node.js side. See [Execution Modes, Authentication, and Supported Scope](execution-modes-and-auth.md) and [Manage Project API Keys](../operations/manage-project-api-keys.md). |
 | Some calls fail after an SDK update | Check changes and added prerequisites through the update target in the CHANGELOG, and isolate the issue by recording the SDK/CLI/Node.js/destination combination. If necessary, see the migration procedure in [SDK and API Version Migration](sdk-api-version-migration.md). |
 
 ## Checklist

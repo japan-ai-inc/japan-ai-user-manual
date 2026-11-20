@@ -2,7 +2,14 @@
 
 When you want to use a resource that has already been prepared by your organization or officially in a Project, you can **add a link to the original resource instead of creating a copy**. This article explains what is shared through links, how links differ from copies, and the procedures and checks for unlinking from a Project.
 
-The screens and resource types that you can link differ depending on your organization's available features and your permissions. In the current screens, you can select Agents, Workflows, knowledge (including Datasets), and Skills. Objects, Storage, Pages, and similar resources cannot necessarily be linked by the same procedure.
+**Only organization-level resources and official resources can be linked.** In the current screens, you can select Agents, Workflows, knowledge (including Datasets), and Skills. Resources created inside another Project cannot be linked; recreate them in this Project, or publish and install them as an App. There is no feature to copy resources between Projects.
+
+| Key point | Rule |
+|---|---|
+| What a link is | A reference to the same resource as the original. No duplicate is created. |
+| When the original changes | The change is reflected immediately in every Project that links it. |
+| Editing in the Project | A linked resource is read-only. Edit it in its original location. |
+| When you unlink | The original resource remains. Unlinking an Agent also deletes that Agent's IAM assignments in the Project. |
 
 - To newly prepare a Dataset in a Project: [Prepare a Dataset and Make an Agent Reference It](prepare-and-reference-datasets.md)
 - To configure a Workflow in your own Project: [Configure Workflow Nodes](configure-workflow-nodes.md)
@@ -14,13 +21,13 @@ First, select the operation that fits your purpose. In particular, do not confus
 
 | Operation | What is created | Relationship with the original resource | How it is handled in the Project |
 |---|---|---|---|
-| Link (shown as "Add" on screen) | A reference to the original | The original remains unchanged. Check the scope and timing of reflected updates for each resource type | The linked resource is read-only. Edit it in its original location |
-| Copy | A new resource | It becomes a resource separate from the original | Changes after copying do not necessarily apply to the original. At minimum, "Copy" for a Workflow creates a new Workflow |
-| Unlink (shown as "Remove Resource" on screen) | Removes the reference from the Project | **Does not affect the original resource** | It can no longer be accessed from this Project. This does not delete the original |
+| Link (shown as "Add" on screen) | A reference to the original | The original remains unchanged. Changes to the original are reflected immediately in all link destinations | The linked resource is read-only. Edit it in its original location |
+| Copy | A new resource | It becomes a resource separate from the original | "Copy" for a Workflow creates a new Workflow. There is no feature to copy resources between Projects |
+| Unlink (shown as "Remove Resource" on screen) | Removes the reference from the Project | **Does not affect the original resource** | It can no longer be accessed from this Project. This does not delete the original. For an Agent, its IAM assignments are also deleted |
 
-Linking is suitable when you want to use the same resource in multiple Projects. On the other hand, if you want to change settings or configuration for each Project, do not begin making changes while it remains linked, because updating the original can also affect other link destinations. Even if the target feature has "Copy," check the scope of settings that are copied before using it.
+Linking is suitable when you want to use the same resource in multiple Projects. On the other hand, if you want to change settings or configuration for each Project, do not begin making changes while it remains linked, because updating the original immediately affects all link destinations. Even if the target feature has "Copy," check the scope of settings that are copied before using it.
 
-> **A link is not an independent duplicate.** If you want to edit a resource that is shown as "Read-only" in the Project, open the original resource outside the Project. For each applicable resource type, check when and to what extent updates to the original can be used in each Project.
+> **A link is not an independent duplicate.** If you want to edit a resource that is shown as "Read-only" in the Project, open the original resource outside the Project. When you update the original, the change is used immediately in every Project that links it.
 
 ## Before you begin
 
@@ -63,13 +70,13 @@ If "Skipped Dependencies" appears, check the reason. Required dependencies may n
 2. If there are no issues, select **"Add."**
 3. Confirm **"Added ○ resources"** or a completion message that includes the number skipped.
 4. Confirm that the target appears in the list.
-5. Open the target and, as necessary, confirm that you can run or reference it. Also share with the administrator the impact that updates to the original have on the business.
+5. Open the target and, as necessary, confirm that you can run or reference it. Also share with the original administrator that updates to the original are reflected immediately in this Project.
 
 When you open a linked resource in the Project, **"Read-only"** may appear. In this case, you cannot edit it in the Project; edit it on the original resource side. If you do not have permission to update the original, do not assume that it will become editable in the Project. Request the change from the original administrator.
 
 ## 4. Unlink a resource that is no longer needed
 
-Unlinking removes access to the original from the Project. It does not delete the original resource or links in other Projects.
+Unlinking removes access to the original from the Project. It does not delete the original resource or links in other Projects. However, unlinking an Agent also deletes the IAM assignments set for that Agent in the Project. If you link it again, reconfigure the assignments as needed.
 
 1. In the target Project, open the list of resources for the resource you want to unlink.
 2. Check the target's name, type, and any Workflows using it. Confirm that it is not referenced by a Workflow or Agent and that there will be no impact on users.
@@ -96,11 +103,11 @@ For an inquiry, include the organization name, Project name, target resource nam
 ## Checklist
 
 - [ ] Confirmed that linking and copying are different operations and that a link is a reference to the original
-- [ ] Confirmed with the original administrator and users that updates to the original may also affect link destinations
+- [ ] Confirmed with the original administrator and users that updates to the original are reflected immediately in all link destinations
 - [ ] Checked the target type, name, source, and administrator before selecting "Add"
 - [ ] For a Workflow, checked automatically added dependent resources and reasons for skips
 - [ ] Am not attempting to edit a "Read-only" resource in the Project
-- [ ] Checked the impact on Project users, Workflows, and Agents before unlinking
+- [ ] Checked the impact on Project users, Workflows, and Agents before unlinking, including that the Agent's IAM assignments are deleted
 - [ ] After unlinking, confirmed that the original resource remains and checked the Project-side display
 
 ## Next articles to read

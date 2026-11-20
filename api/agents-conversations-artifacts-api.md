@@ -9,7 +9,7 @@ JAPAN AI Studioの公開APIで、Agent、会話room、Canvas成果物を扱い�
 
 ## この記事の範囲
 
-本番APIベースURLは`https://api.japan-ai.co.jp`です。Project APIキーは`x-api-key`または`Authorization: Bearer <key>`で渡し、サーバー側だけに保管します。読取には`agent:read`、room作成とProject APIキーによる実行には`agent:execute`が必要です。
+本番APIベースURLは`https://api.japan-ai.co.jp`です。Project APIキーは`x-api-key`または`Authorization: Bearer <key>`で渡し、サーバー側だけに保管します。読取には`agent:read`、room作成とProject APIキーによる実行には`agent:execute`が必要です。公開APIの全エンドポイントとリクエスト・レスポンスのスキーマは、公開OpenAPI（[APIリファレンス](https://api.japan-ai.co.jp/reference)、[`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)）にも掲載されています。
 
 > Project APIキーは作成者として扱われます。共有キーで利用者別のprivateな会話閲覧はできません。ブラウザではAPIキーを使わず、SDKのPage実行環境の認証経路を使用してください。
 
@@ -47,8 +47,10 @@ Project APIキーでは、一覧・詳細取得とは別に、Agent定義の作�
 ```sh
 curl -sS -X POST "$JAI_API/api/v1/agents" \
   -H "x-api-key: $JAI_STUDIO_API_KEY" -H 'Content-Type: application/json' \
-  -d '{"name":"提案整理（検証用）","prompt":"入力を3点で整理してください","model":"利用可能なモデル名"}'
+  -d '{"name":"提案整理（検証用）","prompt":"入力を3点で整理してください","model":"<モデルID>"}'
 ```
+
+`model`には表示名ではなくモデルIDを指定します。既存のAgentと同じモデルを使う場合は、`GET /api/v1/agents/{agentId}/definition`の応答の`model`の値を使います。
 
 ## 3. roomを作成して同期実行する
 
@@ -102,19 +104,19 @@ Canvas一覧は本文を返さず、`id`、`name`、`documentType`、`contentSiz
 
 SDK 0.11.0では、Pageのサインイン済み利用者が、公開API経由で作成したroomのCanvasへhslides形式のデッキを書込み・公開できます。`putCanvasArtifact(roomId, canvasArtifactId, { name, content })`は指定したCanvas IDで作成または置換します。`content`はHTML文字列そのものではなく、`{ document_type: "hslides", text: "..." }`形式です。結果が不明な書込みは、同じIDで状態を確認してから扱います。これらの書込み・公開は、Pageのサインイン済み利用者向けです。Project APIキーなど利用者を特定できない認証では403になり、対応していないデプロイでは404になります。
 
-公開は`publishCanvasArtifact(roomId, canvasArtifactId, scope)`を使い、`scope`は`"PUBLIC"`または`"ORGANIZATION"`です。`PUBLIC`は組織で公開共有が許可されていないと拒否され、`ORGANIZATION`は公開roomでは拒否されます。`unpublishCanvasArtifact()`はroomの共有範囲へ戻します。SDKとPage実行環境の対応バージョンをそろえ、Canvas本文・リンク・添付に秘密情報を含めません。
+公開は`publishCanvasArtifact(roomId, canvasArtifactId, scope)`を使い、`scope`は`"PUBLIC"`または`"ORGANIZATION"`です。公開後の共有URLは、公開結果の`url`フィールドから読み取ります。`PUBLIC`は組織で公開共有が許可されていないと拒否され、`ORGANIZATION`は公開roomでは拒否されます。`unpublishCanvasArtifact()`はroomの共有範囲へ戻します。SDKとPage実行環境の対応バージョンをそろえ、Canvas本文・リンク・添付に秘密情報を含めません。
 
 ## うまくいかない場合
 
 | 状況 | 確認・対応 |
 |---|---|
 | 400になる | 必須項目、`limit`の範囲、JSONまたはmultipartの形式を確認します。要求を推測して自動修正・再送しません。 |
-| 401または403になる | キーの保管先・有効性、対象Project、読取または実行スコープを確認します。キーの実値をログや問い合わせへ含めません。 |
+| 401または403になる | 無効・期限切れのキー（"Invalid API key"／"API key has expired"）は403です。401は認証情報がまったくない場合（一部の経路）だけです。キーの保管先・有効性、対象Project、読取または実行スコープを確認します。キーの実値をログや問い合わせへ含めません。 |
 | 404になる | Agent ID、room ID、Canvas ID、対象Project、認証経路を確認します。別のIDを試して存在を探索しません。 |
-| 429になる | `retryAfterSeconds`と`Retry-After`があればそれに従い、並列数と再送頻度を下げます。固定の待機秒数を実装しません。 |
+| 429になる | `POST /chat/v2`の429では`X-ChatRateLimit-Retry-After`ヘッダーに従います。その他の経路では`retryAfterSeconds`と`Retry-After`があればそれに従います。並列数と再送頻度を下げ、固定の待機秒数を実装しません。 |
 | ストリームが途切れる、またはタイムアウトする | 完了・未実行を画面だけで判断せず、room履歴と業務上の結果を確認してから再開します。 |
 
-429では`retryAfterSeconds`が返る場合があります。再試行と利用制御は[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
+`/chat/v2`の429は`X-ChatRateLimit-Retry-After`ヘッダーで待機時間を示します。その他の経路の429では`retryAfterSeconds`と`Retry-After`を使います。エラー応答には`requestId`が含まれるため、問い合わせ時に記録します。再試行と利用制御は[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
 
 ## チェックリスト
 

@@ -9,7 +9,7 @@ Use the JAPAN AI Studio public API to work with Agents, conversation rooms, and 
 
 ## Scope of this article
 
-The production API base URL is `https://api.japan-ai.co.jp`. Pass a Project API key in `x-api-key` or `Authorization: Bearer <key>`, and store it only server-side. Reading requires `agent:read`; creating rooms and executing with a Project API key require `agent:execute`.
+The production API base URL is `https://api.japan-ai.co.jp`. Pass a Project API key in `x-api-key` or `Authorization: Bearer <key>`, and store it only server-side. Reading requires `agent:read`; creating rooms and executing with a Project API key require `agent:execute`. All public API endpoints and request/response schemas are also published in the public OpenAPI ([API reference](https://api.japan-ai.co.jp/reference), [`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)).
 
 > A Project API key is treated as its creator. A shared key cannot view private conversations separately by user. In the browser, do not use an API key; use the SDK Page runtime environment authentication route.
 
@@ -47,8 +47,10 @@ With a Project API key, you can create, retrieve, and update Agent definitions i
 ```sh
 curl -sS -X POST "$JAI_API/api/v1/agents" \
   -H "x-api-key: $JAI_STUDIO_API_KEY" -H 'Content-Type: application/json' \
-  -d '{"name":"Proposal organization (for validation)","prompt":"Organize the input into three points","model":"available model name"}'
+  -d '{"name":"Proposal organization (for validation)","prompt":"Organize the input into three points","model":"<model ID>"}'
 ```
+
+Specify a model ID, not a display name, for `model`. To use the same model as an existing Agent, use the `model` value in the response of `GET /api/v1/agents/{agentId}/definition`.
 
 ## 3. Create a room and run synchronously
 
@@ -102,19 +104,19 @@ The Canvas list does not return content; it returns `id`, `name`, `documentType`
 
 In SDK 0.11.0, a signed-in Page user can write and publish an hslides-format deck to Canvas in a room created through the public API. `putCanvasArtifact(roomId, canvasArtifactId, { name, content })` creates or replaces Canvas with the specified Canvas ID. `content` is not the HTML string itself; it is in the format `{ document_type: "hslides", text: "..." }`. For a write with an unknown result, check the state using the same ID before proceeding. These writes and publications are for signed-in Page users. Authentication that cannot identify a user, such as a Project API key, returns 403, and an unsupported deployment returns 404.
 
-For publication, use `publishCanvasArtifact(roomId, canvasArtifactId, scope)`, where `scope` is `"PUBLIC"` or `"ORGANIZATION"`. `PUBLIC` is rejected unless public sharing is allowed in the organization, and `ORGANIZATION` is rejected in a public room. `unpublishCanvasArtifact()` returns the Canvas to the room sharing scope. Use compatible versions of the SDK and Page runtime environment, and do not include secrets in Canvas content, links, or attachments.
+For publication, use `publishCanvasArtifact(roomId, canvasArtifactId, scope)`, where `scope` is `"PUBLIC"` or `"ORGANIZATION"`. After publishing, read the share URL from the `url` field of the publication result. `PUBLIC` is rejected unless public sharing is allowed in the organization, and `ORGANIZATION` is rejected in a public room. `unpublishCanvasArtifact()` returns the Canvas to the room sharing scope. Use compatible versions of the SDK and Page runtime environment, and do not include secrets in Canvas content, links, or attachments.
 
 ## Troubleshooting
 
 | Situation | What to check and do |
 |---|---|
 | 400 | Check required fields, the `limit` range, and JSON or multipart format. Do not automatically correct and resend requests based on guesswork. |
-| 401 or 403 | Check key storage location and validity, target Project, and read or execute scope. Do not include the actual key value in logs or support inquiries. |
+| 401 or 403 | An invalid or expired key ("Invalid API key" / "API key has expired") returns 403. 401 is returned only when no authentication information is sent at all (on some routes). Check key storage location and validity, target Project, and read or execute scope. Do not include the actual key value in logs or support inquiries. |
 | 404 | Check the Agent ID, room ID, Canvas ID, target Project, and authentication route. Do not try other IDs to explore existence. |
-| 429 | If present, follow `retryAfterSeconds` and `Retry-After`, and reduce concurrency and retry frequency. Do not implement a fixed wait time. |
+| 429 | For 429 from `POST /chat/v2`, follow the `X-ChatRateLimit-Retry-After` header. For other routes, follow `retryAfterSeconds` and `Retry-After` if present. Reduce concurrency and retry frequency. Do not implement a fixed wait time. |
 | Stream interruption or timeout | Do not determine completion or non-execution from the screen alone. Check room history and the business result before resuming. |
 
-A 429 may return `retryAfterSeconds`. For retry and usage control, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
+For `/chat/v2`, a 429 indicates the wait time in the `X-ChatRateLimit-Retry-After` header. For 429 on other routes, use `retryAfterSeconds` and `Retry-After`. Error responses include `requestId`, so record it when contacting support. For retry and usage control, see [Common API and SDK Errors, Timeouts, and Limits](../development/api-sdk-errors-timeouts-limits.md).
 
 ## Checklist
 

@@ -28,7 +28,7 @@ Start with the minimum structure that lets users choose a storage destination an
 - If using a Storage trigger, decide the folder to monitor, whether to include subfolders, and the events that should start it.
 - Confirm that you have permission to create, rename, move, and delete. Available operations and their display vary by permissions and organization settings.
 
-> **Check references before organizing folders that are already in use.** The Storage screen can copy file and folder paths, and a Workflow Storage trigger can select a target folder. This screen alone does not confirm whether existing references and settings update automatically after renaming or moving. Before changing anything, check the Agents, Workflows, Pages, and procedures that reference it, and test the actual method of use afterward.
+> **Check references before organizing folders that are already in use.** The Storage screen can copy file and folder paths, and a Workflow Storage trigger can select a target folder. Assume that existing references and settings are not updated automatically after renaming or moving. Before changing anything, check the Agents, Workflows, Pages, and procedures that reference it, and test the actual method of use afterward.
 
 ## 1. Create a structure plan
 
@@ -54,7 +54,9 @@ Name folders so that people who see them on the screen can determine their purpo
 
 Because folder names may reveal their content, confirm that they do not contain confidential information.
 
-> Putting dates, versions, and assignees all in the folder hierarchy makes storage locations deep. Keep them shallow enough for daily navigation, such as by including the date in the file name.
+> Putting dates, versions, and assignees all in the folder hierarchy makes storage locations deep. The folder hierarchy can be up to **10 levels** deep, and paths can be up to **1,000 characters**. Keep them shallow enough for daily navigation, such as by including the date in the file name.
+
+Windows reserved names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`, `LPT1`, and so on) cannot be used for folder or file names.
 
 ## 2. Create a folder
 
@@ -66,7 +68,7 @@ Because folder names may reveal their content, confirm that they do not contain 
 6. Confirm that the created folder appears in the list and that "Folder created" appears.
 7. If necessary, open the folder and create subfolders by following the same procedure.
 
-If you created a folder in the wrong location, review the current breadcrumb and your structure plan. If you cannot create it, check your permissions and the reason shown on the screen.
+If you created a folder in the wrong location, review the current breadcrumb and your structure plan. If you cannot create it, check your permissions, the hierarchy depth (up to 10 levels), the path length (up to 1,000 characters), the name, and the reason shown on the screen.
 
 ## 3. Align file destinations with references in items you build
 
@@ -114,7 +116,7 @@ When deleting a folder, a message indicates that all files and folders under it 
 
 In the organization drive, if a non-administrator tries to delete another user's completed file, deletion is blocked on the screen. Whether a folder or other target can be deleted is checked server-side for each target. If you cannot delete it, check with its creator or an administrator. When a same-name item conflicts, review the choices shown on the screen before proceeding.
 
-Files managed by an App may be displayed as read-only and may not allow normal modification. Before updating or deleting an App or changing settings for use, check with the App's person in charge.
+Files managed by an App are displayed as read-only and cannot be renamed, moved, or deleted normally. Before updating or deleting an App or changing settings for use, check with the App's person in charge.
 
 ## Checklist
 

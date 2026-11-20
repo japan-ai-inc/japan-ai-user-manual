@@ -18,7 +18,7 @@ This setting is separate from Page registration, publishing, and access-conditio
 - Check representative operations users perform, such as Page display, input, creation, and sending. Setting a home Page does not guarantee that processing or external connections within the Page work correctly.
 - Check the Page access settings and each user's viewing permission. Setting a home Page does not add people who can view the Page.
 
-> When you set a home Page, users who open the Project may not see the usual Project navigation. Before configuring it, decide whether you want to hide build menus and whether users need to return to other screens.
+> When you set a home Page, people who open the Project see the home Page instead of the usual Project screen. Whether they can return to the usual screen depends on the "Back to Studio" button display setting. Before configuring it, decide whether you want to hide build menus and whether users need to return to other screens.
 
 ## 1. Prepare the home Page
 
@@ -74,7 +74,11 @@ When you select a home Page, you can configure "Show \"Back to Studio\" button."
 3. Confirm that "Updated" appears.
 4. As needed, check the button display both as a user with edit permission and as a user without it.
 
-> When set to "Hidden," no button for returning to the usual Project screen is displayed from the home Page. If users need to proceed to other Pages or features, first check in-Page guidance and the "Page switching" setting described next.
+{% hint style="warning" %}
+When set to "Hidden," the button for returning to the usual Project screen is not displayed to **anyone, including Editors and Admins**. To change the setting back, open the settings from "⋯" on the Project's card in the Studio Workspace Project list, and change "Home Page Settings."
+{% endhint %}
+
+If users need to proceed to other Pages or features, first check in-Page guidance and the "Page switching" setting described next.
 
 ## 5. Configure "Page switching" only when needed
 
@@ -95,7 +99,7 @@ Check not only the configurator's screen, but also in a state close to an actual
 2. Confirm that the home Page displays first.
 3. Check displayed information, input fields, primary operations, and where to check processing results.
 4. If you configured the "Back to Studio" button and page switching, confirm that required entry points appear only for intended users.
-5. If you can check with users with different viewing permissions, confirm that they can open the Page and that unnecessary Pages do not appear in navigation.
+5. Ask users with different viewing permissions to help confirm that they can open the Page and that unnecessary Pages do not appear in navigation.
 
 If the configured home Page cannot be retrieved because it was deleted, for example, opening the Project switches to the usual dashboard display. In contrast, if a user lacks viewing permission for the Page, authentication fails, or the Page fails to load, a home-Page display error may occur. Before asking users to use an alternative URL or change settings, check the Page access settings, user permissions, authentication status, and Page existence.
 
@@ -106,7 +110,7 @@ If the configured home Page cannot be retrieved because it was deleted, for exam
 - [ ] Confirmed that you have permission to edit Project settings
 - [ ] Selected the target Page in "Home Page" under "Home Page Settings" and checked the update result
 - [ ] Reopened the Project and confirmed that the selected Page displays first
-- [ ] Checked the display scope for the "Back to Studio" button according to user roles
+- [ ] Checked the display scope for the "Back to Studio" button according to user roles (if "Hidden," confirmed that you can return to settings from "⋯" on the card in the Project list)
 - [ ] When available, configured "Page switching" and target Pages and checked users' viewing permissions
 - [ ] Decided the inquiry contact if Page deletion, insufficient permission, or loading errors occur
 

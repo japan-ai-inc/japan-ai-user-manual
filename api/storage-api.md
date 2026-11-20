@@ -13,7 +13,7 @@ Storage APIは、Project StorageのファイルとフォルダをHTTPで一覧�
 
 ## 始める前に
 
-ベースURLは`https://api.japan-ai.co.jp`、主経路は`/api/v1/storage`です。以下はこの主経路です。Project APIキーは`x-api-key`または`Authorization: Bearer <キー>`で渡し、操作に必要なスコープだけを付与します。
+ベースURLは`https://api.japan-ai.co.jp`、主経路は`/api/v1/storage`です。以下はこの主経路です。Project APIキーは`x-api-key`または`Authorization: Bearer <キー>`で渡し、操作に必要なスコープだけを付与します。公開APIの全エンドポイントとリクエスト・レスポンスのスキーマは、公開OpenAPI（[APIリファレンス](https://api.japan-ai.co.jp/reference)、[`/api/swagger.json`](https://api.japan-ai.co.jp/api/swagger.json)）にも掲載されています。なお、OpenAPIではStorageの上限が「2GB total」と記載されていますが、実際の上限は本記事のとおり3GBです。
 
 ```bash
 export JAI_STUDIO_API_KEY='安全な保管場所から渡す値'
@@ -25,7 +25,7 @@ curl -H "x-api-key: $JAI_STUDIO_API_KEY" \
 
 ## 応答とエラーの共通事項
 
-JSON応答には原則`success`と`requestId`が含まれます。IDは作成・一覧応答から取得します。認証不備は401または403、入力不備は400、対象不在は404です。429の場合は応答の`retryAfterSeconds`を待機の目安にします。詳細は[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
+JSON応答には原則`success`と`requestId`が含まれ、エラー応答にも`requestId`が含まれます。IDは作成・一覧応答から取得します。認証情報がない場合は401、無効・期限切れのキーやスコープ不足は403、入力不備は400、対象不在は404です。429の場合は応答の`retryAfterSeconds`を待機の目安にします。詳細は[API／SDK共通のエラー・タイムアウト・制限](../development/api-sdk-errors-timeouts-limits.md)を参照してください。
 
 パスは省略時に`/`です。`..`を含むパスは使えず、連続する`/`は正規化されます。ファイル名・フォルダ名は前後の空白を除いた1〜255文字で、パス区切り、制御文字、`.`、`..`などは受け付けられません。
 
@@ -92,7 +92,7 @@ curl -X POST -H "x-api-key: $JAI_STUDIO_API_KEY" \
 
 ZIPの`maxSizeMb`は1以上の整数です。上限超過値は500MBとして扱われ、空・上限超過フォルダは取得できません。削除はファイルでも`DELETE /api/v1/storage/files/:fileId`を使い、`storage:delete`が必要です。成功時は`fileId`とメッセージを返し、存在しない対象は404です。
 
-> 削除は影響範囲を確認してから実行してください。フォルダ削除は配下も対象です。通常画面での復元操作は確認できません。
+> 削除は影響範囲を確認してから実行してください。フォルダ削除は配下も対象です。APIで削除したファイルを復元する操作は、このマニュアルでは扱いません。
 
 ## よくある誤解
 

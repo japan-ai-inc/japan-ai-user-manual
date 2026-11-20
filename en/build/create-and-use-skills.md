@@ -20,6 +20,7 @@ Simply adding a Skill does not mean the same processing will always be performed
 ## Before you begin
 
 - Check the target organization and Project, and confirm that you have permission to create and edit Skills. If the screen displays "Editor or Admin role is required to create or edit skills.", check with an administrator.
+- The number of Skills has an organization-level limit. Check the remaining count in the usage bar on the Skills list screen.
 - Search existing Skills to check whether there is one for the same purpose or one that should be updated.
 - Organize the target work, expected inputs, completion criteria, users, and required tools.
 - When operating an external service, check the connection, permissions, and test target first. Do not write credentials, passwords, API keys, or Secret values in the Skill body or attached files.
@@ -51,7 +52,7 @@ In the body instructions, write the processing order and decision criteria. Use 
 |---|---|
 | Summarize appropriately | Read only the specified meeting minutes and output the content under "Decisions," "Owners and deadlines," and "Open items." |
 | Check if necessary | If a date, owner, or deadline is missing, ask for it as a missing item without guessing. |
-| Make the content correct | Do not add items unsupported by the input; state "This could not be confirmed from the input." |
+| Make the content correct | Do not add items unsupported by the input; state "Not stated in the input." |
 
 Instructions should cover not only the normal flow but also prohibited actions and how to respond in exceptional cases. However, writing "do not send externally" in the Skill body does not revoke the permissions of the tools or connections themselves.
 
@@ -63,8 +64,8 @@ Instructions should cover not only the normal flow but also prohibited actions a
 4. Enter a name users can understand in "Display Name."
 5. In "Description," specifically enter the requests for which the Skill is used and what it returns.
 6. Select "Tools" only when necessary. The selected tools become available to this Skill.
-7. If necessary, use "Select Icon" to set an image for identification. You can also save without an image.
-8. Open "SKILL.md" and describe the procedures, decision criteria, output format, and handling of exceptions organized in the previous section. Check the supporting files in the file list. If you refer to them from the body, make their names and purposes consistent.
+7. If necessary, use "Select Icon" to set an image for identification. Select an image of up to 5MB; after it is cropped to 400×400px, it must be 1MB or less. You can also save without an image.
+8. Open "SKILL.md" and describe the procedures, decision criteria, output format, and handling of exceptions organized in the previous section. Check the supporting files in the file list. If you refer to them from the body, make their names and purposes consistent. Keep SKILL.md within 100KB (an Agent skips it if it is larger).
 9. Save, and confirm that there are no save errors.
 
 SKILL.md requires frontmatter. Include at least `name` and `description`. The on-screen "Skill ID," "Display Name," "Description," and selected "Tools" correspond to the information in SKILL.md. Even when editing SKILL.md directly, confirm before saving that these are as intended.
@@ -78,13 +79,13 @@ When using a prepared Skill, import it from "Upload Skill."
 1. Open the Skill you are creating or editing in "Skill Builder."
 2. Check "Upload Skill" in "Configuration."
 3. Select "Select ZIP file," or drag and drop a file onto the screen. On screens where you can select a folder, you can also use "Select folder."
-4. Check the ZIP contents. Confirm that it includes SKILL.md and the supporting files required for processing.
+4. Check the ZIP contents. Confirm that it includes SKILL.md and the supporting files required for processing. An Agent can read only `.md`, `.json`, `.yml`, `.py`, `.js`, `.ts`, `.tsx`, and `.css` files up to 100KB. For details, see [Skill Specifications and Limits](skill-specs-and-limits.md).
 5. After importing, check the "Skill ID" and "Description" in SKILL.md, the tools, and the file list.
 6. Review the content for your organization's purpose, connections, and sharing scope, then save it.
 
-When using a ZIP file, SKILL.md is required. You cannot import it if its format or structure is invalid, or if the frontmatter in SKILL.md does not contain `name` or `description`. If the same Skill ID already exists, a confirmation about overwriting may be displayed. To avoid updating an unintended existing Skill, check the name and content before continuing.
+When using a ZIP file, SKILL.md is required. You cannot import it if its format or structure is invalid, or if the frontmatter in SKILL.md does not contain `name` or `description`. Hyphens in `name` are converted to underscores on import (for example, `meeting-summary` → `meeting_summary`). If the same Skill ID already exists, a confirmation about overwriting may be displayed. To avoid updating an unintended existing Skill, check the name and content before continuing.
 
-> Do not import a Skill from an unknown download source, or code or files whose content you cannot check, as-is. Check external transmission, file operations, and how credentials are handled, and validate it in an approved test environment.
+> Do not import a Skill from an unknown download source, or code or files whose content you do not understand, as-is. Check external transmission, file operations, and how credentials are handled, and validate it in an approved test environment.
 
 ## 4. Check the sharing scope and editing content
 
@@ -126,7 +127,8 @@ When you update a Skill, test at least a representative normal input, an input w
 | Cannot import a ZIP | Check the ZIP format; the presence and location of SKILL.md; the content and structure; and upload permissions |
 | Users cannot use a Skill | Check the sharing scopes of both the Agent and the Skill, the user's access, and required authentication |
 | The procedure or format is not as intended | Review the purpose in the description, the procedure and exception conditions in SKILL.md, the Agent instructions, and the test input |
-| Cannot confirm updates | Check the save result, the version currently displayed, and the Skill configured in the Agent |
+| Updates are not reflected | Check the save result, the version currently displayed, and the Skill configured in the Agent |
+| The Agent does not use materials in the Skill | Check that the file extension is readable by `skill_read`, that each file is 100KB or less, and that SKILL.md does not exceed 100KB |
 
 ## Checklist
 
